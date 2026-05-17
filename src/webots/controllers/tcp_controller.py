@@ -59,8 +59,25 @@ class WebotsRobotServer:
     def _setup_motors(self) -> None:
         """Initialize wheel motors."""
         try:
-            self.left_motor = self.robot.getDevice("left wheel motor")
-            self.right_motor = self.robot.getDevice("right wheel motor")
+            # Support both generic tutorial names and Webots Pioneer 3-DX names.
+            # Pioneer3dx.proto uses "left wheel" and "right wheel".
+            for name in ("left wheel motor", "left wheel"):
+                try:
+                    self.left_motor = self.robot.getDevice(name)
+                    if self.left_motor:
+                        print(f"[Webots] Left motor: {name}")
+                        break
+                except Exception:
+                    pass
+
+            for name in ("right wheel motor", "right wheel"):
+                try:
+                    self.right_motor = self.robot.getDevice(name)
+                    if self.right_motor:
+                        print(f"[Webots] Right motor: {name}")
+                        break
+                except Exception:
+                    pass
 
             if self.left_motor and self.right_motor:
                 # Set to velocity control mode
@@ -77,13 +94,23 @@ class WebotsRobotServer:
     def _setup_sensors(self) -> None:
         """Initialize proximity, GPS, and compass sensors."""
         try:
-            # Distance/Proximity sensors
+            # Distance/Proximity sensors. Support generic names plus Pioneer 3-DX
+            # sonar names so0..so15.
             for i in range(8):  # Up to 8 sensors
                 try:
                     sensor = self.robot.getDevice(f"distance sensor {i}")
                     if sensor:
                         sensor.enable(self.timestep)
                         self.proximity_sensors[f"distance_{i}"] = sensor
+                except:
+                    pass  # Sensor doesn't exist
+
+            for i in range(16):
+                try:
+                    sensor = self.robot.getDevice(f"so{i}")
+                    if sensor:
+                        sensor.enable(self.timestep)
+                        self.proximity_sensors[f"so{i}"] = sensor
                 except:
                     pass  # Sensor doesn't exist
 
