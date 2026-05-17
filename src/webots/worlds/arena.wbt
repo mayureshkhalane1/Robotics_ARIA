@@ -40,6 +40,13 @@ DEF PIONEER_3DX Pioneer3dx {
     Compass {
       name "compass"
     }
+    Camera {
+      name "camera"
+      width 320
+      height 240
+      fieldOfView 1.047
+      near 0.02
+    }
   ]
 }
 CardboardBox {

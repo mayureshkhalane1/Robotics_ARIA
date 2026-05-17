@@ -1,0 +1,91 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/adept/pioneer3/protos/Pioneer3dx.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+
+WorldInfo {
+  info ["ARIA house-style navigation demo with Pioneer 3-DX and TCP controller"]
+  title "ARIA House Demo"
+  basicTimeStep 8
+}
+Viewpoint {
+  orientation -0.48 0.35 0.8 2.1
+  position 6 -9 7
+}
+TexturedBackground { }
+TexturedBackgroundLight { }
+RectangleArena {
+  floorSize 12 9
+  floorTileSize 1 1
+  wallHeight 0.35
+}
+DEF PIONEER_3DX Pioneer3dx {
+  translation -4 -2.7 0.0975
+  rotation 0 0 1 0
+  controller "tcp_controller"
+  extensionSlot [
+    GPS { name "gps" }
+    Compass { name "compass" }
+    Camera {
+      name "camera"
+      width 320
+      height 240
+      fieldOfView 1.047
+      near 0.02
+    }
+  ]
+}
+
+
+DEF WALL_HALL_1 Solid {
+  translation -1.2 0 0.5
+  children [ Shape { appearance PBRAppearance { baseColor 0.82 0.80 0.74 roughness 1 } geometry Box { size 0.12 5.2 1.0 } } ]
+  boundingObject Box { size 0.12 5.2 1.0 }
+}
+DEF WALL_HALL_2 Solid {
+  translation 1.2 0.8 0.5
+  children [ Shape { appearance PBRAppearance { baseColor 0.82 0.80 0.74 roughness 1 } geometry Box { size 0.12 3.6 1.0 } } ]
+  boundingObject Box { size 0.12 3.6 1.0 }
+}
+DEF WALL_KITCHEN Solid {
+  translation 3.4 0 0.5
+  children [ Shape { appearance PBRAppearance { baseColor 0.82 0.80 0.74 roughness 1 } geometry Box { size 3.2 0.12 1.0 } } ]
+  boundingObject Box { size 3.2 0.12 1.0 }
+}
+DEF WALL_BEDROOM Solid {
+  translation -3.4 0.6 0.5
+  children [ Shape { appearance PBRAppearance { baseColor 0.82 0.80 0.74 roughness 1 } geometry Box { size 2.8 0.12 1.0 } } ]
+  boundingObject Box { size 2.8 0.12 1.0 }
+}
+DEF SOFA Solid {
+  translation -4 2.5 0.25
+  children [ Shape { appearance PBRAppearance { baseColor 0.1 0.2 0.45 roughness 0.9 } geometry Box { size 1.6 0.6 0.5 } } ]
+  name "sofa"
+  boundingObject Box { size 1.6 0.6 0.5 }
+}
+DEF BED Solid {
+  translation -4 -0.8 0.25
+  children [ Shape { appearance PBRAppearance { baseColor 0.45 0.45 0.50 roughness 0.9 } geometry Box { size 1.8 1.1 0.5 } } ]
+  name "bed"
+  boundingObject Box { size 1.8 1.1 0.5 }
+}
+DEF KITCHEN_COUNTER Solid {
+  translation 4 2.2 0.45
+  children [ Shape { appearance PBRAppearance { baseColor 0.55 0.35 0.18 roughness 0.7 } geometry Box { size 1.8 0.55 0.9 } } ]
+  name "kitchen counter"
+  boundingObject Box { size 1.8 0.55 0.9 }
+}
+DEF DINING_TABLE Solid {
+  translation 3.7 -2.0 0.35
+  children [ Shape { appearance PBRAppearance { baseColor 0.35 0.22 0.12 roughness 0.8 } geometry Box { size 1.1 1.1 0.7 } } ]
+  name "dining table"
+  boundingObject Box { size 1.1 1.1 0.7 }
+}
+DEF TARGET_OBJECT Solid {
+  translation 4.5 3.4 0.15
+  children [ Shape { appearance PBRAppearance { baseColor 0 0.8 0.15 roughness 0.4 } geometry Sphere { radius 0.15 } } ]
+  name "green target"
+  boundingObject Sphere { radius 0.15 }
+}

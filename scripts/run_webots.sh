@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORLD="$ROOT/src/webots/worlds/arena.wbt"
+WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/house.wbt}"
 WEBOTS_BIN="/Applications/Webots.app/Contents/MacOS/webots"
 PORT="${WEBOTS_PORT_UI:-1236}"
 

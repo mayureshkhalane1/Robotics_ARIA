@@ -17,6 +17,7 @@ Commands:
 
 import socket
 import json
+import base64
 from typing import Dict, Any, Optional
 
 try:
@@ -151,7 +152,8 @@ class WebotsRobotServer:
             "position": None,
             "orientation": None,
             "proximity": {},
-            "wheel_velocities": [0, 0]
+            "wheel_velocities": [0, 0],
+            "camera": None,
         }
 
         # Position from GPS
@@ -180,6 +182,19 @@ class WebotsRobotServer:
                 float(self.left_motor.getVelocity()),
                 float(self.right_motor.getVelocity())
             ]
+
+        if self.camera:
+            try:
+                image = self.camera.getImage()
+                if image:
+                    state["camera"] = {
+                        "encoding": "bgra8_base64",
+                        "width": int(self.camera.getWidth()),
+                        "height": int(self.camera.getHeight()),
+                        "data": base64.b64encode(image).decode("ascii"),
+                    }
+            except Exception as e:
+                state["camera"] = {"error": str(e)}
 
         return state
 

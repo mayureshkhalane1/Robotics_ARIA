@@ -8,6 +8,7 @@ from dataclasses import asdict, is_dataclass
 from typing import Any
 
 from src.agent.graph import run_reactive_agent
+from src.common.config import OLLAMA_MODEL
 from src.mcp_server.server import call_tool, list_tools
 
 
@@ -25,10 +26,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--steps", type=int, default=50, help="Maximum sense-plan-act steps")
     parser.add_argument(
         "--policy",
-        choices=("reactive",),
+        choices=("reactive", "ollama", "langgraph"),
         default="reactive",
-        help="Policy to run. Only reactive is implemented currently.",
+        help="Policy to run. langgraph currently uses the same evented ReAct loop with Ollama planning.",
     )
+    parser.add_argument("--model", default=OLLAMA_MODEL, help="Ollama model for ollama/langgraph policies")
     parser.add_argument("--obstacle-threshold", type=float, default=800.0)
     parser.add_argument("--sleep", type=float, default=0.1, help="Seconds to sleep between actions")
     parser.add_argument("--list-tools", action="store_true", help="Print available bridge tools and exit")
@@ -54,6 +56,8 @@ def main() -> int:
         max_steps=args.steps,
         obstacle_threshold=args.obstacle_threshold,
         sleep_seconds=args.sleep,
+        policy=args.policy,
+        model=args.model,
     )
 
     if args.json:

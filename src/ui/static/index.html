@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ARIA Robot Console</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, sans-serif; background: #101318; color: #ecf2ff; }
+    header { padding: 16px 20px; border-bottom: 1px solid #263040; display: flex; gap: 12px; align-items: center; }
+    input { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #354156; background: #171c25; color: #ecf2ff; }
+    button, select { padding: 12px 14px; border-radius: 10px; border: 1px solid #43506a; background: #24324a; color: white; cursor: pointer; }
+    button.stop { background: #6b2632; }
+    main { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; padding: 14px; height: calc(100vh - 82px); box-sizing: border-box; }
+    section { background: #171c25; border: 1px solid #283244; border-radius: 14px; padding: 14px; overflow: auto; }
+    h2 { margin: 0 0 12px; font-size: 15px; color: #a9b8d6; letter-spacing: .04em; text-transform: uppercase; }
+    canvas { width: 100%; border-radius: 12px; background: #05070a; image-rendering: pixelated; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.45; }
+    .log-item { border-bottom: 1px solid #2a3446; padding: 10px 0; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #2c3c59; color: #cfe0ff; font-size: 12px; margin-right: 8px; }
+    .status { color: #94f0b3; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>ARIA</strong>
+    <input id="goal" value="explore the house safely and avoid obstacles" />
+    <select id="policy"><option value="reactive">reactive</option><option value="ollama" selected>ollama</option><option value="langgraph">langgraph</option></select>
+    <input id="model" value="qwen3:8b" style="max-width: 140px" />
+    <button id="run">Run</button>
+    <button id="stop" class="stop">Stop</button>
+    <span id="status" class="status">connecting</span>
+  </header>
+  <main>
+    <section>
+      <h2>Robot camera</h2>
+      <canvas id="camera" width="320" height="240"></canvas>
+      <p id="cameraStatus">Waiting for camera frame...</p>
+    </section>
+    <section>
+      <h2>Robot state</h2>
+      <pre id="state">{}</pre>
+    </section>
+    <section>
+      <h2>Thinking and commands</h2>
+      <div id="log"></div>
+    </section>
+  </main>
+  <script>
+    const statusEl = document.getElementById('status');
+    const stateEl = document.getElementById('state');
+    const logEl = document.getElementById('log');
+    const camera = document.getElementById('camera');
+    const ctx = camera.getContext('2d');
+
+    function appendLog(event) {
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      const action = event.action ? `${event.action.type} ${JSON.stringify(event.action.params)}` : '';
+      item.innerHTML = `<span class="tag">${event.type}</span><span>step ${event.step}</span><pre>${event.plan || action || event.error || ''}</pre>`;
+      logEl.prepend(item);
+    }
+
+    function drawCamera(cam) {
+      if (!cam || !cam.data || cam.encoding !== 'bgra8_base64') return;
+      camera.width = cam.width; camera.height = cam.height;
+      const raw = atob(cam.data);
+      const image = ctx.createImageData(cam.width, cam.height);
+      for (let i = 0, j = 0; i < raw.length && j < image.data.length; i += 4, j += 4) {
+        image.data[j] = raw.charCodeAt(i + 2);
+        image.data[j + 1] = raw.charCodeAt(i + 1);
+        image.data[j + 2] = raw.charCodeAt(i);
+        image.data[j + 3] = 255;
+      }
+      ctx.putImageData(image, 0, 0);
+      document.getElementById('cameraStatus').textContent = `${cam.width}x${cam.height} live`;
+    }
+
+    function connect() {
+      const ws = new WebSocket(`ws://${location.host}/ws`);
+      ws.onopen = () => statusEl.textContent = 'connected';
+      ws.onclose = () => { statusEl.textContent = 'disconnected'; setTimeout(connect, 1000); };
+      ws.onmessage = (msg) => {
+        const event = JSON.parse(msg.data);
+        if (event.robot_state) {
+          const cam = event.robot_state.camera_frame || event.robot_state.camera || null;
+          drawCamera(cam);
+          const clean = {...event.robot_state};
+          if (clean.camera_frame) clean.camera_frame = 'frame received';
+          if (clean.camera) clean.camera = 'frame received';
+          stateEl.textContent = JSON.stringify(clean, null, 2);
+        }
+        appendLog(event);
+      };
+    }
+
+    document.getElementById('run').onclick = async () => {
+      await fetch('/goal', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+        goal: document.getElementById('goal').value,
+        policy: document.getElementById('policy').value,
+        model: document.getElementById('model').value,
+        steps: 50
+      })});
+    };
+    document.getElementById('stop').onclick = async () => fetch('/stop', {method:'POST'});
+    connect();
+  </script>
+</body>
+</html>

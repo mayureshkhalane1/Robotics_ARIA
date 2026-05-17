@@ -25,6 +25,7 @@ dev = [
 
 [project.scripts]
 aria-agent = "src.agent.main:main"
+aria-ui = "src.ui.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, Iterable, Mapping, Optional
 
+from src.agent.llm import RobotActionDecision, call_ollama_decision
 from src.common.types import Action, ActionType, AgentState, RobotState
 from src.mcp_server.server import tool_execute_action, tool_get_state
 
@@ -18,6 +19,11 @@ from src.mcp_server.server import tool_execute_action, tool_get_state
 DEFAULT_OBSTACLE_THRESHOLD = 800.0
 DEFAULT_MOVE_VELOCITY = 4.0
 DEFAULT_TURN_VELOCITY = 0.8
+
+
+def clamp(value: float, low: float, high: float) -> float:
+    """Clamp a numeric value for safe robot execution."""
+    return max(low, min(high, value))
 
 
 def _as_float(value: Any, default: float = 0.0) -> float:
@@ -39,6 +45,7 @@ def robot_state_from_response(response: Mapping[str, Any]) -> RobotState:
         orientation=tuple(orientation),
         proximity_sensors={str(k): _as_float(v) for k, v in proximity.items()},
         wheel_velocities=tuple(wheels),
+        camera_frame=response.get("camera"),
         timestamp=_as_float(response.get("timestamp")),
         gps_reading=tuple(position) if position else None,
     )
@@ -108,6 +115,49 @@ def plan_node(state: AgentState, obstacle_threshold: float = DEFAULT_OBSTACLE_TH
     state.action = choose_reactive_action(state.robot_state, obstacle_threshold=obstacle_threshold)
     state.plan = state.action.reasoning
     state.reasoning_trace.append(f"plan: {state.action.type.value} - {state.action.reasoning}")
+    return state
+
+
+def action_from_decision(decision: RobotActionDecision) -> Action:
+    """Convert a model decision into a safely bounded robot action."""
+    params: Dict[str, float] = {}
+    if decision.action_type == "move":
+        params["velocity"] = clamp(float(decision.velocity or 1.0), 0.0, 4.0)
+    elif decision.action_type == "turn":
+        params["angular_velocity"] = clamp(float(decision.angular_velocity or DEFAULT_TURN_VELOCITY), -1.5, 1.5)
+    if decision.duration is not None:
+        params["duration"] = clamp(float(decision.duration), 0.1, 2.0)
+    return Action(type=ActionType(decision.action_type), params=params, reasoning=decision.reasoning or decision.thought)
+
+
+def ollama_plan_node(
+    state: AgentState,
+    obstacle_threshold: float = DEFAULT_OBSTACLE_THRESHOLD,
+    model: Optional[str] = None,
+    planner: Callable[..., RobotActionDecision] = call_ollama_decision,
+) -> AgentState:
+    """Plan using local Ollama/Qwen with deterministic safety fallback."""
+    front_values = front_proximity_values(state.robot_state.proximity_sensors)
+    obstacle_detected = bool(front_values) and max(front_values) >= obstacle_threshold
+
+    try:
+        kwargs = {"goal": state.goal, "robot_state": state.robot_state, "step_count": state.step_count}
+        if model:
+            kwargs["model"] = model
+        decision = planner(**kwargs)
+        action = action_from_decision(decision)
+        if obstacle_detected and action.type == ActionType.MOVE:
+            action = choose_reactive_action(state.robot_state, obstacle_threshold=obstacle_threshold)
+            action.reasoning = f"Safety override near obstacle; {action.reasoning}"
+        state.action = action
+        state.plan = decision.thought or action.reasoning
+        state.reasoning_trace.append(f"think: {state.plan}")
+        state.reasoning_trace.append(f"plan: {state.action.type.value} - {state.action.reasoning}")
+    except Exception as exc:
+        state.action = choose_reactive_action(state.robot_state, obstacle_threshold=obstacle_threshold)
+        state.plan = f"Ollama fallback: {exc}"
+        state.reasoning_trace.append(state.plan)
+        state.reasoning_trace.append(f"plan: {state.action.type.value} - {state.action.reasoning}")
     return state
 
 
