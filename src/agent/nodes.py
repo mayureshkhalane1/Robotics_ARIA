@@ -63,12 +63,19 @@ def front_proximity_values(proximity: Mapping[str, float]) -> list[float]:
     """Return likely front-facing sensor values.
 
     The controller names sensors as distance_0 ... distance_7. The setup docs
-    define 0-2 as front left/center/right.
+    define 0-2 as front left/center/right. Webots Pioneer 3-DX uses sonar
+    names so0..so15, where so0..so7 are the forward-facing sonar ring.
     """
     preferred_names = ("distance_0", "distance_1", "distance_2")
     values = [_as_float(proximity[name]) for name in preferred_names if name in proximity]
     if values:
         return values
+
+    pioneer_front_names = tuple(f"so{i}" for i in range(8))
+    values = [_as_float(proximity[name]) for name in pioneer_front_names if name in proximity]
+    if values:
+        return values
+
     return [_as_float(v) for _, v in sorted(proximity.items())[:3]]
 
 
