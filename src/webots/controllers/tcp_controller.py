@@ -56,28 +56,34 @@ class WebotsRobotServer:
         self.client_socket: Optional[socket.socket] = None
         print(f"[Webots] Robot server initialized on port {self.port}")
 
+    def _available_devices(self) -> Dict[str, Any]:
+        """Return Webots devices by name without triggering missing-device warnings."""
+        devices: Dict[str, Any] = {}
+        try:
+            for i in range(self.robot.getNumberOfDevices()):
+                device = self.robot.getDeviceByIndex(i)
+                devices[device.getName()] = device
+        except Exception as e:
+            print(f"[WARNING] Could not enumerate devices: {e}")
+        return devices
+
     def _setup_motors(self) -> None:
         """Initialize wheel motors."""
         try:
+            devices = self._available_devices()
             # Support both generic tutorial names and Webots Pioneer 3-DX names.
             # Pioneer3dx.proto uses "left wheel" and "right wheel".
             for name in ("left wheel motor", "left wheel"):
-                try:
-                    self.left_motor = self.robot.getDevice(name)
-                    if self.left_motor:
-                        print(f"[Webots] Left motor: {name}")
-                        break
-                except Exception:
-                    pass
+                self.left_motor = devices.get(name)
+                if self.left_motor:
+                    print(f"[Webots] Left motor: {name}")
+                    break
 
             for name in ("right wheel motor", "right wheel"):
-                try:
-                    self.right_motor = self.robot.getDevice(name)
-                    if self.right_motor:
-                        print(f"[Webots] Right motor: {name}")
-                        break
-                except Exception:
-                    pass
+                self.right_motor = devices.get(name)
+                if self.right_motor:
+                    print(f"[Webots] Right motor: {name}")
+                    break
 
             if self.left_motor and self.right_motor:
                 # Set to velocity control mode
@@ -94,49 +100,35 @@ class WebotsRobotServer:
     def _setup_sensors(self) -> None:
         """Initialize proximity, GPS, and compass sensors."""
         try:
+            devices = self._available_devices()
             # Distance/Proximity sensors. Support generic names plus Pioneer 3-DX
             # sonar names so0..so15.
             for i in range(8):  # Up to 8 sensors
-                try:
-                    sensor = self.robot.getDevice(f"distance sensor {i}")
-                    if sensor:
-                        sensor.enable(self.timestep)
-                        self.proximity_sensors[f"distance_{i}"] = sensor
-                except:
-                    pass  # Sensor doesn't exist
+                sensor = devices.get(f"distance sensor {i}")
+                if sensor:
+                    sensor.enable(self.timestep)
+                    self.proximity_sensors[f"distance_{i}"] = sensor
 
             for i in range(16):
-                try:
-                    sensor = self.robot.getDevice(f"so{i}")
-                    if sensor:
-                        sensor.enable(self.timestep)
-                        self.proximity_sensors[f"so{i}"] = sensor
-                except:
-                    pass  # Sensor doesn't exist
+                sensor = devices.get(f"so{i}")
+                if sensor:
+                    sensor.enable(self.timestep)
+                    self.proximity_sensors[f"so{i}"] = sensor
 
             # GPS
-            try:
-                self.gps = self.robot.getDevice("gps")
-                if self.gps:
-                    self.gps.enable(self.timestep)
-            except:
-                pass
+            self.gps = devices.get("gps")
+            if self.gps:
+                self.gps.enable(self.timestep)
 
             # Compass
-            try:
-                self.compass = self.robot.getDevice("compass")
-                if self.compass:
-                    self.compass.enable(self.timestep)
-            except:
-                pass
+            self.compass = devices.get("compass")
+            if self.compass:
+                self.compass.enable(self.timestep)
 
             # Camera (optional)
-            try:
-                self.camera = self.robot.getDevice("camera")
-                if self.camera:
-                    self.camera.enable(self.timestep)
-            except:
-                pass
+            self.camera = devices.get("camera")
+            if self.camera:
+                self.camera.enable(self.timestep)
 
             sensor_count = len(self.proximity_sensors)
             print(f"[Webots] Sensors initialized: {sensor_count} proximity, GPS={'yes' if self.gps else 'no'}, Compass={'yes' if self.compass else 'no'}")
@@ -190,7 +182,7 @@ class WebotsRobotServer:
         try:
             if action_type == "move":
                 # Move forward/backward
-                velocity = float(params.get("velocity", 1.0))
+                velocity = float(params.get("velocity", 4.0))
                 self.left_motor.setVelocity(velocity)
                 self.right_motor.setVelocity(velocity)
                 result = {"status": "ok", "action": action_type, "velocity": velocity}

@@ -16,7 +16,7 @@ from src.mcp_server.server import tool_execute_action, tool_get_state
 # for common infrared sensors. This threshold is conservative and configurable
 # through CLI options in main.py.
 DEFAULT_OBSTACLE_THRESHOLD = 800.0
-DEFAULT_MOVE_VELOCITY = 1.0
+DEFAULT_MOVE_VELOCITY = 4.0
 DEFAULT_TURN_VELOCITY = 0.8
 
 
