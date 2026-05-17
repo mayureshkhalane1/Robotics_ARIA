@@ -56,6 +56,15 @@ class WebotsRobotServer:
         self.client_socket: Optional[socket.socket] = None
         print(f"[Webots] Robot server initialized on port {self.port}")
 
+    def _close_client(self) -> None:
+        """Close the current client socket safely."""
+        if self.client_socket:
+            try:
+                self.client_socket.close()
+            except Exception:
+                pass
+        self.client_socket = None
+
     def _available_devices(self) -> Dict[str, Any]:
         """Return Webots devices by name without triggering missing-device warnings."""
         devices: Dict[str, Any] = {}
@@ -265,13 +274,13 @@ class WebotsRobotServer:
                     else:
                         # Client disconnected
                         print("[Webots] Client disconnected")
-                        self.client_socket = None
+                        self._close_client()
 
                 except BlockingIOError:
                     pass  # No data available
                 except Exception as e:
                     print(f"[Webots] Command error: {e}")
-                    self.client_socket = None
+                    self._close_client()
 
             # Periodic status
             if step_count % 100 == 0:
