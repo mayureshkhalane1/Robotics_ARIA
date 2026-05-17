@@ -29,3 +29,6 @@ Robotics_ARIA/
 *.wbproj
 *.wbt.bak
 controllers/*/build/
+
+# Packaging artifacts
+*.egg-info/

@@ -78,7 +78,7 @@
   - Configure motor/sensor names to match world
 
 - [ ] Test Webots connection
-  - Run: `python -m pytest tests/test_webots_connection.py`
+  - Run: `uv run pytest tests/test_webots_connection.py`
   - Verify TCP handshake works
   - Verify sensor reads work
   - Verify action execution works
@@ -246,7 +246,7 @@ Phase 6 (Ablation + Demo)
 - [ ] `WEBOTS_HOST` = localhost (or your Webots IP)
 - [ ] `WEBOTS_PORT` = 19997
 - [ ] `WEBOTS_SIM_SPEED` = 0.1 (or adjust for your machine)
-- [ ] Dependencies installed: `pip install -r requirements.txt`
+- [ ] Dependencies installed: `uv sync --group dev`
 
 ---
 
@@ -332,7 +332,7 @@ Phase 6 (Ablation + Demo)
 
 3. **Test Webots connection**
    - Ensure Webots is running with controller active
-   - Run: `python -m pytest tests/test_webots_connection.py -v`
+   - Run: `uv run pytest tests/test_webots_connection.py -v`
    - Fix any connection issues
 
 4. **Then proceed to Phase 3** (MCP server testing)

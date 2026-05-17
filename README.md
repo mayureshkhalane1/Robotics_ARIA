@@ -36,12 +36,14 @@ ARIA/
 
 ## Quick Start
 
-### 1. Install Dependencies
+### 1. Install Dependencies with uv
 
 ```bash
 cd /Users/mayureshkhalane/Documents/ARIA
-pip install -r requirements.txt
+uv sync --group dev
 ```
+
+This project uses `pyproject.toml` plus tracked `uv.lock` as the dependency source of truth. `requirements.txt` is kept only as a legacy/reference file.
 
 ### 2. Set Up Configuration
 
@@ -68,7 +70,7 @@ export ANTHROPIC_API_KEY=sk-...
 ### 4. Test Webots Connection
 
 ```bash
-python -m pytest tests/test_webots_connection.py -v
+uv run pytest tests/test_webots_connection.py -v
 ```
 
 (Requires Webots simulator running with tcp_controller.py as controller)
@@ -78,13 +80,13 @@ python -m pytest tests/test_webots_connection.py -v
 The MCP server bridges the agent to Webots. Start with:
 
 ```bash
-python src/mcp_server/server.py
+uv run python src/mcp_server/server.py
 ```
 
 ### 6. Run the Agent
 
 ```bash
-python src/agent/main.py --goal "Navigate to the target" --steps 50
+uv run python -m src.agent.main --goal "Navigate to the target" --steps 50
 ```
 
 ## System Architecture
@@ -179,13 +181,13 @@ Test individual components in isolation:
 
 ```bash
 # Test Webots connection
-python -m pytest tests/test_webots_connection.py -v
+uv run pytest tests/test_webots_connection.py -v
 
 # Test MCP tools
-python -m pytest tests/test_mcp_tools.py -v
+uv run pytest tests/test_mcp_tools.py -v
 
 # Test agent integration
-python -m pytest tests/test_agent_integration.py -v
+uv run pytest tests/test_agent_integration.py -v
 ```
 
 ### Integration Tests

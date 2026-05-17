@@ -184,7 +184,7 @@ You should see robot position and sensor readings.
 Once TCP connection works:
 
 ```bash
-python -m pytest tests/test_webots_connection.py -v
+uv run pytest tests/test_webots_connection.py -v
 ```
 
 All tests should pass ✓
@@ -253,7 +253,7 @@ Once Webots is set up and TCP connection works:
 
 2. **Run full test suite:**
    ```bash
-   python -m pytest tests/ -v
+   uv run pytest tests/ -v
    ```
 
 3. **Proceed to Phase 3** (MCP server integration)

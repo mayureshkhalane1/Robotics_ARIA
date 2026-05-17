@@ -67,9 +67,7 @@ Commands:
 cd /Users/mayureshkhalane/Documents/ARIA
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pip install pytest
+uv sync --group dev
 cp .env.example .env
 ```
 
@@ -147,7 +145,7 @@ With Webots running and simulation playing:
 ```bash
 cd /Users/mayureshkhalane/Documents/ARIA
 source .venv/bin/activate
-python -m pytest tests/test_webots_connection.py -v
+uv run pytest tests/test_webots_connection.py -v
 ```
 
 Manual TCP test:
@@ -194,7 +192,7 @@ Minimal agent behavior:
 Command after implementation:
 
 ```bash
-python -m src.agent.main --goal "avoid obstacles and explore" --steps 50 --policy reactive
+uv run python -m src.agent.main --goal "avoid obstacles and explore" --steps 50 --policy reactive
 ```
 
 Then add LLM policy:
@@ -224,7 +222,7 @@ pip install mcp
 Then expose tools over stdio:
 
 ```bash
-python -m src.mcp_server.server
+uv run python -m src.mcp_server.server
 ```
 
 ## Phase 6: Benchmarks
@@ -254,8 +252,8 @@ Metrics:
 Command:
 
 ```bash
-python -m benchmarks.run_benchmark --task avoid_obstacles_30s --runs 5 --policy reactive
-python -m benchmarks.run_benchmark --task navigate_to_target --runs 5 --policy llm
+uv run python -m benchmarks.run_benchmark --task avoid_obstacles --runs 5 --policy reactive
+uv run python -m benchmarks.run_benchmark --task navigate_to_target --runs 5 --policy llm
 ```
 
 ## Phase 7: Git workflow
@@ -297,7 +295,7 @@ PY
 Run Webots integration tests:
 
 ```bash
-python -m pytest tests/test_webots_connection.py -v
+uv run pytest tests/test_webots_connection.py -v
 ```
 
 Run MCP bridge test, requires Webots live:
