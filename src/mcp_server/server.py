@@ -37,6 +37,8 @@ class WebotsBridge:
         self.timeout = timeout
         self.socket: Optional[socket.socket] = None
         self._connected = False
+        self._connection_failures = 0
+        self._last_error: Optional[str] = None
 
     def connect(self) -> bool:
         """Establish connection to Webots TCP server."""
@@ -45,11 +47,30 @@ class WebotsBridge:
             self.socket.settimeout(self.timeout)
             self.socket.connect((self.host, self.port))
             self._connected = True
+            self._connection_failures = 0
+            self._last_error = None
             logger.info(f"Connected to Webots at {self.host}:{self.port}")
             return True
-        except (socket.timeout, ConnectionRefusedError, OSError) as e:
-            logger.error(f"Failed to connect to Webots: {e}")
+        except socket.timeout:
+            msg = f"Connection timeout after {self.timeout}s - Webots may be paused or not responding"
+            self._last_error = msg
+            logger.error(f"Failed to connect to Webots: {msg}")
             self._connected = False
+            self._connection_failures += 1
+            return False
+        except ConnectionRefusedError:
+            msg = f"Connection refused on {self.host}:{self.port} - Is Webots running?"
+            self._last_error = msg
+            logger.error(f"Failed to connect to Webots: {msg}")
+            self._connected = False
+            self._connection_failures += 1
+            return False
+        except OSError as e:
+            msg = f"OS error connecting to {self.host}:{self.port}: {e}"
+            self._last_error = msg
+            logger.error(f"Failed to connect to Webots: {msg}")
+            self._connected = False
+            self._connection_failures += 1
             return False
 
     def disconnect(self) -> None:
@@ -68,17 +89,24 @@ class WebotsBridge:
             raise ConnectionError("Socket is not connected")
 
         chunks = []
-        while True:
-            chunk = self.socket.recv(4096)
-            if not chunk:
-                raise ConnectionError("Webots closed the TCP connection")
-            chunks.append(chunk)
-            data = b"".join(chunks).decode("utf-8")
-            if "\n" in data:
-                line = data.split("\n", 1)[0].strip()
-                if not line:
-                    raise ConnectionError("Webots returned an empty response")
-                return json.loads(line)
+        timeout_msg = f"No response from Webots after {self.timeout}s - simulator may be paused"
+        
+        try:
+            while True:
+                chunk = self.socket.recv(4096)
+                if not chunk:
+                    raise ConnectionError("Webots closed the TCP connection")
+                chunks.append(chunk)
+                data = b"".join(chunks).decode("utf-8")
+                if "\n" in data:
+                    line = data.split("\n", 1)[0].strip()
+                    if not line:
+                        raise ConnectionError("Webots returned an empty response")
+                    return json.loads(line)
+        except socket.timeout:
+            raise ConnectionError(timeout_msg)
+        except json.JSONDecodeError as e:
+            raise ConnectionError(f"Invalid JSON response from Webots: {e}")
 
     def send_command(self, cmd: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send a command to Webots and receive response."""
@@ -86,9 +114,11 @@ class WebotsBridge:
 
         for attempt in range(2):
             if not self._connected:
-                logger.warning("Not connected to Webots. Attempting reconnect...")
+                logger.warning(f"Not connected to Webots. Attempting reconnect (attempt {attempt + 1}/2)...")
                 if not self.connect():
-                    return {"status": "error", "message": "Not connected to Webots"}
+                    if self._last_error:
+                        return {"status": "error", "message": self._last_error}
+                    return {"status": "error", "message": "Failed to connect to Webots"}
 
             try:
                 cmd_json = json.dumps(cmd) + "\n"
