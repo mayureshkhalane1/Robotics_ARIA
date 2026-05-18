@@ -27,7 +27,7 @@ Write-Host "World:      $WORLD"
 Write-Host "Webots port: $PORT  (robot TCP stays on 19997)"
 Write-Host "Starting Webots in background..."
 
-Start-Process -FilePath $WEBOTS -ArgumentList "--port=$PORT", "`"$WORLD`"" -WindowStyle Normal
+Start-Process -FilePath $WEBOTS -ArgumentList "--mode=pause", "--port=$PORT", "`"$WORLD`"" -WindowStyle Normal
 
 Write-Host "Webots launched. Switch to it in the taskbar."
 Write-Host "To stop it:  Stop-Process -Name webots"

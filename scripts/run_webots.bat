@@ -20,4 +20,4 @@ echo After Webots opens, press Play to start the simulation.
 echo The robot TCP controller starts automatically when you press Play.
 echo.
 
-start "" "%WEBOTS%" "%WORLD%"
+start "" "%WEBOTS%" --mode=pause "%WORLD%"
