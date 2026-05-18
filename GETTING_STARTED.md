@@ -11,7 +11,9 @@ A robotic agent that:
 - **Remembers** observations and locations
 - **Searches** for target objects smartly
 
-## ⏱️ 30-Second Quick Start
+**Note:** The original `apartment.wbt` used deprecated EXTERNPROTO links and an older header, causing loading failures in Webots R2025a. The new pure‑VRML version (R2023b) works across all current Webots releases. If you see a conversion prompt, you can safely accept it or just continue using the VRML file.
+
+
 
 ```bash
 # Terminal 1
