@@ -80,7 +80,7 @@ class CameraManager:
             # Get robot state which includes camera
             result = call_tool(
                 "get_state",
-                {"include_camera": self.include_camera},
+                {},
             )
 
             if result.get("error"):
