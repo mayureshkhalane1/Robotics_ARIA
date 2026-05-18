@@ -84,7 +84,11 @@ class WebotsBridge:
             self._connected = False
 
     def _recv_json_line(self) -> Dict[str, Any]:
-        """Receive one newline-terminated JSON response from Webots."""
+        """Receive one newline-terminated JSON response from Webots.
+        
+        Note: Responses can be large (327KB+) due to base64-encoded camera images.
+        We need to read until we have a complete, valid JSON object.
+        """
         if self.socket is None:
             raise ConnectionError("Socket is not connected")
 
@@ -93,20 +97,30 @@ class WebotsBridge:
         
         try:
             while True:
-                chunk = self.socket.recv(4096)
+                chunk = self.socket.recv(65536)  # Increased from 4096 to handle large responses
                 if not chunk:
                     raise ConnectionError("Webots closed the TCP connection")
                 chunks.append(chunk)
-                data = b"".join(chunks).decode("utf-8")
-                if "\n" in data:
-                    line = data.split("\n", 1)[0].strip()
-                    if not line:
-                        raise ConnectionError("Webots returned an empty response")
-                    return json.loads(line)
+                
+                # Try to decode and parse what we have so far
+                try:
+                    data = b"".join(chunks).decode("utf-8")
+                    if "\n" in data:
+                        line = data.split("\n", 1)[0].strip()
+                        if not line:
+                            raise ConnectionError("Webots returned an empty response")
+                        # Try to parse - this will only succeed if JSON is complete
+                        response = json.loads(line)
+                        return response
+                except json.JSONDecodeError:
+                    # JSON not complete yet, keep reading
+                    pass
+                except UnicodeDecodeError:
+                    # Partial UTF-8 sequence, keep reading
+                    pass
+                    
         except socket.timeout:
             raise ConnectionError(timeout_msg)
-        except json.JSONDecodeError as e:
-            raise ConnectionError(f"Invalid JSON response from Webots: {e}")
 
     def send_command(self, cmd: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send a command to Webots and receive response."""
@@ -137,9 +151,15 @@ class WebotsBridge:
         logger.error(f"Command failed after retry: {message}")
         return {"status": "error", "message": message}
 
-    def get_state(self) -> Optional[Dict[str, Any]]:
-        """Fetch current robot state from Webots."""
-        return self.send_command({"cmd": "get_state"})
+    def get_state(self, include_camera: bool = False) -> Optional[Dict[str, Any]]:
+        """Fetch current robot state from Webots.
+        
+        Args:
+            include_camera: Whether to include base64-encoded camera image.
+                           Default False to keep response small (~2KB vs 327KB).
+                           Set True only when camera feed is specifically needed.
+        """
+        return self.send_command({"cmd": "get_state", "include_camera": include_camera})
 
     def execute_action(self, action: Action) -> Optional[Dict[str, Any]]:
         """Execute an action on the robot."""

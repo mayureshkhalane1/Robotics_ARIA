@@ -145,8 +145,12 @@ class WebotsRobotServer:
         except Exception as e:
             print(f"[WARNING] Sensor setup failed: {e}")
 
-    def get_robot_state(self) -> Dict[str, Any]:
-        """Return current sensor readings as a dict."""
+    def get_robot_state(self, include_camera: bool = True) -> Dict[str, Any]:
+        """Return current sensor readings as a dict.
+        
+        Args:
+            include_camera: If False, skip camera image to reduce response size (327KB -> 2KB)
+        """
         state = {
             "timestamp": self.robot.getTime(),
             "position": None,
@@ -183,7 +187,8 @@ class WebotsRobotServer:
                 float(self.right_motor.getVelocity())
             ]
 
-        if self.camera:
+        # Camera (optional, can be expensive due to base64 encoding)
+        if include_camera and self.camera:
             try:
                 image = self.camera.getImage()
                 if image:
@@ -241,7 +246,9 @@ class WebotsRobotServer:
         command = cmd.get("cmd", "")
 
         if command == "get_state":
-            return self.get_robot_state()
+            # Support optional include_camera flag to reduce response size
+            include_camera = cmd.get("include_camera", True)
+            return self.get_robot_state(include_camera=include_camera)
         elif command == "execute":
             action = cmd.get("action", {})
             return self.execute_action(action)
