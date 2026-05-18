@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 # Resolve the world file path relative to this script's location
 $ROOT     = (Resolve-Path "$PSScriptRoot\..").Path
 $WORLD    = if ($env:WEBOTS_WORLD) { $env:WEBOTS_WORLD } `
-            else { Join-Path $ROOT "src\webots\worlds\house.wbt" }
+            else { Join-Path $ROOT "src\webots\indoor\worlds\complete_apartment.wbt" }
 $PORT     = if ($env:WEBOTS_PORT_UI) { $env:WEBOTS_PORT_UI } else { "1234" }
 
 # Webots R2025a default install path
