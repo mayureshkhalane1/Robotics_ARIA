@@ -10,6 +10,7 @@ from typing import Any, Dict, Set
 from aiohttp import web
 
 from src.agent.graph import run_reactive_agent
+from src.agent.vision_agent import run_vision_aware_agent
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
@@ -66,7 +67,7 @@ async def set_goal(request: web.Request) -> web.Response:
     body = await request.json()
     goal = body.get("goal", "explore safely")
     steps = int(body.get("steps", 50))
-    policy = body.get("policy", "ollama")
+    policy = body.get("policy", "vision")
     model = body.get("model") or None
     loop = asyncio.get_running_loop()
 
@@ -75,18 +76,30 @@ async def set_goal(request: web.Request) -> web.Response:
         call_tool("stop", {})
 
     async def runner() -> None:
-        await asyncio.to_thread(
-            run_reactive_agent,
-            goal,
-            steps,
-            800.0,
-            0.1,
-            None,
-            None,
-            policy,
-            model,
-            lambda event: dashboard.emit_threadsafe(loop, event),
-        )
+        if policy == "vision":
+            # Use vision-aware agent
+            await asyncio.to_thread(
+                run_vision_aware_agent,
+                goal,
+                steps,
+                800.0,
+                0.1,
+                lambda event_type, event_data: dashboard.emit_threadsafe(loop, event_data),
+            )
+        else:
+            # Use reactive/ollama agent
+            await asyncio.to_thread(
+                run_reactive_agent,
+                goal,
+                steps,
+                800.0,
+                0.1,
+                None,
+                None,
+                policy,
+                model,
+                lambda event: dashboard.emit_threadsafe(loop, event),
+            )
 
     dashboard.current_task = asyncio.create_task(runner())
     await dashboard.broadcast({"type": "goal", "plan": goal, "policy": policy, "step": 0})
