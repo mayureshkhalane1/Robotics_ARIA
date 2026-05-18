@@ -2,19 +2,21 @@
 
 A LangGraph-based robotic agent that reasons visually and acts on real-time sensor feedback. Combines local LLMs (Qwen via Ollama), Webots simulation, advanced vision system (YOLO object detection, visual memory, spatial reasoning), and a web UI for interactive goal setting.
 
-## ✨ What's New: Vision System
+## ✨ What's New: Smart Vision Language Agent
 
-The ARIA robot now has **complete vision capabilities**:
+The ARIA robot now **SEES and UNDERSTANDS** using Qwen3-VL LLM:
 
 - 🎥 **Real-time Camera Streaming** (15 FPS to browser)
-- 🔍 **Object Detection** (YOLO-Nano detects cups, chairs, tables, etc.)
-- 🧠 **Visual Memory** (Loop closure detection - recognizes revisited locations)
-- 🗺️ **Environment Graph** (Spatial reasoning about explored areas)
-- 🎯 **Intelligent Search** (Find and approach target objects)
+- 🧠 **Scene Understanding** (Qwen3-VL LLM analyzes "What do you see?")
+- 💡 **Intelligent Planning** (LLM decides "Should I move forward or turn?")
+- 🗺️ **Spatial Memory** (Remembers observations, avoids redundant exploration)
+- 🎯 **Smart Search** (Find objects by understanding the environment)
 
-**New goal:** `"find cup and approach it"` - robot searches using memory + graph!
+**New:** Smart Vision Agent is now the default policy! Robot uses LLM reasoning to make intelligent navigation decisions, not just obstacle avoidance.
 
-See [VISION_QUICKSTART.md](./VISION_QUICKSTART.md) for 60-second setup.
+**Quick test:** `find cup` - robot will search intelligently using vision + reasoning
+
+See [SMART_VISION_GUIDE.md](./SMART_VISION_GUIDE.md) for complete documentation.
 
 ## Quick Start
 
