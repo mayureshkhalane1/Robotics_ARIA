@@ -21,4 +21,16 @@ fi
 echo "Opening ARIA Webots world: $WORLD"
 echo "Using Webots UI/extern-controller port: $PORT"
 echo "ARIA robot TCP port remains: 19997"
-exec "$WEBOTS_BIN" --port="$PORT" --stdout --stderr "$WORLD"
+echo ""
+echo "NOTE: Webots will run in the background."
+echo "To kill it later, run: pkill -f 'Webots'"
+echo ""
+
+# Run in background and disown so it survives terminal closure
+"$WEBOTS_BIN" --port="$PORT" --stdout --stderr "$WORLD" > /tmp/webots.log 2>&1 &
+PID=$!
+echo "✓ Webots started with PID $PID"
+echo "✓ Log file: /tmp/webots.log"
+sleep 3
+echo "✓ Webots initialized"
+disown
