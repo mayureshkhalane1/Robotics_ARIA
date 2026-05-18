@@ -196,15 +196,18 @@ def get_bridge() -> WebotsBridge:
 # Tool Functions - These are called by the agent via MCP
 # ============================================================================
 
-def tool_get_state() -> Dict[str, Any]:
+def tool_get_state(include_camera: bool = True) -> Dict[str, Any]:
     """
     MCP Tool: Get current robot state.
+
+    Args:
+        include_camera: Whether to include camera image (default True for UI/perception)
 
     Returns:
         Robot state including position, orientation, and sensor readings.
     """
     bridge = get_bridge()
-    state = bridge.get_state()
+    state = bridge.get_state(include_camera=include_camera)
 
     if state and state.get("status") != "error":
         return {
@@ -356,10 +359,16 @@ def tool_validate_action(action_type: str, **params) -> Dict[str, Any]:
 MCP_TOOLS = {
     "get_state": {
         "function": tool_get_state,
-        "description": "Get current robot state: position, orientation, sensor readings",
+        "description": "Get current robot state: position, orientation, sensor readings, optionally camera",
         "input_schema": {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "include_camera": {
+                    "type": "boolean",
+                    "description": "Include camera image in response (default True)",
+                    "default": True
+                }
+            },
             "required": []
         }
     },

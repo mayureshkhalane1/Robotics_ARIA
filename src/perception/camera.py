@@ -77,10 +77,10 @@ class CameraManager:
             True if successful, False otherwise
         """
         try:
-            # Get robot state which includes camera
+            # Get robot state with camera enabled
             result = call_tool(
                 "get_state",
-                {},
+                {"include_camera": True},
             )
 
             if result.get("error"):
@@ -95,16 +95,28 @@ class CameraManager:
                 print("[Camera] No camera data in response")
                 return False
 
-            # Decode frame
-            image_base64 = camera_data.get("image")
+            # Decode frame based on encoding
+            encoding = camera_data.get("encoding", "bgra8_base64")
+            image_base64 = camera_data.get("data")
+            width = camera_data.get("width", 320)
+            height = camera_data.get("height", 240)
+
             if not image_base64:
                 print("[Camera] No image data in camera response")
                 return False
 
-            # Decode base64 to numpy array
+            # Decode base64 to raw bytes
             image_bytes = base64.b64decode(image_base64)
-            nparr = np.frombuffer(image_bytes, np.uint8)
-            frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if encoding == "bgra8_base64":
+                # BGRA format: 4 bytes per pixel
+                frame_bgra = np.frombuffer(image_bytes, dtype=np.uint8).reshape((height, width, 4))
+                # Convert BGRA to BGR (drop alpha channel)
+                frame_bgr = frame_bgra[:, :, :3]
+            else:
+                # Fallback: try to decode as image
+                nparr = np.frombuffer(image_bytes, np.uint8)
+                frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
             if frame_bgr is None:
                 print("[Camera] Failed to decode image")
