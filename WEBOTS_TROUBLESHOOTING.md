@@ -24,6 +24,23 @@ This will tell you **exactly** where the problem is.
 
 ## Common Issues & Fixes
 
+### 0. **New: Updated TCP Controller for Large Responses**
+
+If you just updated the code and get "timeout" errors, **you must restart Webots**.
+
+The TCP controller code has been updated to handle large camera images (327KB). Webots doesn't auto-reload controllers, so:
+
+```bash
+# 1. Close Webots completely
+# 2. Restart it
+./scripts/run_webots.sh
+
+# 3. Test the fix
+uv run python scripts/diagnose_webots.py
+```
+
+See [RESTART_WEBOTS.md](./RESTART_WEBOTS.md) for detailed instructions.
+
 ### 1. **Webots Simulator Not Running**
 
 **Symptom:** `Port is CLOSED/FILTERED`
