@@ -1,5 +1,8 @@
 #VRML_SIM R2023b utf8
 
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+
 WorldInfo {
   title "Apartment with ARIA Robot"
   basicTimeStep 16
@@ -20,6 +23,7 @@ TexturedBackgroundLight {
 
 DEF FLOOR Solid {
   translation 0 0 0
+  name "floor"
   children [
     Shape {
       appearance PBRAppearance {
@@ -31,210 +35,221 @@ DEF FLOOR Solid {
       }
     }
   ]
-  name "floor"
   boundingObject Box {
     size 20 0.05 20
   }
   locked TRUE
 }
 
-DEF WALLS Group {
+DEF WALL1 Solid {
+  translation 0 1.2 -10
+  name "wall_1"
   children [
-    DEF WALL1 Solid {
-      translation 0 1.2 -10
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.9 0.9 0.9
-          }
-          geometry Box {
-            size 20 2.4 0.3
-          }
-        }
-      ]
-      boundingObject Box {
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.9 0.9
+      }
+      geometry Box {
         size 20 2.4 0.3
       }
-      locked TRUE
     }
-    DEF WALL2 Solid {
-      translation 10 1.2 0
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.9 0.9 0.9
-          }
-          geometry Box {
-            size 0.3 2.4 20
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 20 2.4 0.3
+  }
+  locked TRUE
+}
+
+DEF WALL2 Solid {
+  translation 10 1.2 0
+  name "wall_2"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.9 0.9
+      }
+      geometry Box {
         size 0.3 2.4 20
       }
-      locked TRUE
     }
-    DEF WALL3 Solid {
-      translation -10 1.2 0
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.9 0.9 0.9
-          }
-          geometry Box {
-            size 0.3 2.4 20
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 0.3 2.4 20
+  }
+  locked TRUE
+}
+
+DEF WALL3 Solid {
+  translation -10 1.2 0
+  name "wall_3"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.9 0.9
+      }
+      geometry Box {
         size 0.3 2.4 20
       }
-      locked TRUE
     }
-    DEF WALL4 Solid {
-      translation 0 1.2 10
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.9 0.9 0.9
-          }
-          geometry Box {
-            size 20 2.4 0.3
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 0.3 2.4 20
+  }
+  locked TRUE
+}
+
+DEF WALL4 Solid {
+  translation 0 1.2 10
+  name "wall_4"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.9 0.9
+      }
+      geometry Box {
         size 20 2.4 0.3
       }
-      locked TRUE
     }
   ]
+  boundingObject Box {
+    size 20 2.4 0.3
+  }
+  locked TRUE
 }
 
-DEF LIGHTS Group {
-  children [
-    PointLight {
-      location 0 2 0
-      intensity 1.5
-      radius 15
-    }
-    PointLight {
-      location 5 2 5
-      intensity 1
-      radius 10
-    }
-    PointLight {
-      location -5 2 -5
-      intensity 1
-      radius 10
-    }
-  ]
+DEF LIGHT1 PointLight {
+  location 0 2 0
+  intensity 1.5
+  radius 15
+  attenuation 0 0 1
 }
 
-DEF FURNITURE Group {
+DEF LIGHT2 PointLight {
+  location 5 2 5
+  intensity 1
+  radius 10
+  attenuation 0 0 1
+}
+
+DEF LIGHT3 PointLight {
+  location -5 2 -5
+  intensity 1
+  radius 10
+  attenuation 0 0 1
+}
+
+DEF SOFA Solid {
+  translation 0 0.4 5
+  name "sofa"
   children [
-    DEF SOFA Solid {
-      translation 0 0.4 5
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.4 0.2 0.2
-          }
-          geometry Box {
-            size 3 0.8 1
-          }
-        }
-      ]
-      boundingObject Box {
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.4 0.2 0.2
+      }
+      geometry Box {
         size 3 0.8 1
       }
     }
-    DEF TABLE Solid {
-      translation 0 0.4 -5
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.6 0.4 0.2
-          }
-          geometry Box {
-            size 2 0.7 1.5
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 3 0.8 1
+  }
+}
+
+DEF TABLE Solid {
+  translation 0 0.4 -5
+  name "table"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.4 0.2
+      }
+      geometry Box {
         size 2 0.7 1.5
       }
     }
-    DEF CHAIR1 Solid {
-      translation -1.5 0.35 -5.5
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.5 0.5 0.5
-          }
-          geometry Box {
-            size 0.5 0.9 0.5
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 2 0.7 1.5
+  }
+}
+
+DEF CHAIR1 Solid {
+  translation -1.5 0.35 -5.5
+  name "chair_1"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.5 0.5
+      }
+      geometry Box {
         size 0.5 0.9 0.5
       }
     }
-    DEF CHAIR2 Solid {
-      translation 1.5 0.35 -5.5
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.5 0.5 0.5
-          }
-          geometry Box {
-            size 0.5 0.9 0.5
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 0.5 0.9 0.5
+  }
+}
+
+DEF CHAIR2 Solid {
+  translation 1.5 0.35 -5.5
+  name "chair_2"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.5 0.5
+      }
+      geometry Box {
         size 0.5 0.9 0.5
       }
     }
-    DEF CABINET Solid {
-      translation 7 0.8 -8
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.5 0.35 0.2
-          }
-          geometry Box {
-            size 1.5 1.6 0.5
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 0.5 0.9 0.5
+  }
+}
+
+DEF CABINET Solid {
+  translation 7 0.8 -8
+  name "cabinet"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.35 0.2
+      }
+      geometry Box {
         size 1.5 1.6 0.5
       }
     }
-    DEF DESK Solid {
-      translation -7 0.4 0
-      children [
-        Shape {
-          appearance PBRAppearance {
-            baseColor 0.6 0.4 0.2
-          }
-          geometry Box {
-            size 1.5 0.7 1
-          }
-        }
-      ]
-      boundingObject Box {
+  ]
+  boundingObject Box {
+    size 1.5 1.6 0.5
+  }
+}
+
+DEF DESK Solid {
+  translation -7 0.4 0
+  name "desk"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.6 0.4 0.2
+      }
+      geometry Box {
         size 1.5 0.7 1
       }
     }
   ]
+  boundingObject Box {
+    size 1.5 0.7 1
+  }
 }
 
 DEF ARIA_ROBOT Robot {
   translation 0 0.15 0
   rotation 0 0 1 0
+  name "aria_robot"
   children [
     Shape {
       appearance PBRAppearance {
@@ -246,7 +261,7 @@ DEF ARIA_ROBOT Robot {
         size 0.4 1.2 0.3
       }
     }
-    HingeJoint {
+    DEF WHEEL_FL HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor 0.15 0.05 0.2
@@ -258,9 +273,10 @@ DEF ARIA_ROBOT Robot {
           maxTorque 20
         }
       ]
-      endPoint Solid {
+      endPoint DEF WHEEL_FL_SOLID Solid {
         translation 0.15 0.05 0.2
         rotation 1 0 0 0
+        name "wheel_fl"
         children [
           Shape {
             appearance PBRAppearance {
@@ -282,7 +298,7 @@ DEF ARIA_ROBOT Robot {
         }
       }
     }
-    HingeJoint {
+    DEF WHEEL_FR HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor -0.15 0.05 0.2
@@ -294,9 +310,10 @@ DEF ARIA_ROBOT Robot {
           maxTorque 20
         }
       ]
-      endPoint Solid {
+      endPoint DEF WHEEL_FR_SOLID Solid {
         translation -0.15 0.05 0.2
         rotation 1 0 0 0
+        name "wheel_fr"
         children [
           Shape {
             appearance PBRAppearance {
@@ -318,7 +335,7 @@ DEF ARIA_ROBOT Robot {
         }
       }
     }
-    HingeJoint {
+    DEF WHEEL_BL HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor 0.15 0.05 -0.2
@@ -330,9 +347,10 @@ DEF ARIA_ROBOT Robot {
           maxTorque 20
         }
       ]
-      endPoint Solid {
+      endPoint DEF WHEEL_BL_SOLID Solid {
         translation 0.15 0.05 -0.2
         rotation 1 0 0 0
+        name "wheel_bl"
         children [
           Shape {
             appearance PBRAppearance {
@@ -354,7 +372,7 @@ DEF ARIA_ROBOT Robot {
         }
       }
     }
-    HingeJoint {
+    DEF WHEEL_BR HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor -0.15 0.05 -0.2
@@ -366,9 +384,10 @@ DEF ARIA_ROBOT Robot {
           maxTorque 20
         }
       ]
-      endPoint Solid {
+      endPoint DEF WHEEL_BR_SOLID Solid {
         translation -0.15 0.05 -0.2
         rotation 1 0 0 0
+        name "wheel_br"
         children [
           Shape {
             appearance PBRAppearance {
