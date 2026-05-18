@@ -1,6 +1,8 @@
 #VRML_SIM R2023b utf8
 
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/released/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/released/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/released/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 
 WorldInfo {
   title "Smart Home with Furniture"
@@ -12,8 +14,8 @@ WorldInfo {
 }
 
 Viewpoint {
-  orientation -0.57735 0.57735 0.57735 2.0944
-  position 15 15 15
+  orientation 0 1 0 1.57
+  position 10 10 10
 }
 
 TexturedBackground {
@@ -34,7 +36,7 @@ DEF ROBOT Robot {
   translation 1 0.62 1
   rotation 0 1 0 0
   children [
-    DEF BODY Shape {
+    Shape {
       appearance PBRAppearance {
         baseColor 0.1 0.1 0.8
         metalness 0.3
@@ -44,7 +46,7 @@ DEF ROBOT Robot {
         size 0.4 1.2 0.3
       }
     }
-    DEF WHEEL_FL HingeJoint {
+    HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor 0.15 0.1 0.2
@@ -55,9 +57,6 @@ DEF ROBOT Robot {
           maxVelocity 10
           maxTorque 20
         }
-        PositionSensor {
-          name "wheel_fl_sensor"
-        }
       ]
       endPoint Solid {
         translation 0.15 0.1 0.2
@@ -66,8 +65,6 @@ DEF ROBOT Robot {
           Shape {
             appearance PBRAppearance {
               baseColor 0.3 0.3 0.3
-              metalness 0.8
-              roughness 0.2
             }
             geometry Cylinder {
               radius 0.1
@@ -85,7 +82,7 @@ DEF ROBOT Robot {
         }
       }
     }
-    DEF WHEEL_FR HingeJoint {
+    HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor -0.15 0.1 0.2
@@ -96,9 +93,6 @@ DEF ROBOT Robot {
           maxVelocity 10
           maxTorque 20
         }
-        PositionSensor {
-          name "wheel_fr_sensor"
-        }
       ]
       endPoint Solid {
         translation -0.15 0.1 0.2
@@ -107,8 +101,6 @@ DEF ROBOT Robot {
           Shape {
             appearance PBRAppearance {
               baseColor 0.3 0.3 0.3
-              metalness 0.8
-              roughness 0.2
             }
             geometry Cylinder {
               radius 0.1
@@ -126,7 +118,7 @@ DEF ROBOT Robot {
         }
       }
     }
-    DEF WHEEL_BL HingeJoint {
+    HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor 0.15 0.1 -0.2
@@ -137,9 +129,6 @@ DEF ROBOT Robot {
           maxVelocity 10
           maxTorque 20
         }
-        PositionSensor {
-          name "wheel_bl_sensor"
-        }
       ]
       endPoint Solid {
         translation 0.15 0.1 -0.2
@@ -148,8 +137,6 @@ DEF ROBOT Robot {
           Shape {
             appearance PBRAppearance {
               baseColor 0.3 0.3 0.3
-              metalness 0.8
-              roughness 0.2
             }
             geometry Cylinder {
               radius 0.1
@@ -167,7 +154,7 @@ DEF ROBOT Robot {
         }
       }
     }
-    DEF WHEEL_BR HingeJoint {
+    HingeJoint {
       jointParameters HingeJointParameters {
         axis 0 1 0
         anchor -0.15 0.1 -0.2
@@ -178,9 +165,6 @@ DEF ROBOT Robot {
           maxVelocity 10
           maxTorque 20
         }
-        PositionSensor {
-          name "wheel_br_sensor"
-        }
       ]
       endPoint Solid {
         translation -0.15 0.1 -0.2
@@ -189,8 +173,6 @@ DEF ROBOT Robot {
           Shape {
             appearance PBRAppearance {
               baseColor 0.3 0.3 0.3
-              metalness 0.8
-              roughness 0.2
             }
             geometry Cylinder {
               radius 0.1
@@ -208,7 +190,7 @@ DEF ROBOT Robot {
         }
       }
     }
-    DEF CAMERA Camera {
+    Camera {
       translation 0 0.9 0
       rotation 0 0 1 0
       name "main_camera"
@@ -218,16 +200,6 @@ DEF ROBOT Robot {
       far 50
       fieldOfView 0.8
     }
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.8 0.8 0.8
-        metalness 0.4
-        roughness 0.5
-      }
-      geometry Box {
-        size 0.3 0.2 0.3
-      }
-    }
   ]
   boundingObject Box {
     size 0.4 1.2 0.3
@@ -236,7 +208,6 @@ DEF ROBOT Robot {
     density -1
     mass 5
   }
-  controller "robot_controller"
 }
 
 DEF SOFA Solid {
@@ -246,8 +217,6 @@ DEF SOFA Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.6 0.4 0.2
-        metalness 0.1
-        roughness 0.8
       }
       geometry Box {
         size 3 0.8 1
@@ -266,8 +235,6 @@ DEF ARMCHAIR Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.5 0.3 0.3
-        metalness 0.05
-        roughness 0.9
       }
       geometry Box {
         size 1.2 0.7 1.2
@@ -286,8 +253,6 @@ DEF TABLE Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.4 0.2 0.1
-        metalness 0.2
-        roughness 0.6
       }
       geometry Box {
         size 2 0.7 1.5
@@ -306,8 +271,6 @@ DEF KITCHEN_COUNTER Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.9 0.9 0.8
-        metalness 0.3
-        roughness 0.4
       }
       geometry Box {
         size 4 1.2 1
@@ -326,8 +289,6 @@ DEF FRIDGE Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.7 0.7 0.7
-        metalness 0.6
-        roughness 0.3
       }
       geometry Box {
         size 0.8 1.7 0.7
@@ -346,8 +307,6 @@ DEF BED Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.8 0.2 0.2
-        metalness 0.05
-        roughness 0.8
       }
       geometry Box {
         size 2 1 2.5
@@ -366,8 +325,6 @@ DEF CABINET Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.5 0.35 0.2
-        metalness 0.15
-        roughness 0.6
       }
       geometry Box {
         size 1.5 1.7 0.5
@@ -386,8 +343,6 @@ DEF LAMP Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.9 0.8 0.2
-        metalness 0.7
-        roughness 0.3
       }
       geometry Cylinder {
         radius 0.15
@@ -409,8 +364,6 @@ DEF CUP Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 1 0.8 0.2
-        metalness 0.4
-        roughness 0.5
       }
       geometry Cylinder {
         radius 0.08
@@ -436,8 +389,6 @@ DEF FOOTBALL Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.8 0.5 0.2
-        metalness 0.2
-        roughness 0.6
       }
       geometry Box {
         size 0.12 0.08 0.25
@@ -460,8 +411,6 @@ DEF CHAIR1 Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.5 0.5 0.5
-        metalness 0.3
-        roughness 0.5
       }
       geometry Box {
         size 0.5 1 0.5
@@ -480,8 +429,6 @@ DEF CHAIR2 Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.5 0.5 0.5
-        metalness 0.3
-        roughness 0.5
       }
       geometry Box {
         size 0.5 1 0.5
@@ -500,8 +447,6 @@ DEF BOOKSHELF Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.6 0.4 0.2
-        metalness 0.1
-        roughness 0.7
       }
       geometry Box {
         size 0.4 1.7 1.5
@@ -521,8 +466,6 @@ DEF PLANT Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.2 0.6 0.2
-        metalness 0
-        roughness 0.9
       }
       geometry Cylinder {
         radius 0.2
@@ -544,8 +487,6 @@ DEF DISH Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 1 1 1
-        metalness 0.1
-        roughness 0.3
       }
       geometry Cylinder {
         radius 0.12
@@ -570,8 +511,6 @@ DEF RUG Solid {
     Shape {
       appearance PBRAppearance {
         baseColor 0.8 0.6 0.4
-        metalness 0
-        roughness 0.9
       }
       geometry Box {
         size 3 0.01 2.5
