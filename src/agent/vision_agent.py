@@ -61,7 +61,7 @@ def run_vision_aware_agent(
 
         # === SENSE ===
         try:
-            result = call_tool("get_state", {})
+            result = call_tool("get_state", {"include_camera": True})
             if result.get("error"):
                 state.error = f"State read failed: {result.get('error')}"
                 break
