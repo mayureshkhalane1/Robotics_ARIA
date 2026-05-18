@@ -37,7 +37,7 @@ DEF OVERHEAD_LIGHT PointLight {
 DEF PIONEER_3DX Pioneer3dx {
   translation -4 0 0.0975
   rotation 0 0 1 0
-  name "aria_pioneer"
+  name "pioneer_robot"
   controller "tcp_controller"
   extensionSlot [
     GPS {
