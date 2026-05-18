@@ -11,6 +11,7 @@ from aiohttp import web
 
 from src.agent.graph import run_reactive_agent
 from src.agent.vision_agent import run_vision_aware_agent
+from src.agent.smart_vision_agent import run_smart_vision_agent
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
@@ -76,7 +77,14 @@ async def set_goal(request: web.Request) -> web.Response:
         call_tool("stop", {})
 
     async def runner() -> None:
-        if policy == "vision":
+        if policy == "smart_vision":
+            # Use smart vision language agent
+            await asyncio.to_thread(
+                run_smart_vision_agent,
+                goal,
+                steps,
+            )
+        elif policy == "vision":
             # Use vision-aware agent
             await asyncio.to_thread(
                 run_vision_aware_agent,
