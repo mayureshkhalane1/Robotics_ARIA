@@ -1,0 +1,148 @@
+ARIA Robotics Project — Development Summary
+============================================================
+Project: ARIA (Adaptive Robotic Intelligence Agent)
+Platform: Windows 11 + WSL2 (Ubuntu) + Webots R2025a
+Robot: Pioneer 3-DX simulated in Webots
+Date: May 2026
+
+============================================================
+WHAT WAS BUILT
+============================================================
+
+An end-to-end robotic AI system where a Pioneer 3-DX robot navigates
+a simulated apartment driven by natural-language goals set via a web UI.
+
+Stack:
+  - Webots R2025a (Windows)         — physics simulation & 3D rendering
+  - TCP Controller (Python, Windows) — robot sensor/motor bridge
+  - ARIA Agent (Python, WSL2)        — AI decision loop (perception → plan → act)
+  - Ollama + Qwen 3:8b (WSL2)        — local VLM for scene understanding
+  - aiohttp UI Server (WSL2)         — web dashboard at http://localhost:8080
+
+============================================================
+WHAT WAS DONE — STEP BY STEP
+============================================================
+
+1. WINDOWS COMPATIBILITY
+   - All scripts were originally Linux-only.
+   - Created scripts/run_webots.bat  — double-click launcher for Webots on Windows
+     (no PowerShell execution policy restrictions).
+   - Created scripts/run_webots.ps1  — PowerShell launcher using Start-Process
+     (required because WSL cannot spawn Windows GUI apps directly).
+   - Updated scripts/run_webots.sh   — WSL helper that delegates to run_webots.ps1
+     via powershell.exe, and auto-detects the Windows host IP.
+
+2. WSL2 NETWORKING FIX
+   - WSL2 runs behind NAT; Windows services are NOT at "localhost" from WSL.
+   - Auto-detect Windows host gateway IP using:
+       ip route show default | awk '/via/{print $3}'
+     (typically 172.20.128.1 or similar)
+   - Fixed src/common/config.py to run this detection BEFORE loading .env.example,
+     which had WEBOTS_HOST=localhost and was overriding the correct value.
+   - UI server (src/ui/server.py) changed to bind 0.0.0.0:8080 so the Windows
+     browser can reach it through WSL2's localhost port-forwarding.
+
+3. WEBOTS WORLD SETUP
+   - Copied a Webots sample apartment world into:
+       src/webots/indoor/worlds/complete_apartment.wbt
+   - Added a Pioneer 3-DX robot via the Webots GUI with:
+       - controller: "tcp_controller"
+       - extensionSlot: Camera (320x240, FOV 1.047), Compass, GPS
+
+4. TCP CONTROLLER
+   - Created src/webots/indoor/controllers/tcp_controller/tcp_controller.py
+     (Webots looks for controllers relative to the world file's parent directory)
+   - Controller opens a TCP server on 0.0.0.0:19997 (Windows-side).
+   - Handles JSON commands over TCP: get_state, execute (move/turn/stop), stop.
+   - Streams camera frames as base64-encoded BGRA, plus GPS position, compass
+     orientation, and 16 proximity sensor readings.
+   - Crash-proof: every setup stage wrapped in try/except with sys.stdout.flush()
+     so errors are visible in Webots console.
+
+5. PYTHON ON WINDOWS (CONTROLLER RUNTIME)
+   - Webots R2025a uses the system Python on Windows to run .py controllers.
+   - Robot crashed silently (empty log) because Python was not installed.
+   - Fix: install Python 3.11.9 on Windows with "Add python.exe to PATH" checked,
+     then disable Windows Store app execution aliases for python.exe/python3.exe
+     in Settings → Apps → Advanced app settings → App execution aliases.
+
+6. SIMULATION SPEED FIX
+   - Simulation was running at 0.03x real-time speed.
+   - Root cause: socket timeouts (server 0.1s, client 0.5s) blocked the Webots
+     simulation loop each timestep (16ms step × 0.5s wait = 0.03x).
+   - Fix: changed both sockets to setblocking(False). BlockingIOError is already
+     caught, so no-data steps now return instantly instead of waiting 500ms.
+
+============================================================
+END-TO-END FLOW
+============================================================
+
+  [Windows]
+    Webots R2025a
+      └─ Pioneer 3-DX robot
+           └─ tcp_controller.py  →  TCP :19997 (0.0.0.0)
+
+  [WSL2]
+    ARIA agent  ←→  TCP 172.20.128.1:19997
+    Ollama (Qwen 3:8b)  ←  ARIA agent (VLM queries)
+    UI server  →  http://localhost:8080 (Windows browser via port-forward)
+
+User opens http://localhost:8080, types a goal (e.g. "explore the apartment
+and avoid obstacles"), selects Smart Vision (VLM) policy, and clicks Run.
+The ARIA agent sense→perceive→understand→plan→act loop runs, sending
+move/turn/stop commands to the robot in Webots every step.
+
+============================================================
+KEY FILES
+============================================================
+
+  scripts/run_webots.bat                          Windows launch script
+  scripts/run_webots.ps1                          PowerShell launch script
+  scripts/run_webots.sh                           WSL helper / launcher
+  src/common/config.py                            WSL2 host IP auto-detection
+  src/ui/server.py                                Web dashboard (0.0.0.0:8080)
+  src/webots/indoor/worlds/complete_apartment.wbt Apartment simulation world
+  src/webots/indoor/controllers/
+    tcp_controller/tcp_controller.py              Robot TCP bridge (Windows)
+
+============================================================
+HOW TO RUN
+============================================================
+
+Step 1 — Start Webots (from Windows):
+  Double-click:  scripts\run_webots.bat
+  OR in PowerShell:  .\scripts\run_webots.ps1
+  Press Play in Webots. Console should show:
+    [OK] TCP server listening on 0.0.0.0:19997
+
+Step 2 — Start Ollama (WSL):
+  ollama serve
+  (in another terminal) ollama run qwen3:8b
+
+Step 3 — Start ARIA UI (WSL):
+  cd /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA
+  .venv/bin/python -m src.ui.server
+
+Step 4 — Open browser (Windows):
+  http://localhost:8080
+  Type a goal → select policy → click Run
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+  Robot not moving / ARIA can't connect:
+    - Check WEBOTS_HOST in .env; it should be 172.20.128.1 (or your gateway IP)
+    - Run: ip route show default   to find the correct IP from WSL2
+    - Ensure Windows Firewall allows inbound on port 19997
+
+  Webots crashes on Play with empty log:
+    - Python not installed on Windows — install Python 3.11+ and add to PATH
+    - Disable Windows Store app execution aliases for python.exe
+
+  Simulation speed very slow (0.03x):
+    - Ensure tcp_controller uses setblocking(False), not settimeout(...)
+    - Use Webots toolbar >> button to increase simulation speed multiplier
+
+  Qwen errors (Connection refused):
+    - Ollama is not running — start with: ollama serve

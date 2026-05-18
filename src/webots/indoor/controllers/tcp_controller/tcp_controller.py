@@ -102,7 +102,7 @@ class WebotsRobotServer:
             self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             self.server_socket.bind(("0.0.0.0", self.port))
             self.server_socket.listen(1)
-            self.server_socket.settimeout(0.1)
+            self.server_socket.setblocking(False)
             self.client_socket: Optional[socket.socket] = None
             self.tcp_ok = True
             print(f"[OK] TCP server listening on 0.0.0.0:{self.port}")
@@ -235,7 +235,7 @@ class WebotsRobotServer:
             if not self.client_socket:
                 try:
                     self.client_socket, addr = self.server_socket.accept()
-                    self.client_socket.settimeout(0.5)
+                    self.client_socket.setblocking(False)
                     print(f"[TCP] Client connected: {addr}")
                     sys.stdout.flush()
                 except (socket.timeout, BlockingIOError):
