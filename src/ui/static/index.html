@@ -14,16 +14,22 @@
     section { background: #171c25; border: 1px solid #283244; border-radius: 14px; padding: 14px; overflow: auto; }
     h2 { margin: 0 0 12px; font-size: 15px; color: #a9b8d6; letter-spacing: .04em; text-transform: uppercase; }
     canvas { width: 100%; border-radius: 12px; background: #05070a; image-rendering: pixelated; }
+    img { width: 100%; border-radius: 12px; background: #05070a; }
     pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.45; }
     .log-item { border-bottom: 1px solid #2a3446; padding: 10px 0; }
     .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #2c3c59; color: #cfe0ff; font-size: 12px; margin-right: 8px; }
     .status { color: #94f0b3; }
+    .camera-container { position: relative; }
+    .detection-overlay { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
+    .detection-box { position: absolute; border: 2px solid #00ff00; color: #00ff00; font-size: 11px; padding: 2px 4px; background: rgba(0,0,0,0.7); }
+    .stats { font-size: 12px; color: #a9b8d6; margin: 8px 0; }
+    .stat-line { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #283244; }
   </style>
 </head>
 <body>
   <header>
     <strong>ARIA</strong>
-    <input id="goal" value="explore the house safely and avoid obstacles" />
+    <input id="goal" value="find cup and approach it" />
     <select id="policy"><option value="reactive">reactive</option><option value="ollama" selected>ollama</option><option value="langgraph">langgraph</option></select>
     <input id="model" value="qwen3:8b" style="max-width: 140px" />
     <button id="run">Run</button>
@@ -32,16 +38,27 @@
   </header>
   <main>
     <section>
-      <h2>Robot camera</h2>
-      <canvas id="camera" width="320" height="240"></canvas>
-      <p id="cameraStatus">Waiting for camera frame...</p>
+      <h2>Robot Camera & Detections</h2>
+      <div class="camera-container">
+        <img id="cameraImg" src="" style="display:none; width:100%; border-radius:12px;" />
+        <canvas id="camera" width="320" height="240" style="display:none;"></canvas>
+        <p id="cameraStatus" style="text-align:center; color:#666;">Connecting to camera...</p>
+      </div>
+      <div class="stats" id="cameraStats"></div>
     </section>
     <section>
-      <h2>Robot state</h2>
-      <pre id="state">{}</pre>
+      <h2>Memory &amp; Graph</h2>
+      <div id="memoryGraph">
+        <div class="stat-line"><span>Observations:</span><span id="obsCount">0</span></div>
+        <div class="stat-line"><span>Nodes:</span><span id="nodeCount">0</span></div>
+        <div class="stat-line"><span>Objects Seen:</span><span id="objCount">0</span></div>
+        <div class="stat-line"><span>Memory (MB):</span><span id="memMB">0</span></div>
+      </div>
+      <h2 style="margin-top:20px;">Robot State</h2>
+      <pre id="state" style="font-size:11px;">{}</pre>
     </section>
     <section>
-      <h2>Thinking and commands</h2>
+      <h2>Thinking and Commands</h2>
       <div id="log"></div>
     </section>
   </main>
@@ -49,8 +66,9 @@
     const statusEl = document.getElementById('status');
     const stateEl = document.getElementById('state');
     const logEl = document.getElementById('log');
-    const camera = document.getElementById('camera');
-    const ctx = camera.getContext('2d');
+    const cameraImg = document.getElementById('cameraImg');
+    const cameraStatus = document.getElementById('cameraStatus');
+    const cameraStats = document.getElementById('cameraStats');
 
     function appendLog(event) {
       const item = document.createElement('div');
@@ -60,30 +78,13 @@
       logEl.prepend(item);
     }
 
-    function drawCamera(cam) {
-      if (!cam || !cam.data || cam.encoding !== 'bgra8_base64') return;
-      camera.width = cam.width; camera.height = cam.height;
-      const raw = atob(cam.data);
-      const image = ctx.createImageData(cam.width, cam.height);
-      for (let i = 0, j = 0; i < raw.length && j < image.data.length; i += 4, j += 4) {
-        image.data[j] = raw.charCodeAt(i + 2);
-        image.data[j + 1] = raw.charCodeAt(i + 1);
-        image.data[j + 2] = raw.charCodeAt(i);
-        image.data[j + 3] = 255;
-      }
-      ctx.putImageData(image, 0, 0);
-      document.getElementById('cameraStatus').textContent = `${cam.width}x${cam.height} live`;
-    }
-
-    function connect() {
+    function connectMainWS() {
       const ws = new WebSocket(`ws://${location.host}/ws`);
       ws.onopen = () => statusEl.textContent = 'connected';
-      ws.onclose = () => { statusEl.textContent = 'disconnected'; setTimeout(connect, 1000); };
+      ws.onclose = () => { statusEl.textContent = 'disconnected'; setTimeout(connectMainWS, 1000); };
       ws.onmessage = (msg) => {
         const event = JSON.parse(msg.data);
         if (event.robot_state) {
-          const cam = event.robot_state.camera_frame || event.robot_state.camera || null;
-          drawCamera(cam);
           const clean = {...event.robot_state};
           if (clean.camera_frame) clean.camera_frame = 'frame received';
           if (clean.camera) clean.camera = 'frame received';
@@ -93,16 +94,68 @@
       };
     }
 
+    function connectCameraWS() {
+      const ws = new WebSocket(`ws://${location.host}/camera`);
+      
+      ws.onopen = () => {
+        console.log('Camera WebSocket connected');
+      };
+      
+      ws.onclose = () => {
+        console.log('Camera WebSocket disconnected');
+        setTimeout(connectCameraWS, 2000);
+      };
+      
+      ws.onmessage = (msg) => {
+        try {
+          const data = JSON.parse(msg.data);
+          if (data.type === 'camera') {
+            // Display image
+            cameraImg.src = `data:image/jpeg;base64,${data.data}`;
+            cameraImg.style.display = 'block';
+            cameraStatus.textContent = `${data.width}x${data.height} @ ${(1/0.067).toFixed(0)}FPS`;
+            
+            // Update stats
+            if (data.memory_stats) {
+              const mem = data.memory_stats;
+              document.getElementById('obsCount').textContent = mem.num_observations || 0;
+              document.getElementById('memMB').textContent = (mem.memory_full ? '(full)' : 'ok');
+            }
+            if (data.graph_stats) {
+              const graph = data.graph_stats;
+              document.getElementById('nodeCount').textContent = graph.total_nodes || 0;
+              document.getElementById('objCount').textContent = graph.unique_objects || 0;
+            }
+            
+            // Draw detections
+            if (data.detections && data.detections.length > 0) {
+              let statsHtml = '<strong>Detected Objects:</strong><br>';
+              for (const det of data.detections) {
+                statsHtml += `• ${det.class_name} (${(det.confidence*100).toFixed(0)}%)<br>`;
+              }
+              cameraStats.innerHTML = statsHtml;
+            } else {
+              cameraStats.innerHTML = '<em>No objects detected</em>';
+            }
+          }
+        } catch (e) {
+          console.error('Camera message error:', e);
+        }
+      };
+    }
+
     document.getElementById('run').onclick = async () => {
       await fetch('/goal', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
         goal: document.getElementById('goal').value,
         policy: document.getElementById('policy').value,
         model: document.getElementById('model').value,
-        steps: 50
+        steps: 100
       })});
     };
     document.getElementById('stop').onclick = async () => fetch('/stop', {method:'POST'});
-    connect();
+    
+    connectMainWS();
+    connectCameraWS();
   </script>
 </body>
 </html>

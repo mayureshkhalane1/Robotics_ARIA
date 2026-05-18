@@ -11,6 +11,10 @@ from aiohttp import web
 
 from src.agent.graph import run_reactive_agent
 from src.mcp_server.server import call_tool
+from src.perception.camera import get_camera_manager
+from src.perception.object_detector import get_detector
+from src.agent.visual_memory import get_visual_memory
+from src.agent.environment_graph import get_environment_graph
 
 ROOT = Path(__file__).parent
 STATIC = ROOT / "static"
@@ -97,10 +101,81 @@ async def stop(_request: web.Request) -> web.Response:
     return web.json_response(result)
 
 
+async def camera_stream(request: web.Request) -> web.WebSocketResponse:
+    """WebSocket endpoint for real-time camera streaming."""
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+    
+    camera = get_camera_manager()
+    detector = get_detector()
+    
+    try:
+        while not ws.closed:
+            # Get frame from camera
+            frame = camera.get_frame()
+            if frame is None:
+                await asyncio.sleep(0.1)
+                continue
+            
+            # Encode as JPEG
+            jpeg_b64 = camera.encode_frame_jpeg(quality=85)
+            if not jpeg_b64:
+                await asyncio.sleep(0.1)
+                continue
+            
+            # Run detection
+            try:
+                import cv2
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                detections = detector.detect(frame_rgb)
+                
+                detection_data = [
+                    {
+                        "class_name": d.class_name,
+                        "confidence": float(d.confidence),
+                        "bbox": d.bbox,
+                        "center": d.center,
+                    }
+                    for d in detections[:5]  # Top 5 detections
+                ]
+            except Exception as e:
+                detection_data = []
+                print(f"[UI] Detection error: {e}")
+            
+            # Get memory and graph stats
+            memory = get_visual_memory()
+            graph = get_environment_graph()
+            
+            # Send frame with metadata
+            msg = {
+                "type": "camera",
+                "data": jpeg_b64,
+                "width": frame.shape[1],
+                "height": frame.shape[0],
+                "detections": detection_data,
+                "memory_stats": memory.get_stats(),
+                "graph_stats": graph.get_stats(),
+            }
+            
+            try:
+                await ws.send_str(json.dumps(msg, default=str))
+            except Exception:
+                break
+            
+            # Target ~15 FPS
+            await asyncio.sleep(0.067)
+    
+    except Exception as e:
+        print(f"[UI] Camera stream error: {e}")
+    
+    return ws
+
+
 def make_app() -> web.Application:
     app = web.Application()
     app.router.add_get("/", index)
     app.router.add_get("/ws", websocket)
+    app.router.add_get("/camera", camera_stream)
     app.router.add_post("/goal", set_goal)
     app.router.add_post("/stop", stop)
     app.router.add_static("/static", STATIC)
