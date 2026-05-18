@@ -8,8 +8,7 @@ from typing import Optional, Callable
 import cv2
 import numpy as np
 
-from src.agent.graph import AgentState, ActionType
-from src.common.types import Action
+from src.common.types import AgentState, ActionType, Action
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
