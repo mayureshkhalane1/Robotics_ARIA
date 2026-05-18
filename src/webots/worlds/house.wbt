@@ -61,6 +61,7 @@ DEF PIONEER_3DX Pioneer3dx {
   ]
 }
 DEF WALL_HALL_1 Solid {
+  name "wall_hall_1"
   translation -1.2 0 0.5
   children [
     Shape {
@@ -78,6 +79,7 @@ DEF WALL_HALL_1 Solid {
   }
 }
 DEF WALL_HALL_2 Solid {
+  name "wall_hall_2"
   translation 1.2 0.8 0.5
   children [
     Shape {
@@ -95,6 +97,7 @@ DEF WALL_HALL_2 Solid {
   }
 }
 DEF WALL_KITCHEN Solid {
+  name "wall_kitchen"
   translation 3.4 0 0.5
   children [
     Shape {
@@ -112,6 +115,7 @@ DEF WALL_KITCHEN Solid {
   }
 }
 DEF WALL_BEDROOM Solid {
+  name "wall_bedroom"
   translation -3.4 0.6 0.5
   children [
     Shape {
