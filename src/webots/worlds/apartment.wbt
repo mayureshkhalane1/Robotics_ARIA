@@ -1,437 +1,183 @@
-#VRML_SIM R2023b utf8
+#VRML_SIM R2024a utf8
 
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "webots://projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "webots://projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "webots://projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "webots://projects/robots/adept/pioneer3/protos/Pioneer3dx.proto"
 
 WorldInfo {
-  title "Apartment with ARIA Robot"
+  title "Apartment (Pioneer 3-DX)"
   basicTimeStep 16
 }
 
 Viewpoint {
-  orientation 0 1 0 1.57
-  position 0 5 10
+  orientation 0.377 0.910 0.173 2.42
+  position 7.5 6.0 9.5
 }
 
 TexturedBackground {
-  texture "empty_office"
 }
 
 TexturedBackgroundLight {
-  texture "empty_office"
 }
 
-DEF FLOOR Solid {
-  translation 0 0 0
-  name "floor"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.8 0.8 0.7
-        roughness 0.5
-      }
-      geometry Box {
-        size 20 0.05 20
-      }
-    }
-  ]
-  boundingObject Box {
-    size 20 0.05 20
-  }
-  locked TRUE
+RectangleArena {
+  floorSize 12 9
+  floorTileSize 1 1
+  wallHeight 0.4
 }
 
-DEF WALL1 Solid {
-  translation 0 1.2 -10
-  name "wall_1"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.9 0.9 0.9
-      }
-      geometry Box {
-        size 20 2.4 0.3
-      }
-    }
-  ]
-  boundingObject Box {
-    size 20 2.4 0.3
-  }
-  locked TRUE
-}
-
-DEF WALL2 Solid {
-  translation 10 1.2 0
-  name "wall_2"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.9 0.9 0.9
-      }
-      geometry Box {
-        size 0.3 2.4 20
-      }
-    }
-  ]
-  boundingObject Box {
-    size 0.3 2.4 20
-  }
-  locked TRUE
-}
-
-DEF WALL3 Solid {
-  translation -10 1.2 0
-  name "wall_3"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.9 0.9 0.9
-      }
-      geometry Box {
-        size 0.3 2.4 20
-      }
-    }
-  ]
-  boundingObject Box {
-    size 0.3 2.4 20
-  }
-  locked TRUE
-}
-
-DEF WALL4 Solid {
-  translation 0 1.2 10
-  name "wall_4"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.9 0.9 0.9
-      }
-      geometry Box {
-        size 20 2.4 0.3
-      }
-    }
-  ]
-  boundingObject Box {
-    size 20 2.4 0.3
-  }
-  locked TRUE
-}
-
-DEF LIGHT1 PointLight {
-  location 0 2 0
-  intensity 1.5
-  radius 15
+DEF OVERHEAD_LIGHT PointLight {
+  location 0 3 0
+  intensity 2.5
+  radius 20
   attenuation 0 0 1
 }
 
-DEF LIGHT2 PointLight {
-  location 5 2 5
-  intensity 1
-  radius 10
-  attenuation 0 0 1
+DEF PIONEER_3DX Pioneer3dx {
+  translation -4 0 0.0975
+  rotation 0 0 1 0
+  name "aria_pioneer"
+  controller "tcp_controller"
+  extensionSlot [
+    GPS {
+      name "gps"
+    }
+    Compass {
+      name "compass"
+    }
+    Camera {
+      name "camera"
+      width 320
+      height 240
+      fieldOfView 1.047
+      near 0.02
+    }
+  ]
 }
 
-DEF LIGHT3 PointLight {
-  location -5 2 -5
-  intensity 1
-  radius 10
-  attenuation 0 0 1
+DEF DIVIDER_WALL Solid {
+  translation 0 1.2 -1.5
+  name "divider_wall"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.92 0.92 0.92
+        roughness 0.7
+      }
+      geometry Box {
+        size 6 2.4 0.2
+      }
+    }
+  ]
+  boundingObject Box {
+    size 6 2.4 0.2
+  }
+  locked TRUE
+}
+
+DEF KITCHEN_WALL Solid {
+  translation 3.8 1.2 1.8
+  name "kitchen_wall"
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.9 0.9 0.9
+        roughness 0.6
+      }
+      geometry Box {
+        size 0.2 2.4 3
+      }
+    }
+  ]
+  boundingObject Box {
+    size 0.2 2.4 3
+  }
+  locked TRUE
 }
 
 DEF SOFA Solid {
-  translation 0 0.4 5
+  translation 1.5 0.4 2.8
   name "sofa"
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.4 0.2 0.2
+        baseColor 0.35 0.35 0.4
+        roughness 0.8
       }
       geometry Box {
-        size 3 0.8 1
+        size 2.4 0.8 1.0
       }
     }
   ]
   boundingObject Box {
-    size 3 0.8 1
+    size 2.4 0.8 1.0
   }
+  locked TRUE
 }
 
 DEF TABLE Solid {
-  translation 0 0.4 -5
+  translation 0.5 0.35 -3.2
   name "table"
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.6 0.4 0.2
+        baseColor 0.55 0.4 0.25
+        roughness 0.6
       }
       geometry Box {
-        size 2 0.7 1.5
+        size 1.6 0.7 1.0
       }
     }
   ]
   boundingObject Box {
-    size 2 0.7 1.5
+    size 1.6 0.7 1.0
   }
+  locked TRUE
 }
 
-DEF CHAIR1 Solid {
-  translation -1.5 0.35 -5.5
-  name "chair_1"
+DEF BED Solid {
+  translation -3.5 0.35 3.0
+  name "bed"
   children [
     Shape {
       appearance PBRAppearance {
-        baseColor 0.5 0.5 0.5
+        baseColor 0.7 0.3 0.3
+        roughness 0.7
       }
       geometry Box {
-        size 0.5 0.9 0.5
+        size 2.2 0.7 1.6
       }
     }
   ]
   boundingObject Box {
-    size 0.5 0.9 0.5
+    size 2.2 0.7 1.6
   }
-}
-
-DEF CHAIR2 Solid {
-  translation 1.5 0.35 -5.5
-  name "chair_2"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.5 0.5 0.5
-      }
-      geometry Box {
-        size 0.5 0.9 0.5
-      }
-    }
-  ]
-  boundingObject Box {
-    size 0.5 0.9 0.5
-  }
+  locked TRUE
 }
 
 DEF CABINET Solid {
-  translation 7 0.8 -8
+  translation 3.0 0.8 -0.8
   name "cabinet"
   children [
     Shape {
       appearance PBRAppearance {
         baseColor 0.5 0.35 0.2
+        roughness 0.7
       }
       geometry Box {
-        size 1.5 1.6 0.5
+        size 1.2 1.6 0.5
       }
     }
   ]
   boundingObject Box {
-    size 1.5 1.6 0.5
+    size 1.2 1.6 0.5
   }
-}
-
-DEF DESK Solid {
-  translation -7 0.4 0
-  name "desk"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.6 0.4 0.2
-      }
-      geometry Box {
-        size 1.5 0.7 1
-      }
-    }
-  ]
-  boundingObject Box {
-    size 1.5 0.7 1
-  }
-}
-
-DEF ARIA_ROBOT Robot {
-  translation 0 0.15 0
-  rotation 0 0 1 0
-  name "aria_robot"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.1 0.1 0.8
-        metalness 0.3
-        roughness 0.4
-      }
-      geometry Box {
-        size 0.4 1.2 0.3
-      }
-    }
-    DEF WHEEL_FL HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.15 0.05 0.2
-      }
-      device [
-        RotationalMotor {
-          name "wheel_fl_motor"
-          maxVelocity 10
-          maxTorque 20
-        }
-      ]
-      endPoint DEF WHEEL_FL_SOLID Solid {
-        translation 0.15 0.05 0.2
-        rotation 1 0 0 0
-        name "wheel_fl"
-        children [
-          Shape {
-            appearance PBRAppearance {
-              baseColor 0.2 0.2 0.2
-            }
-            geometry Cylinder {
-              radius 0.1
-              height 0.05
-            }
-          }
-        ]
-        boundingObject Cylinder {
-          radius 0.1
-          height 0.05
-        }
-        physics Physics {
-          density -1
-          mass 0.5
-        }
-      }
-    }
-    DEF WHEEL_FR HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor -0.15 0.05 0.2
-      }
-      device [
-        RotationalMotor {
-          name "wheel_fr_motor"
-          maxVelocity 10
-          maxTorque 20
-        }
-      ]
-      endPoint DEF WHEEL_FR_SOLID Solid {
-        translation -0.15 0.05 0.2
-        rotation 1 0 0 0
-        name "wheel_fr"
-        children [
-          Shape {
-            appearance PBRAppearance {
-              baseColor 0.2 0.2 0.2
-            }
-            geometry Cylinder {
-              radius 0.1
-              height 0.05
-            }
-          }
-        ]
-        boundingObject Cylinder {
-          radius 0.1
-          height 0.05
-        }
-        physics Physics {
-          density -1
-          mass 0.5
-        }
-      }
-    }
-    DEF WHEEL_BL HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor 0.15 0.05 -0.2
-      }
-      device [
-        RotationalMotor {
-          name "wheel_bl_motor"
-          maxVelocity 10
-          maxTorque 20
-        }
-      ]
-      endPoint DEF WHEEL_BL_SOLID Solid {
-        translation 0.15 0.05 -0.2
-        rotation 1 0 0 0
-        name "wheel_bl"
-        children [
-          Shape {
-            appearance PBRAppearance {
-              baseColor 0.2 0.2 0.2
-            }
-            geometry Cylinder {
-              radius 0.1
-              height 0.05
-            }
-          }
-        ]
-        boundingObject Cylinder {
-          radius 0.1
-          height 0.05
-        }
-        physics Physics {
-          density -1
-          mass 0.5
-        }
-      }
-    }
-    DEF WHEEL_BR HingeJoint {
-      jointParameters HingeJointParameters {
-        axis 0 1 0
-        anchor -0.15 0.05 -0.2
-      }
-      device [
-        RotationalMotor {
-          name "wheel_br_motor"
-          maxVelocity 10
-          maxTorque 20
-        }
-      ]
-      endPoint DEF WHEEL_BR_SOLID Solid {
-        translation -0.15 0.05 -0.2
-        rotation 1 0 0 0
-        name "wheel_br"
-        children [
-          Shape {
-            appearance PBRAppearance {
-              baseColor 0.2 0.2 0.2
-            }
-            geometry Cylinder {
-              radius 0.1
-              height 0.05
-            }
-          }
-        ]
-        boundingObject Cylinder {
-          radius 0.1
-          height 0.05
-        }
-        physics Physics {
-          density -1
-          mass 0.5
-        }
-      }
-    }
-    Camera {
-      translation 0 0.9 0
-      rotation 0 0 1 0
-      name "main_camera"
-      width 320
-      height 240
-      near 0.01
-      far 50
-      fieldOfView 0.8
-    }
-  ]
-  boundingObject Box {
-    size 0.4 1.2 0.3
-  }
-  physics Physics {
-    density -1
-    mass 5
-  }
+  locked TRUE
 }
 
 DEF CUP Solid {
-  translation 0 0.7 -5
-  rotation 0 0 1 0
+  translation 0.5 0.75 -3.2
   name "cup"
   children [
     Shape {
@@ -455,7 +201,7 @@ DEF CUP Solid {
 }
 
 DEF FOOTBALL Solid {
-  translation 3 0.2 0
+  translation -1.5 0.15 0.5
   rotation 0.707 0 0.707 1.57
   name "football"
   children [
@@ -478,8 +224,7 @@ DEF FOOTBALL Solid {
 }
 
 DEF BOTTLE Solid {
-  translation 7 0.7 5
-  rotation 0 0 1 0
+  translation 3.0 1.05 -0.8
   name "bottle"
   children [
     Shape {
@@ -495,28 +240,6 @@ DEF BOTTLE Solid {
   boundingObject Cylinder {
     radius 0.06
     height 0.25
-  }
-  physics Physics {
-    density -1
-    mass 0.3
-  }
-}
-
-DEF SPHERE Solid {
-  translation -5 0.5 5
-  name "sphere"
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0.8 0.2 0.2
-      }
-      geometry Sphere {
-        radius 0.15
-      }
-    }
-  ]
-  boundingObject Sphere {
-    radius 0.15
   }
   physics Physics {
     density -1
