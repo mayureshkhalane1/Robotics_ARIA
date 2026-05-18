@@ -1,36 +1,43 @@
 #!/usr/bin/env bash
+# Helper to remind WSL users how to start Webots (which is a Windows GUI app).
+#
+# Webots must be launched from Windows PowerShell — not from WSL — because
+# WSL cannot create a process in the Windows interactive desktop session.
+#
+# Usage (from this WSL shell):
+#   powershell.exe -ExecutionPolicy Bypass -File "$(wslpath -w "$( cd "$(dirname "$0")/.." && pwd )/scripts/run_webots.ps1")"
+#
+# Or open a Windows PowerShell window and run:
+#   cd E:\Leiden\Year-1\Sem-2\ENV\Robotics\Robotics_ARIA
+#   .\scripts\run_webots.ps1
+
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/house.wbt}"
-WEBOTS_BIN="/Applications/Webots.app/Contents/MacOS/webots"
-PORT="${WEBOTS_PORT_UI:-1236}"
+PS1_WIN="$(wslpath -w "$ROOT/scripts/run_webots.ps1")"
 
-if [[ ! -x "$WEBOTS_BIN" ]]; then
-  echo "Webots binary not found at: $WEBOTS_BIN" >&2
-  echo "Open Webots manually and load: $WORLD" >&2
-  exit 1
-fi
+# Determine the Windows host IP so the user knows what to put in .env
+WINDOWS_HOST="$(ip route show default 2>/dev/null | awk '/via/{print $3; exit}')"
+WINDOWS_HOST="${WINDOWS_HOST:-172.20.128.1}"
 
-if pgrep -f "/Applications/Webots.app/Contents/MacOS/webots" >/dev/null; then
-  echo "WARNING: Another Webots instance is already running."
-  echo "Recommended: quit it first with: osascript -e 'quit app \"Webots\"'"
-  echo "Continuing on UI/extern-controller port $PORT..."
-fi
-
-echo "Opening ARIA Webots world: $WORLD"
-echo "Using Webots UI/extern-controller port: $PORT"
-echo "ARIA robot TCP port remains: 19997"
 echo ""
-echo "NOTE: Webots will run in the background."
-echo "To kill it later, run: pkill -f 'Webots'"
+echo "=== Webots must be launched from Windows PowerShell, not WSL ==="
+echo ""
+echo "Option 1 — run from THIS WSL terminal (launches PowerShell for you):"
+echo "  powershell.exe -ExecutionPolicy Bypass -File \"$PS1_WIN\""
+echo ""
+echo "Option 2 — open a Windows PowerShell window and run:"
+echo "  cd $(wslpath -w "$ROOT")"
+echo "  .\\scripts\\run_webots.ps1"
+echo ""
+echo "After Webots opens, make sure your .env contains:"
+echo "  WEBOTS_HOST=$WINDOWS_HOST"
 echo ""
 
-# Run in background and disown so it survives terminal closure
-"$WEBOTS_BIN" --port="$PORT" --stdout --stderr "$WORLD" > /tmp/webots.log 2>&1 &
-PID=$!
-echo "✓ Webots started with PID $PID"
-echo "✓ Log file: /tmp/webots.log"
-sleep 3
-echo "✓ Webots initialized"
-disown
+# Offer to launch PowerShell automatically
+read -rp "Launch Webots now via powershell.exe? [Y/n] " REPLY
+REPLY="${REPLY:-Y}"
+if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+  echo "Launching..."
+  powershell.exe -ExecutionPolicy Bypass -File "$PS1_WIN"
+fi

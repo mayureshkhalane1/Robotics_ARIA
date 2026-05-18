@@ -204,7 +204,8 @@ def make_app() -> web.Application:
 
 
 def main() -> None:
-    web.run_app(make_app(), host="127.0.0.1", port=8080)
+    # Bind on all interfaces so Windows browsers can reach the UI from WSL2.
+    web.run_app(make_app(), host="0.0.0.0", port=8080)
 
 
 if __name__ == "__main__":

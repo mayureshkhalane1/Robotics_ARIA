@@ -4,21 +4,56 @@ Loads from environment variables with sensible defaults.
 """
 
 import os
+import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load from .env file if it exists
-env_path = Path(__file__).parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
-else:
-    # Try to load from .env.example as fallback
-    env_example_path = Path(__file__).parent.parent.parent / ".env.example"
-    if env_example_path.exists():
-        load_dotenv(env_example_path)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+
+def _default_webots_host() -> str:
+    """Return the right host for the Webots TCP connection.
+
+    When running inside WSL2 (NAT networking mode), Webots runs as a Windows
+    process and its TCP server is NOT reachable at 'localhost' — we must use
+    the Windows gateway IP instead (e.g. 172.20.128.1).
+    An explicit WEBOTS_HOST env var always takes priority.
+    """
+    if env_val := os.getenv("WEBOTS_HOST"):
+        return env_val
+    try:
+        osrelease = Path("/proc/sys/kernel/osrelease").read_text().lower()
+        if "microsoft" in osrelease:
+            out = subprocess.run(
+                ["ip", "route", "show", "default"],
+                capture_output=True, text=True, timeout=2,
+            ).stdout
+            for line in out.splitlines():
+                parts = line.split()
+                if "via" in parts:
+                    return parts[parts.index("via") + 1]
+    except Exception:
+        pass
+    return "localhost"
+
+
+# Step 1: load user's real .env (explicit overrides, if it exists)
+_env_path = PROJECT_ROOT / ".env"
+if _env_path.exists():
+    load_dotenv(_env_path)
+
+# Step 2: resolve WEBOTS_HOST *before* loading .env.example, which contains
+# the dummy default 'localhost' and would prevent WSL2 auto-detection.
+WEBOTS_HOST = _default_webots_host()
+os.environ.setdefault("WEBOTS_HOST", WEBOTS_HOST)  # keep .env.example from overriding it
+
+# Step 3: load .env.example for all other settings (load_dotenv skips already-set vars)
+if not _env_path.exists():
+    _example_path = PROJECT_ROOT / ".env.example"
+    if _example_path.exists():
+        load_dotenv(_example_path)
 
 # Webots Connection Configuration
-WEBOTS_HOST = os.getenv("WEBOTS_HOST", "localhost")
 WEBOTS_PORT = int(os.getenv("WEBOTS_PORT", 19997))
 WEBOTS_SIM_SPEED = float(os.getenv("WEBOTS_SIM_SPEED", 0.1))
 WEBOTS_TIMEOUT = int(os.getenv("WEBOTS_TIMEOUT", 5))  # seconds
@@ -37,7 +72,6 @@ OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:8b")
 
 # Project Paths
-PROJECT_ROOT = Path(__file__).parent.parent.parent
 WEBOTS_WORLDS_PATH = PROJECT_ROOT / "src" / "webots" / "worlds"
 WEBOTS_CONTROLLERS_PATH = PROJECT_ROOT / "src" / "webots" / "controllers"
 LOGS_PATH = PROJECT_ROOT / "logs"
