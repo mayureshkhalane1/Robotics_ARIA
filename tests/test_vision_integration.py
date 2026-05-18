@@ -82,8 +82,7 @@ def test_visual_memory():
     # Test loop closure
     loop_closure = memory.find_loop_closure(test_frames[0])
     if loop_closure:
-        matched_id, similarity = loop_closure
-        print(f"✓ Loop closure detected: {matched_id} (similarity={similarity:.2f})")
+        print(f"✓ Loop closure detected: {loop_closure.obs_id} (similarity={loop_closure.similarity_score:.2f})")
     else:
         print("✗ Loop closure not detected")
 
