@@ -41,7 +41,8 @@ class WebotsRobotServer:
         # TCP Server
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.server_socket.bind(("127.0.0.1", self.port))
+        # Bind on all interfaces so WSL2 (which has its own network namespace) can connect.
+        self.server_socket.bind(("0.0.0.0", self.port))
         self.server_socket.listen(1)
         self.server_socket.setblocking(False)  # Non-blocking accept
         self.server_socket.settimeout(0.1)  # 100ms timeout for accept
