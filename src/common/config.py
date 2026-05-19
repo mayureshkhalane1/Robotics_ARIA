@@ -69,7 +69,7 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")  # 'anthropic' or 'ollama'
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:8b")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b")
 
 # Project Paths
 WEBOTS_WORLDS_PATH = PROJECT_ROOT / "src" / "webots" / "worlds"

@@ -10,7 +10,8 @@ import numpy as np
 from ultralytics import YOLO
 
 
-# COCO class names that YOLO-Nano detects
+# Common COCO class aliases. The detector still returns every class supported by
+# the loaded YOLO model via self.model.names, not only these household classes.
 COCO_CLASSES = {
     39: "bottle",
     41: "cup",
@@ -205,25 +206,14 @@ class ObjectDetector:
         return best_match
 
     def get_common_classes(self) -> list[str]:
-        """Get list of commonly detectable objects.
+        """Get list of detectable object class names.
 
         Returns:
             List of class names
         """
-        return [
-            "bottle",
-            "cup",
-            "chair",
-            "table",
-            "bed",
-            "laptop",
-            "monitor",
-            "plant",
-            "couch",
-            "fork",
-            "knife",
-            "spoon",
-        ]
+        if self.model is None:
+            return []
+        return sorted({READABLE_NAMES.get(name, name) for name in self.model.names.values()})
 
     def visualize_detections(
         self,

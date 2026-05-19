@@ -46,6 +46,15 @@ _TARGET_KEYWORDS: Dict[str, str] = {
     "laptop": "laptop",
     "person": "person",
     "human": "person",
+    "extinguisher": "fire extinguisher",
+    "fire extinguisher": "fire extinguisher",
+    "fire-extinguisher": "fire extinguisher",
+}
+
+_GOAL_STOPWORDS = {
+    "find", "the", "a", "an", "and", "go", "towards", "toward", "to", "it",
+    "stop", "away", "from", "centimeter", "centimeters", "cm", "meter", "meters",
+    "near", "at", "search", "for", "object", "target",
 }
 
 # === System Prompt ===
@@ -65,12 +74,14 @@ Available actions (use EXACTLY these strings):
 
 Rules:
   1. Never choose move_forward if front_blocked is true.
-  2. When the target is visible in the image (confirmed by yolo_detections), choose stop and set target_found=true.
-  3. Prefer unexplored directions; avoid re-visiting visited_positions_last_8 whenever possible.
-  4. If stuck (blocked on all recent steps), alternate turns to escape.
+  2. Use yolo_detections with class names, confidence, center, and bbox first.
+  3. If YOLO cannot detect the target class, inspect the image directly with vision.
+  4. Only set target_found=true when the requested target object is clearly visible, not merely mentioned in text.
+  5. Prefer unexplored directions; avoid re-visiting visited_positions_last_8 whenever possible.
+  6. If stuck (blocked on all recent steps), alternate turns to escape.
 
 Respond ONLY with a single JSON object — no markdown fences, no extra text:
-{"action": "<action>", "reasoning": "<one sentence>", "target_found": <true|false>, "target_direction": "<left|right|center|not_visible>"}
+{"action": "<action>", "reasoning": "<one sentence>", "target_found": <true|false>, "target_visible_confidence": <0.0-1.0>, "target_direction": "<left|right|center|not_visible>", "target_bbox": [x1,y1,x2,y2] or null}
 """
 
 
@@ -81,8 +92,34 @@ def _extract_target(goal: str) -> str:
     for keyword, target in _TARGET_KEYWORDS.items():
         if keyword in goal_lower:
             return target
-    words = goal_lower.split()
-    return words[-1] if words else "object"
+    words = re.findall(r"[a-zA-Z][a-zA-Z-]*", goal_lower)
+    candidates = [w for w in words if w not in _GOAL_STOPWORDS and not w.isdigit()]
+    return candidates[0] if candidates else "object"
+
+
+def _target_aliases(target: str) -> set[str]:
+    t = target.lower().strip()
+    aliases = {t}
+    if t == "fire extinguisher":
+        aliases.update({"extinguisher", "fire extinguisher"})
+    if t == "table":
+        aliases.update({"dining table"})
+    if t == "plant":
+        aliases.update({"potted plant"})
+    if t == "sofa":
+        aliases.update({"couch"})
+    return aliases
+
+
+def _detection_to_dict(d: Any) -> Dict[str, Any]:
+    x1, y1, x2, y2 = d.bbox
+    return {
+        "class_name": d.class_name,
+        "confidence": round(float(d.confidence), 3),
+        "bbox": [round(float(x1), 1), round(float(y1), 1), round(float(x2), 1), round(float(y2), 1)],
+        "center": [round(float(d.center[0]), 1), round(float(d.center[1]), 1)],
+        "class_id": int(d.class_id),
+    }
 
 
 def _get_front_proximity(proximity: Dict[str, float]) -> tuple[bool, float]:
@@ -181,7 +218,7 @@ def _query_vlm(
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=60) as resp:
         raw = json.loads(resp.read().decode("utf-8"))
     return raw.get("message", {}).get("content", "")
 
@@ -225,6 +262,7 @@ def run_aria_agent(
     event_callback: Optional[Callable[[Dict], None]] = None,
 ) -> AgentState:
     target = _extract_target(goal)
+    target_aliases = _target_aliases(target)
     camera = get_camera_manager()
     detector = get_detector()
     env_graph = get_environment_graph()
@@ -298,20 +336,19 @@ def run_aria_agent(
                     if name not in objects_seen_so_far:
                         objects_seen_so_far.append(name)
                 target_found_yolo = any(
-                    d.class_name.lower() == target.lower() for d in detections
+                    d.class_name.lower() in target_aliases for d in detections
                 )
-                print(f"[ARIA] YOLO detections: {detected_names}")
+                print("[ARIA] YOLO detections:")
+                if detections:
+                    for d in detections[:20]:
+                        print(f"  - {d.class_name} conf={d.confidence:.2f} bbox={[round(x, 1) for x in d.bbox]} center={[round(x, 1) for x in d.center]}")
+                else:
+                    print("  - none")
             except Exception as e:
                 print(f"[ARIA] YOLO error: {e}")
 
-        yolo_str = (
-            ", ".join(
-                f"{d.class_name}({d.confidence:.2f}) @ ({d.center[0]:.0f},{d.center[1]:.0f})"
-                for d in detections
-            )
-            if detections
-            else "none"
-        )
+        detection_dicts = [_detection_to_dict(d) for d in detections]
+        yolo_str = json.dumps(detection_dicts[:20]) if detection_dicts else "[]"
 
         # === VLM QUERY ===
         jpeg_b64: Optional[str] = None
@@ -326,12 +363,13 @@ def run_aria_agent(
             "max_steps": max_steps,
             "goal": goal,
             "target_to_find": target,
+            "target_aliases": sorted(target_aliases),
             "position": [round(position[0], 3), round(position[1], 3), round(position[2], 3)],
             "heading_degrees": round(heading_deg, 1),
             "front_blocked": front_blocked,
             "front_max_proximity": round(front_max_proximity, 1),
             "all_proximity_sensors": {k: round(v, 1) for k, v in proximity.items()},
-            "yolo_detections": yolo_str,
+            "yolo_detections_all_classes": detection_dicts[:20],
             "objects_seen_so_far": objects_seen_so_far,
             "visited_positions_last_8": visited_last_8,
             "scene_description_vlm": vlm_scene,
@@ -365,7 +403,12 @@ def run_aria_agent(
         action = parsed.get("action", "move_forward")
         reasoning = parsed.get("reasoning", "")
         llm_target_found = bool(parsed.get("target_found", False))
+        try:
+            llm_target_conf = float(parsed.get("target_visible_confidence", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            llm_target_conf = 0.0
         target_direction = parsed.get("target_direction", "not_visible")
+        target_bbox = parsed.get("target_bbox")
 
         valid_actions = {"move_forward", "turn_left_90", "turn_right_90", "turn_around", "stop"}
         if action not in valid_actions:
@@ -378,10 +421,26 @@ def run_aria_agent(
             reasoning = f"[safety override] was:{reasoning}"
 
         # === TARGET DETECTION (YOLO only) ===
+        vlm_confident_found = (
+            llm_target_found
+            and llm_target_conf >= 0.70
+            and target_direction in {"left", "right", "center"}
+            and target_bbox is not None
+        )
+
         if target_found_yolo:
             print(f"[ARIA] Target '{target}' confirmed by YOLO")
             action = "stop"
             llm_target_found = True
+        elif llm_target_found and not vlm_confident_found:
+            print(
+                f"[ARIA] Ignoring weak VLM target_found for '{target}' "
+                f"(conf={llm_target_conf:.2f}, direction={target_direction}, bbox={target_bbox})"
+            )
+            llm_target_found = False
+            if action == "stop":
+                action = "turn_left_90" if not front_blocked else "turn_right_90"
+                reasoning = f"Weak target evidence, continue searching. {reasoning}"
 
         state.reasoning_trace.append(
             f"step={step} pos={pos_key} hdg={heading_deg:.0f}° blocked={front_blocked} "
@@ -430,7 +489,7 @@ def run_aria_agent(
                     "heading_degrees": heading_deg,
                     "front_blocked": front_blocked,
                     "proximity": proximity,
-                    "detections": yolo_str,
+                    "detections": detection_dicts[:20],
                     "graph_stats": graph_stats,
                 },
                 "reasoning_tail": reasoning,
@@ -438,7 +497,7 @@ def run_aria_agent(
         )
 
         # === SUCCESS CHECK ===
-        if action == "stop" and (target_found_yolo or llm_target_found):
+        if action == "stop" and (target_found_yolo or vlm_confident_found):
             _execute_motion("stop")
             state.success = True
             state.reasoning_trace.append(f"SUCCESS at step {step}: {target} found")

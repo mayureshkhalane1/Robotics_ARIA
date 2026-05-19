@@ -88,6 +88,8 @@ async def set_goal(request: web.Request) -> web.Response:
                 run_smart_vision_agent,
                 goal,
                 steps,
+                model or OLLAMA_MODEL,
+                lambda event: dashboard.emit_threadsafe(loop, event),
             )
         elif policy == "vision":
             # Use vision-aware agent
