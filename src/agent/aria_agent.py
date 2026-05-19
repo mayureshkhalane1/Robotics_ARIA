@@ -221,10 +221,14 @@ def _decode_camera_frame(camera_data: Dict[str, Any]) -> Optional[np.ndarray]:
         image_bytes = b64decode(raw_b64)
         if encoding == "bgra8_base64":
             frame_bgra = np.frombuffer(image_bytes, dtype=np.uint8).reshape((height, width, 4))
-            return frame_bgra[:, :, :3].copy()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        return frame
+            frame_bgr = frame_bgra[:, :, :3].copy()
+        else:
+            nparr = np.frombuffer(image_bytes, np.uint8)
+            frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        # Flip camera image 180 degrees (upside down + horizontal flip)
+        frame_bgr = cv2.rotate(frame_bgr, cv2.ROTATE_180)
+        return frame_bgr
     except Exception as e:
         print(f"[ARIA] Camera decode error: {e}")
         return None

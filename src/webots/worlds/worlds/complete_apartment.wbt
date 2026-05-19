@@ -2234,7 +2234,6 @@ Pioneer3dx {
     DistanceSensor {
     }
     Camera {
-      rotation 1 0 0 3.14159
       fieldOfView 1.57
       width 320
       height 240
