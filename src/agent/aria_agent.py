@@ -16,6 +16,7 @@ import numpy as np
 
 # === Project ===
 from src.agent.environment_graph import get_environment_graph
+from src.agent.exploration_agent import ExplorationPlanner, RoomMapper
 from src.common.config import (
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
@@ -402,6 +403,9 @@ def run_aria_agent(
     camera = get_camera_manager()
     detector = get_detector()
     env_graph = get_environment_graph()
+    
+    # Initialize exploration planner
+    explorer = ExplorationPlanner(goal, target)
 
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen_so_far: List[str] = []
@@ -449,6 +453,11 @@ def run_aria_agent(
         pos_key = f"({position[0]:.1f},{position[1]:.1f})"
         if pos_key not in visited_positions:
             visited_positions.append(pos_key)
+        
+        # Check if stuck
+        is_stuck = explorer.detect_stuck((position[0], position[1]))
+        if is_stuck:
+            print(f"[ARIA] STUCK DETECTION: Repeating position {pos_key}, need to change strategy")
         visited_last_8 = visited_positions[-8:]
 
         # === DECODE CAMERA ===
@@ -558,11 +567,30 @@ Answer: 1) What room is this? 2) What objects are visible? 3) Where is the {targ
             
             # Step 2: Use REASONING model to decide action
             user_prompt_dict["vision_description"] = vision_description
+            
+            # Get exploration-guided prompt
+            current_room = vision_description.split('\n')[0] if vision_description else "unknown room"
+            exploration_prompt = explorer.get_exploration_prompt(
+                current_room, 
+                vision_description
+            )
+            
+            # Combine with exploration strategy
+            combined_prompt = f"""{exploration_prompt}
+
+SENSOR DATA:
+- Front blocked: {front_blocked}
+- Proximity: front={proximity_scan.get('front', 0):.0f}, left={proximity_scan.get('left', 0):.0f}, right={proximity_scan.get('right', 0):.0f}
+- Position: {position}
+- Heading: {heading_deg}°
+
+Choose next action:"""
+            
             for attempt in range(max_vlm_retries):
                 try:
                     llm_response_text = _query_reasoning_model(
                         system_prompt=_SYSTEM_PROMPT,
-                        user_prompt=json.dumps(user_prompt_dict),
+                        user_prompt=combined_prompt,
                     )
                     if llm_response_text.strip():
                         print(f"[ARIA] Reasoning: {llm_response_text[:200]}")
