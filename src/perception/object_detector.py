@@ -76,20 +76,22 @@ class Detection:
 class ObjectDetector:
     """YOLO-based object detector for robot perception."""
 
-    def __init__(self, model_name: str = "yolov8n", confidence_threshold: float = 0.5):
+    def __init__(self, model_name: str = "yolov8n", confidence_threshold: float = 0.5, iou_threshold: float = 0.45):
         """Initialize object detector.
 
         Args:
             model_name: YOLO model name (yolov8n, yolov8s, etc.)
-            confidence_threshold: Minimum confidence to keep detections
+            confidence_threshold: Minimum confidence to keep detections (0.0-1.0)
+            iou_threshold: NMS IoU threshold for duplicate suppression (0.0-1.0)
         """
         self.model_name = model_name
         self.confidence_threshold = confidence_threshold
+        self.iou_threshold = iou_threshold
 
         # Load model (auto-downloads on first use)
         try:
             self.model = YOLO(f"{model_name}.pt")
-            print(f"[Detector] Loaded {model_name} successfully")
+            print(f"[Detector] Loaded {model_name} successfully (conf={confidence_threshold}, iou={iou_threshold})")
         except Exception as e:
             print(f"[Detector] Failed to load model: {e}")
             self.model = None
@@ -98,24 +100,34 @@ class ObjectDetector:
         """Detect objects in frame.
 
         Args:
-            frame: RGB numpy array (HxWx3, uint8)
+            frame: BGR numpy array (HxWx3, uint8). YOLO expects BGR input!
 
         Returns:
-            List of Detection objects sorted by confidence
+            List of Detection objects sorted by confidence (highest first)
         """
         if self.model is None:
             print("[Detector] Model not loaded")
             return []
 
         if frame is None or frame.size == 0:
-            print("[Detector] Invalid frame")
+            print("[Detector] Invalid frame: empty or None")
+            return []
+
+        if len(frame.shape) != 3 or frame.shape[2] != 3:
+            print(f"[Detector] Invalid frame shape: {frame.shape} (expected HxWx3)")
             return []
 
         try:
-            # Run inference
-            results = self.model(frame, verbose=False, conf=self.confidence_threshold)
+            # Run inference with explicit NMS
+            results = self.model(
+                frame,
+                verbose=False,
+                conf=self.confidence_threshold,
+                iou=self.iou_threshold  # Non-maximum suppression threshold
+            )
 
             detections = []
+            frame_h, frame_w = frame.shape[:2]
 
             # Process results
             if results and len(results) > 0:
@@ -128,6 +140,16 @@ class ObjectDetector:
                         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                         confidence = float(box.conf[0].cpu().numpy())
                         class_id = int(box.cls[0].cpu().numpy())
+
+                        # Validate bbox bounds
+                        if not (0 <= x1 < x2 <= frame_w and 0 <= y1 < y2 <= frame_h):
+                            print(f"[Detector] Invalid bbox: ({x1:.1f},{y1:.1f},{x2:.1f},{y2:.1f}) outside frame {frame_w}x{frame_h}")
+                            continue
+
+                        # Validate confidence range
+                        if not (0 <= confidence <= 1.0):
+                            print(f"[Detector] Invalid confidence: {confidence} (must be 0-1)")
+                            continue
 
                         # Get class name
                         class_name = self.model.names.get(class_id, f"object_{class_id}")
@@ -154,6 +176,8 @@ class ObjectDetector:
 
         except Exception as e:
             print(f"[Detector] Inference error: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def find_target(self, frame: np.ndarray, target_name: str) -> Optional[Detection]:
@@ -251,26 +275,40 @@ def get_detector() -> ObjectDetector:
     """Get or create global object detector.
 
     Returns:
-        ObjectDetector instance
+        ObjectDetector instance configured with:
+        - Model: yolov8n (nano, ~3.3M params)
+        - Confidence threshold: 0.5
+        - NMS IoU threshold: 0.45
     """
     global _detector
     if _detector is None:
-        _detector = ObjectDetector(model_name="yolov8n", confidence_threshold=0.5)
+        _detector = ObjectDetector(
+            model_name="yolov8n",
+            confidence_threshold=0.5,
+            iou_threshold=0.45
+        )
     return _detector
 
 
 def init_detector(
-    model_name: str = "yolov8n", confidence_threshold: float = 0.5
+    model_name: str = "yolov8n",
+    confidence_threshold: float = 0.5,
+    iou_threshold: float = 0.45
 ) -> ObjectDetector:
     """Initialize object detector.
 
     Args:
-        model_name: YOLO model name
-        confidence_threshold: Minimum confidence
+        model_name: YOLO model name (yolov8n, yolov8s, yolov8m, etc.)
+        confidence_threshold: Minimum confidence (0.0-1.0), default 0.5
+        iou_threshold: NMS IoU threshold (0.0-1.0), default 0.45
 
     Returns:
         ObjectDetector instance
     """
     global _detector
-    _detector = ObjectDetector(model_name=model_name, confidence_threshold=confidence_threshold)
+    _detector = ObjectDetector(
+        model_name=model_name,
+        confidence_threshold=confidence_threshold,
+        iou_threshold=iou_threshold
+    )
     return _detector

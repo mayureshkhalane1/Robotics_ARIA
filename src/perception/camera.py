@@ -132,9 +132,9 @@ class CameraManager:
                 print(f"[Camera] Failed to decode image (encoding={encoding}, size={len(image_bytes)})")
                 return False
             
-            # Validate frame shape
-            if len(frame_bgr.shape) != 3 or frame_bgr.shape[2] not in (3, 4):
-                print(f"[Camera] Invalid frame shape: {frame_bgr.shape}")
+            # Validate frame channels (after BGRA→BGR conversion, should be 3)
+            if frame_bgr.shape[2] != 3:
+                print(f"[Camera] Invalid frame channels: {frame_bgr.shape[2]} (expected 3)")
                 return False
 
             # Extract metadata

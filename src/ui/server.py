@@ -144,11 +144,9 @@ async def camera_stream(request: web.Request) -> web.WebSocketResponse:
                 await asyncio.sleep(0.1)
                 continue
             
-            # Run detection
+            # Run detection (detector expects BGR format directly)
             try:
-                import cv2
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                detections = detector.detect(frame_rgb)
+                detections = detector.detect(frame)
                 
                 detection_data = [
                     {
