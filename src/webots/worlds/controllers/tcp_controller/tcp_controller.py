@@ -192,7 +192,7 @@ class WebotsRobotServer:
                     # High-res camera frames can exceed 5 MB once base64
                     # encoded. Downsample raw BGRA to keep TCP responses small
                     # and avoid client timeouts/disconnects.
-                    max_dim = 320
+                    max_dim = 160
                     stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
                     if stride > 1:
                         raw = bytes(image)
@@ -284,18 +284,24 @@ class WebotsRobotServer:
         while self.robot.step(self.timestep) != -1:
             step_count += 1
 
-            # Try to accept a new connection (non-blocking)
-            if self.client_socket is None:
-                try:
-                    self.client_socket, addr = self.server_socket.accept()
-                    self.client_socket.setblocking(False)
-                    self.client_socket.settimeout(0.5)
-                    client_count += 1
-                    print(f"[CLIENT] Connected #{client_count}: {addr}")
-                except (BlockingIOError, socket.timeout):
-                    pass
-                except Exception as e:
-                    print(f"[ERROR] Accept failed: {e}")
+            # Accept new connection even if an old/stale client is still held.
+            # The ARIA UI may reconnect while a previous camera request timed
+            # out; replacing the stale socket prevents new requests from sitting
+            # unhandled in the OS backlog.
+            try:
+                new_client, addr = self.server_socket.accept()
+                new_client.setblocking(False)
+                new_client.settimeout(0.5)
+                if self.client_socket:
+                    print("[CLIENT] Replacing previous client")
+                    self._close_client()
+                self.client_socket = new_client
+                client_count += 1
+                print(f"[CLIENT] Connected #{client_count}: {addr}")
+            except (BlockingIOError, socket.timeout):
+                pass
+            except Exception as e:
+                print(f"[ERROR] Accept failed: {e}")
 
             # Handle incoming data from connected client
             if self.client_socket:

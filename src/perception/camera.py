@@ -102,13 +102,14 @@ class CameraManager:
                 {"include_camera": True},
             )
 
-            if result.get("error"):
-                print(f"[Camera] Error: {result.get('error')}")
+            if not isinstance(result, dict) or result.get("error") or not result.get("success", False):
+                message = result.get("message") if isinstance(result, dict) else str(result)
+                print(f"[Camera] get_state failed: {message or 'unknown error'}")
                 return False
 
             # Extract camera data
-            state = result.get("state", {})
-            camera_data = state.get("camera")
+            state = result.get("state") or {}
+            camera_data = state.get("camera") if isinstance(state, dict) else None
 
             if not camera_data:
                 print("[Camera] No camera data in response")

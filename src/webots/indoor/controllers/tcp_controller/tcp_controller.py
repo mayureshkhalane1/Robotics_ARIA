@@ -176,7 +176,7 @@ class WebotsRobotServer:
                     # before base64 and can make the TCP client time out or
                     # drop the connection. Keep the wire format unchanged but
                     # downsample to a connection-safe preview frame.
-                    max_dim = 320
+                    max_dim = 160
                     stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
                     if stride > 1:
                         raw = bytes(img)
@@ -252,18 +252,23 @@ class WebotsRobotServer:
             if not self.tcp_ok:
                 continue
 
-            # Accept new connection
-            if not self.client_socket:
-                try:
-                    self.client_socket, addr = self.server_socket.accept()
-                    self.client_socket.setblocking(False)
-                    print(f"[TCP] Client connected: {addr}")
-                    sys.stdout.flush()
-                except (socket.timeout, BlockingIOError):
-                    pass
-                except Exception as e:
-                    print(f"[WARN] Accept error: {e}")
-                    sys.stdout.flush()
+            # Accept new connection. If a stale UI/client socket is still held,
+            # replace it so fresh ARIA requests do not sit in the OS backlog
+            # forever without being serviced.
+            try:
+                new_client, addr = self.server_socket.accept()
+                new_client.setblocking(False)
+                if self.client_socket:
+                    print("[TCP] Replacing previous client")
+                    self._close_client()
+                self.client_socket = new_client
+                print(f"[TCP] Client connected: {addr}")
+                sys.stdout.flush()
+            except (socket.timeout, BlockingIOError):
+                pass
+            except Exception as e:
+                print(f"[WARN] Accept error: {e}")
+                sys.stdout.flush()
 
             # Handle commands
             if self.client_socket:
