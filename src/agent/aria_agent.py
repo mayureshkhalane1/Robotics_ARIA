@@ -217,7 +217,7 @@ def _decode_camera_frame(camera_data: Dict[str, Any]) -> Optional[np.ndarray]:
         return None
 
 
-def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 90) -> Optional[str]:
+def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 95) -> Optional[str]:
     try:
         h, w = frame_bgr.shape[:2]
         max_dim = max(32, OLLAMA_VISION_IMAGE_MAX_DIM)

@@ -192,7 +192,8 @@ class WebotsRobotServer:
                     # High-res camera frames can exceed 5 MB once base64
                     # encoded. Downsample raw BGRA to keep TCP responses small
                     # and avoid client timeouts/disconnects.
-                    max_dim = 256
+                    # Increased from 256px to 512px for better vision and wider FOV
+                    max_dim = 512
                     stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
                     if stride > 1:
                         raw = bytes(image)
