@@ -30,13 +30,16 @@ from src.perception.camera import Frame, FrameMetadata, get_camera_manager
 from src.perception.object_detector import get_detector
 
 # === Motion Constants ===
-CYCLE_INTERVAL = 5.0
-MOVE_DURATION = 2.5
-MOVE_VELOCITY = 4.0
+CYCLE_INTERVAL = 4.0
+MOVE_DURATION = 1.2
+BACKUP_DURATION = 1.0
+MOVE_VELOCITY = 2.2
+BACKUP_VELOCITY = -2.0
 TURN_90_DUR = 1.7
 TURN_180_DUR = 3.4
 TURN_VELOCITY = 1.5
-OBSTACLE_THRESH = 600
+OBSTACLE_THRESH = 450
+CRITICAL_OBSTACLE_THRESH = 850
 
 # === Target Keyword Map ===
 _TARGET_KEYWORDS: Dict[str, str] = {
@@ -69,6 +72,7 @@ _SYSTEM_PROMPT = """You are ARIA, an autonomous indoor robot. Be fast.
 
 Available actions (use EXACTLY these strings):
 move_forward, turn_left_90, turn_right_90, turn_around, stop
+Emergency actions may be forced by safety code: back_up, back_up_turn.
 
 Rules:
 1. Never move_forward if front_blocked=true.
@@ -118,15 +122,64 @@ def _detection_to_dict(d: Any) -> Dict[str, Any]:
     }
 
 
-def _get_front_proximity(proximity: Dict[str, float]) -> tuple[bool, float]:
-    front_keys = ["so0", "so1", "so2", "so15"]
-    values = [proximity[k] for k in front_keys if k in proximity]
-    if not values:
-        values = list(proximity.values())
-    if not values:
-        return False, 0.0
-    max_val = max(values)
-    return max_val > OBSTACLE_THRESH, max_val
+def _sensor_index(name: str) -> Optional[int]:
+    m = re.search(r"(\d+)$", name)
+    return int(m.group(1)) if m else None
+
+
+def _proximity_scan(proximity: Dict[str, float]) -> Dict[str, Any]:
+    """Summarize 180-degree obstacle scan. Higher Webots distance value means closer."""
+    items = [(k, float(v), _sensor_index(k)) for k, v in proximity.items() if float(v) >= 0]
+    if not items:
+        return {"front_blocked": False, "critical": False, "front": 0.0, "left": 0.0, "right": 0.0, "clearer_turn": "turn_left_90"}
+
+    indexed = [(k, v, i) for k, v, i in items if i is not None]
+    values = [v for _k, v, _i in items]
+    if indexed:
+        n = max(i for _k, _v, i in indexed) + 1
+        front_idx = {0, 1, 2, max(0, n - 1), max(0, n - 2)}
+        left_idx = {i for i in range(n // 2, n)}
+        right_idx = {i for i in range(0, max(1, n // 2))}
+        front_vals = [v for _k, v, i in indexed if i in front_idx]
+        left_vals = [v for _k, v, i in indexed if i in left_idx]
+        right_vals = [v for _k, v, i in indexed if i in right_idx]
+    else:
+        front_vals = values
+        left_vals = values
+        right_vals = values
+
+    front = max(front_vals or values)
+    left = max(left_vals or [0.0])
+    right = max(right_vals or [0.0])
+    # Turn toward lower proximity value, i.e. more open space.
+    clearer_turn = "turn_left_90" if left < right else "turn_right_90"
+    return {
+        "front_blocked": front > OBSTACLE_THRESH,
+        "critical": max(values) > CRITICAL_OBSTACLE_THRESH,
+        "front": front,
+        "left": left,
+        "right": right,
+        "max": max(values),
+        "clearer_turn": clearer_turn,
+    }
+
+
+def _is_white_wall_view(frame_bgr: Optional[np.ndarray]) -> bool:
+    if frame_bgr is None or frame_bgr.size == 0:
+        return False
+    hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
+    brightness = float(np.mean(hsv[:, :, 2]))
+    saturation = float(np.mean(hsv[:, :, 1]))
+    texture = float(np.std(cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2GRAY)))
+    return brightness > 185 and saturation < 35 and texture < 28
+
+
+def _safe_exploration_action(scan: Dict[str, Any], white_wall: bool) -> tuple[str, str]:
+    if scan.get("critical") or (white_wall and scan.get("front", 0.0) > OBSTACLE_THRESH * 0.7):
+        return "back_up_turn", "critical wall/corner proximity or white wall view, reverse then turn to open side"
+    if scan.get("front_blocked"):
+        return scan.get("clearer_turn", "turn_left_90"), "front obstacle in 180-degree scan, turning toward clearer side"
+    return "move_forward", "path clear in 180-degree scan, exploring forward cautiously"
 
 
 def _decode_camera_frame(camera_data: Dict[str, Any]) -> Optional[np.ndarray]:
@@ -246,6 +299,17 @@ def _execute_motion(action: str) -> None:
         call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
         time.sleep(TURN_180_DUR)
         call_tool("stop", {})
+    elif action == "back_up":
+        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
+        time.sleep(BACKUP_DURATION)
+        call_tool("stop", {})
+    elif action == "back_up_turn":
+        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
+        time.sleep(BACKUP_DURATION)
+        call_tool("stop", {})
+        call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
+        time.sleep(TURN_90_DUR)
+        call_tool("stop", {})
     elif action == "stop":
         call_tool("stop", {})
 
@@ -313,7 +377,9 @@ def run_aria_agent(
         camera_data = robot_state_raw.get("camera", {})
 
         heading_deg = _heading_from_orientation(orientation)
-        front_blocked, front_max_proximity = _get_front_proximity(proximity)
+        proximity_scan = _proximity_scan(proximity)
+        front_blocked = bool(proximity_scan["front_blocked"])
+        front_max_proximity = float(proximity_scan["front"])
         pos_key = f"({position[0]:.1f},{position[1]:.1f})"
         if pos_key not in visited_positions:
             visited_positions.append(pos_key)
@@ -331,6 +397,15 @@ def run_aria_agent(
             print(f"[ARIA] Camera frame updated: {frame_bgr.shape}")
         else:
             print("[ARIA] No camera frame this cycle")
+
+        white_wall_view = _is_white_wall_view(frame_bgr)
+        safe_action, safe_reason = _safe_exploration_action(proximity_scan, white_wall_view)
+        print(
+            "[ARIA] Proximity scan: "
+            f"front={proximity_scan.get('front', 0):.0f} left={proximity_scan.get('left', 0):.0f} "
+            f"right={proximity_scan.get('right', 0):.0f} max={proximity_scan.get('max', 0):.0f} "
+            f"blocked={front_blocked} critical={proximity_scan.get('critical', False)} white_wall={white_wall_view}"
+        )
 
         sample_vision = (
             frame_bgr is not None
@@ -385,6 +460,8 @@ def run_aria_agent(
             "heading_degrees": round(heading_deg, 1),
             "front_blocked": front_blocked,
             "front_max_proximity": round(front_max_proximity, 1),
+            "proximity_scan_180": proximity_scan,
+            "white_wall_view": white_wall_view,
             "all_proximity_sensors": {k: round(v, 1) for k, v in proximity.items()},
             "image_is_yolo_annotated": bool(sample_vision),
             "vision_sample_interval_seconds": OLLAMA_VISION_SAMPLE_INTERVAL,
@@ -410,7 +487,12 @@ def run_aria_agent(
                 print(f"[ARIA] VLM error: {e}")
                 llm_response_text = '{"action":"move_forward","reasoning":"VLM unavailable, exploring","target_found":false,"target_direction":"not_visible"}'
         else:
-            llm_response_text = '{"action":"move_forward","reasoning":"Between 10s vision samples, continue exploring safely","target_found":false,"target_direction":"not_visible"}'
+            llm_response_text = json.dumps({
+                "action": safe_action,
+                "reasoning": safe_reason,
+                "target_found": False,
+                "target_direction": "not_visible",
+            })
 
         # === PARSE LLM RESPONSE ===
         parsed = _extract_json(llm_response_text)
@@ -433,15 +515,19 @@ def run_aria_agent(
         target_direction = parsed.get("target_direction", "not_visible")
         target_bbox = parsed.get("target_bbox")
 
-        valid_actions = {"move_forward", "turn_left_90", "turn_right_90", "turn_around", "stop"}
+        valid_actions = {"move_forward", "turn_left_90", "turn_right_90", "turn_around", "back_up", "back_up_turn", "stop"}
         if action not in valid_actions:
             action = "move_forward"
 
-        # === SAFETY OVERRIDE ===
-        if action == "move_forward" and front_blocked:
-            print(f"[ARIA] Safety override: front blocked (max={front_max_proximity:.0f}), forcing turn_left_90")
-            action = "turn_left_90"
-            reasoning = f"[safety override] was:{reasoning}"
+        # === SENSOR-FIRST SAFETY OVERRIDE ===
+        if proximity_scan.get("critical") or (white_wall_view and front_max_proximity > OBSTACLE_THRESH * 0.7):
+            print(f"[ARIA] Critical safety override: max={proximity_scan.get('max', 0):.0f}, backing out")
+            action = "back_up_turn"
+            reasoning = f"[critical safety override] {safe_reason}; was:{reasoning}"
+        elif action == "move_forward" and front_blocked:
+            print(f"[ARIA] Safety override: front blocked (front={front_max_proximity:.0f}), forcing {safe_action}")
+            action = safe_action if safe_action != "move_forward" else proximity_scan.get("clearer_turn", "turn_left_90")
+            reasoning = f"[sensor safety override] {safe_reason}; was:{reasoning}"
 
         # === TARGET DETECTION (YOLO only) ===
         vlm_confident_found = (
@@ -511,6 +597,8 @@ def run_aria_agent(
                     "position": position,
                     "heading_degrees": heading_deg,
                     "front_blocked": front_blocked,
+                    "proximity_scan_180": proximity_scan,
+                    "white_wall_view": white_wall_view,
                     "proximity": proximity,
                     "detections": detection_dicts[:20],
                     "graph_stats": graph_stats,
