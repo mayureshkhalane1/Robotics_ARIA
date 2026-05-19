@@ -19,6 +19,8 @@ from src.agent.environment_graph import get_environment_graph
 from src.common.config import (
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
+    OLLAMA_VISION_MODEL,
+    OLLAMA_REASONING_MODEL,
     OLLAMA_VISION_IMAGE_MAX_DIM,
     OLLAMA_VISION_NUM_PREDICT,
     OLLAMA_VISION_SAMPLE_INTERVAL,
@@ -247,22 +249,21 @@ def _extract_json(text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _query_vlm(
-    model: str,
-    system_prompt: str,
-    user_prompt: str,
+def _query_vision_model(
     jpeg_b64: Optional[str],
+    user_prompt: str,
     temperature: float = 0.1,
 ) -> str:
+    """Query vision model (llava-phi3) for image description only."""
     url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
     user_msg: Dict[str, Any] = {"role": "user", "content": user_prompt}
     if jpeg_b64:
         user_msg["images"] = [jpeg_b64]
     payload = {
-        "model": model,
+        "model": OLLAMA_VISION_MODEL,
         "stream": False,
         "messages": [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": "Describe the image briefly and accurately."},
             user_msg,
         ],
         "options": {
@@ -283,7 +284,43 @@ def _query_vlm(
     text = raw.get("message", {}).get("content") or raw.get("response") or ""
     text = text.strip()
     if not text:
-        raise RuntimeError(f"empty VLM response from {model}; check `ollama pull {model}` and model vision support")
+        raise RuntimeError(f"empty response from vision model {OLLAMA_VISION_MODEL}")
+    return text
+
+
+def _query_reasoning_model(
+    system_prompt: str,
+    user_prompt: str,
+    temperature: float = 0.1,
+) -> str:
+    """Query reasoning model (qwen3:8b) for agent decisions - TEXT ONLY."""
+    url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+    payload = {
+        "model": OLLAMA_REASONING_MODEL,
+        "stream": False,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "options": {
+            "temperature": temperature,
+            "num_predict": OLLAMA_VISION_NUM_PREDICT,
+            "num_ctx": 2048,
+        },
+        "keep_alive": "10m",
+    }
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=OLLAMA_VISION_TIMEOUT) as resp:
+        raw = json.loads(resp.read().decode("utf-8"))
+    text = raw.get("message", {}).get("content") or raw.get("response") or ""
+    text = text.strip()
+    if not text:
+        raise RuntimeError(f"empty response from reasoning model {OLLAMA_REASONING_MODEL}")
     return text
 
 
@@ -496,20 +533,33 @@ def run_aria_agent(
             last_vision_sample_time = time.time()
             max_vlm_retries = 2
             try:
+                # Step 1: Get image description from VISION model (llava-phi3)
+                vision_description = ""
+                try:
+                    vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
+                    vision_description = _query_vision_model(
+                        jpeg_b64=jpeg_b64,
+                        user_prompt=vision_prompt,
+                    )
+                    print(f"[ARIA] Vision: {vision_description[:100]}...")
+                except Exception as e:
+                    print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
+                    vision_description = ""
+                
+                # Step 2: Use REASONING model (qwen3:8b) to decide action
+                user_prompt_dict["vision_description"] = vision_description
                 for attempt in range(max_vlm_retries):
                     try:
-                        llm_response_text = _query_vlm(
-                            model=model,
+                        llm_response_text = _query_reasoning_model(
                             system_prompt=_SYSTEM_PROMPT,
                             user_prompt=json.dumps(user_prompt_dict),
-                            jpeg_b64=jpeg_b64,
                         )
                         if llm_response_text.strip():
-                            print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
+                            print(f"[ARIA] Reasoning: {llm_response_text[:200]}")
                             break
                     except Exception as e:
                         if attempt < max_vlm_retries - 1:
-                            print(f"[ARIA] VLM attempt {attempt+1}/{max_vlm_retries} failed, retrying: {e}")
+                            print(f"[ARIA] Reasoning attempt {attempt+1}/{max_vlm_retries} failed, retrying: {e}")
                             time.sleep(0.5)
                         else:
                             raise
