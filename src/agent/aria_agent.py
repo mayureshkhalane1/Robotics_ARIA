@@ -80,7 +80,7 @@ Rules:
 3. Only target_found=true if requested target is clearly visible now.
 4. If not visible, choose a search action.
 
-Return ONLY compact JSON, no markdown, no thinking:
+Return ONLY one valid compact JSON object. No markdown. No thinking. No empty response:
 {"action": "<action>", "reasoning": "<one sentence>", "target_found": <true|false>, "target_visible_confidence": <0.0-1.0>, "target_direction": "<left|right|center|not_visible>", "target_bbox": [x1,y1,x2,y2] or null}
 """
 
@@ -175,8 +175,9 @@ def _is_white_wall_view(frame_bgr: Optional[np.ndarray]) -> bool:
 
 
 def _safe_exploration_action(scan: Dict[str, Any], white_wall: bool) -> tuple[str, str]:
+    backup_turn = "back_up_turn_left" if scan.get("clearer_turn") == "turn_left_90" else "back_up_turn_right"
     if scan.get("critical") or (white_wall and scan.get("front", 0.0) > OBSTACLE_THRESH * 0.7):
-        return "back_up_turn", "critical wall/corner proximity or white wall view, reverse then turn to open side"
+        return backup_turn, "critical wall/corner proximity or white wall view, reverse then turn to clearer side"
     if scan.get("front_blocked"):
         return scan.get("clearer_turn", "turn_left_90"), "front obstacle in 180-degree scan, turning toward clearer side"
     return "move_forward", "path clear in 180-degree scan, exploring forward cautiously"
@@ -202,7 +203,7 @@ def _decode_camera_frame(camera_data: Dict[str, Any]) -> Optional[np.ndarray]:
         return None
 
 
-def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 65) -> Optional[str]:
+def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 90) -> Optional[str]:
     try:
         h, w = frame_bgr.shape[:2]
         max_dim = max(32, OLLAMA_VISION_IMAGE_MAX_DIM)
@@ -279,7 +280,11 @@ def _query_vlm(
     )
     with urllib.request.urlopen(req, timeout=OLLAMA_VISION_TIMEOUT) as resp:
         raw = json.loads(resp.read().decode("utf-8"))
-    return raw.get("message", {}).get("content", "")
+    text = raw.get("message", {}).get("content") or raw.get("response") or ""
+    text = text.strip()
+    if not text:
+        raise RuntimeError(f"empty VLM response from {model}; check `ollama pull {model}` and model vision support")
+    return text
 
 
 def _execute_motion(action: str) -> None:
@@ -308,6 +313,20 @@ def _execute_motion(action: str) -> None:
         time.sleep(BACKUP_DURATION)
         call_tool("stop", {})
         call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
+        time.sleep(TURN_90_DUR)
+        call_tool("stop", {})
+    elif action == "back_up_turn_left":
+        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
+        time.sleep(BACKUP_DURATION)
+        call_tool("stop", {})
+        call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
+        time.sleep(TURN_90_DUR)
+        call_tool("stop", {})
+    elif action == "back_up_turn_right":
+        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
+        time.sleep(BACKUP_DURATION)
+        call_tool("stop", {})
+        call_tool("execute_action", {"action_type": "turn", "angular_velocity": -TURN_VELOCITY})
         time.sleep(TURN_90_DUR)
         call_tool("stop", {})
     elif action == "stop":
@@ -485,7 +504,12 @@ def run_aria_agent(
                 print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
             except Exception as e:
                 print(f"[ARIA] VLM error: {e}")
-                llm_response_text = '{"action":"move_forward","reasoning":"VLM unavailable, exploring","target_found":false,"target_direction":"not_visible"}'
+                llm_response_text = json.dumps({
+                    "action": safe_action,
+                    "reasoning": f"VLM unavailable; {safe_reason}",
+                    "target_found": False,
+                    "target_direction": "not_visible",
+                })
         else:
             llm_response_text = json.dumps({
                 "action": safe_action,
@@ -497,10 +521,10 @@ def run_aria_agent(
         # === PARSE LLM RESPONSE ===
         parsed = _extract_json(llm_response_text)
         if parsed is None:
-            print("[ARIA] JSON parse failed, defaulting to move_forward")
+            print("[ARIA] JSON parse failed, defaulting to sensor-safe action")
             parsed = {
-                "action": "move_forward",
-                "reasoning": "parse error",
+                "action": safe_action,
+                "reasoning": f"VLM parse error; {safe_reason}",
                 "target_found": False,
                 "target_direction": "not_visible",
             }
@@ -515,14 +539,14 @@ def run_aria_agent(
         target_direction = parsed.get("target_direction", "not_visible")
         target_bbox = parsed.get("target_bbox")
 
-        valid_actions = {"move_forward", "turn_left_90", "turn_right_90", "turn_around", "back_up", "back_up_turn", "stop"}
+        valid_actions = {"move_forward", "turn_left_90", "turn_right_90", "turn_around", "back_up", "back_up_turn", "back_up_turn_left", "back_up_turn_right", "stop"}
         if action not in valid_actions:
             action = "move_forward"
 
         # === SENSOR-FIRST SAFETY OVERRIDE ===
         if proximity_scan.get("critical") or (white_wall_view and front_max_proximity > OBSTACLE_THRESH * 0.7):
             print(f"[ARIA] Critical safety override: max={proximity_scan.get('max', 0):.0f}, backing out")
-            action = "back_up_turn"
+            action = safe_action if str(safe_action).startswith("back_up_turn") else "back_up_turn_left"
             reasoning = f"[critical safety override] {safe_reason}; was:{reasoning}"
         elif action == "move_forward" and front_blocked:
             print(f"[ARIA] Safety override: front blocked (front={front_max_proximity:.0f}), forcing {safe_action}")
