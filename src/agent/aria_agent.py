@@ -17,6 +17,7 @@ import numpy as np
 # === Project ===
 from src.agent.environment_graph import get_environment_graph
 from src.agent.exploration_agent import ExplorationPlanner, RoomMapper
+from src.agent.intelligent_decision_maker import IntelligentDecisionMaker
 from src.common.config import (
     OLLAMA_BASE_URL,
     OLLAMA_MODEL,
@@ -406,6 +407,10 @@ def run_aria_agent(
     
     # Initialize exploration planner
     explorer = ExplorationPlanner(goal, target)
+    
+    # Initialize intelligent decision maker
+    decision_maker = IntelligentDecisionMaker()
+    decision_maker.set_target(target)
 
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen_so_far: List[str] = []
@@ -678,6 +683,23 @@ Choose next action:"""
             if action in {"move_forward", "back_up"}:
                 stuck_steps = 0
                 last_successful_action = action
+        
+        # === INTELLIGENT DECISION MAKER: Override with semantic understanding ===
+        # Use decision maker only when LLM is unsure or stuck
+        if stuck_steps > 0 or llm_target_conf < 0.5:
+            intelligent_decision = decision_maker.decide_action(
+                proximity_front=front_max_proximity,
+                vision_text=vision_description,
+                current_heading=heading_deg,
+                is_stuck=is_stuck,
+                stuck_count=stuck_steps
+            )
+            
+            # Override action if we're stuck or uncertain
+            if is_stuck or llm_target_conf < 0.5:
+                action = intelligent_decision["action"]
+                reasoning = f"[intelligent-override] {intelligent_decision['reasoning']}"
+                print(f"[ARIA] Intelligence Override: {reasoning}")
 
         # === TARGET DETECTION (YOLO only) ===
         vlm_confident_found = (
