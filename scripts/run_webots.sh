@@ -1,43 +1,83 @@
 #!/usr/bin/env bash
-# Helper to remind WSL users how to start Webots (which is a Windows GUI app).
-#
-# Webots must be launched from Windows PowerShell — not from WSL — because
-# WSL cannot create a process in the Windows interactive desktop session.
-#
-# Usage (from this WSL shell):
-#   powershell.exe -ExecutionPolicy Bypass -File "$(wslpath -w "$( cd "$(dirname "$0")/.." && pwd )/scripts/run_webots.ps1")"
-#
-# Or open a Windows PowerShell window and run:
-#   cd E:\Leiden\Year-1\Sem-2\ENV\Robotics\Robotics_ARIA
-#   .\scripts\run_webots.ps1
+# ARIA Webots Launcher - Cross-platform (macOS/Linux/WSL2)
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PS1_WIN="$(wslpath -w "$ROOT/scripts/run_webots.ps1")"
 
-# Determine the Windows host IP so the user knows what to put in .env
-WINDOWS_HOST="$(ip route show default 2>/dev/null | awk '/via/{print $3; exit}')"
-WINDOWS_HOST="${WINDOWS_HOST:-172.20.128.1}"
+# Detect OS and platform
+OS_TYPE=$(uname -s)
+IN_WSL=false
+
+# Check if running in WSL2
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  IN_WSL=true
+fi
 
 echo ""
-echo "=== Webots must be launched from Windows PowerShell, not WSL ==="
-echo ""
-echo "Option 1 — run from THIS WSL terminal (launches PowerShell for you):"
-echo "  powershell.exe -ExecutionPolicy Bypass -File \"$PS1_WIN\""
-echo ""
-echo "Option 2 — open a Windows PowerShell window and run:"
-echo "  cd $(wslpath -w "$ROOT")"
-echo "  .\\scripts\\run_webots.ps1"
-echo ""
-echo "After Webots opens, make sure your .env contains:"
-echo "  WEBOTS_HOST=$WINDOWS_HOST"
+echo "╔════════════════════════════════════════════════════════════╗"
+echo "║              ARIA Webots Launcher                         ║"
+echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
 
-# Offer to launch PowerShell automatically
-read -rp "Launch Webots now via powershell.exe? [Y/n] " REPLY
-REPLY="${REPLY:-Y}"
-if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-  echo "Launching..."
+if [[ "$IN_WSL" == true ]]; then
+  # WSL2 - Launch via PowerShell
+  echo "Platform: WSL2 (Windows Subsystem for Linux)"
+  echo ""
+  PS1_WIN="$(wslpath -w "$ROOT/scripts/run_webots.ps1")"
+  WINDOWS_HOST="$(ip route show default 2>/dev/null | awk '/via/{print $3; exit}' || echo '172.20.128.1')"
+  
+  echo "Launching Webots via Windows PowerShell..."
   powershell.exe -ExecutionPolicy Bypass -File "$PS1_WIN"
+  
+elif [[ "$OS_TYPE" == "Darwin" ]]; then
+  # macOS
+  echo "Platform: macOS"
+  echo "Launching Webots..."
+  
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/complete_apartment.wbt}"
+  export WEBOTS_WORLD
+  
+  open -a Webots "$WEBOTS_WORLD" || {
+    echo "Error: Webots not found. Install from https://cyberbotics.com"
+    exit 1
+  }
+  
+  echo ""
+  echo "✓ Webots opened with: $WEBOTS_WORLD"
+  echo ""
+  echo "Next steps:"
+  echo "  1. Wait for Webots to fully load (10 seconds)"
+  echo "  2. Click the GREEN PLAY button ▶️ in the toolbar"
+  echo "  3. In a new terminal:"
+  echo "     cd $ROOT"
+  echo "     uv run python -m src.ui.server"
+  echo "  4. Open browser: http://localhost:8080"
+  echo ""
+  
+elif [[ "$OS_TYPE" == "Linux" ]]; then
+  # Linux (native)
+  echo "Platform: Linux"
+  echo "Launching Webots..."
+  
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/complete_apartment.wbt}"
+  export WEBOTS_WORLD
+  
+  webots "$WEBOTS_WORLD" > /tmp/webots.log 2>&1 &
+  WEBOTS_PID=$!
+  
+  echo "✓ Webots started (PID: $WEBOTS_PID)"
+  echo ""
+  echo "Next steps:"
+  echo "  1. Wait for Webots to fully load (10 seconds)"
+  echo "  2. Click the GREEN PLAY button ▶️ in the toolbar"
+  echo "  3. In a new terminal:"
+  echo "     cd $ROOT"
+  echo "     uv run python -m src.ui.server"
+  echo "  4. Open browser: http://localhost:8080"
+  echo ""
+  
+else
+  echo "Error: Unsupported OS: $OS_TYPE"
+  exit 1
 fi
