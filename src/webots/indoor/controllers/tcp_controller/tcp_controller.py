@@ -138,7 +138,7 @@ class WebotsRobotServer:
     # State / actions
     # ------------------------------------------------------------------
 
-    def get_state(self, include_camera: bool = True) -> Dict[str, Any]:
+    def get_state(self, include_camera: bool = False) -> Dict[str, Any]:
         state: Dict[str, Any] = {
             "timestamp": self.robot.getTime(),
             "position": None,
@@ -169,10 +169,31 @@ class WebotsRobotServer:
             if include_camera and self.camera:
                 img = self.camera.getImage()
                 if img:
+                    width = int(self.camera.getWidth())
+                    height = int(self.camera.getHeight())
+                    # Large worlds may use high-res cameras (e.g. 1080x920 in
+                    # complete_apartment.wbt). Raw BGRA at that size is ~4 MB
+                    # before base64 and can make the TCP client time out or
+                    # drop the connection. Keep the wire format unchanged but
+                    # downsample to a connection-safe preview frame.
+                    max_dim = 320
+                    stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
+                    if stride > 1:
+                        raw = bytes(img)
+                        row_bytes = width * 4
+                        small = bytearray()
+                        for y in range(0, height, stride):
+                            row_start = y * row_bytes
+                            for x in range(0, width, stride):
+                                i = row_start + x * 4
+                                small.extend(raw[i:i + 4])
+                        img = bytes(small)
+                        width = (width + stride - 1) // stride
+                        height = (height + stride - 1) // stride
                     state["camera"] = {
                         "encoding": "bgra8_base64",
-                        "width": int(self.camera.getWidth()),
-                        "height": int(self.camera.getHeight()),
+                        "width": width,
+                        "height": height,
                         "data": base64.b64encode(img).decode("ascii"),
                     }
         except Exception as e:
@@ -208,7 +229,7 @@ class WebotsRobotServer:
     def handle_command(self, cmd: Dict[str, Any]) -> Dict[str, Any]:
         command = cmd.get("cmd", "")
         if command == "get_state":
-            return self.get_state(include_camera=cmd.get("include_camera", True))
+            return self.get_state(include_camera=cmd.get("include_camera", False))
         elif command == "execute":
             return self.execute_action(cmd.get("action", {}))
         elif command == "stop":

@@ -136,7 +136,7 @@ class WebotsRobotServer:
         except Exception as e:
             print(f"[WARN] Sensor setup failed: {e}")
 
-    def get_robot_state(self, include_camera: bool = True) -> Dict[str, Any]:
+    def get_robot_state(self, include_camera: bool = False) -> Dict[str, Any]:
         """Return current sensor readings."""
         state = {
             "timestamp": self.robot.getTime(),
@@ -187,10 +187,29 @@ class WebotsRobotServer:
             try:
                 image = self.camera.getImage()
                 if image:
+                    width = int(self.camera.getWidth())
+                    height = int(self.camera.getHeight())
+                    # High-res camera frames can exceed 5 MB once base64
+                    # encoded. Downsample raw BGRA to keep TCP responses small
+                    # and avoid client timeouts/disconnects.
+                    max_dim = 320
+                    stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
+                    if stride > 1:
+                        raw = bytes(image)
+                        row_bytes = width * 4
+                        small = bytearray()
+                        for y in range(0, height, stride):
+                            row_start = y * row_bytes
+                            for x in range(0, width, stride):
+                                i = row_start + x * 4
+                                small.extend(raw[i:i + 4])
+                        image = bytes(small)
+                        width = (width + stride - 1) // stride
+                        height = (height + stride - 1) // stride
                     state["camera"] = {
                         "encoding": "bgra8_base64",
-                        "width": int(self.camera.getWidth()),
-                        "height": int(self.camera.getHeight()),
+                        "width": width,
+                        "height": height,
                         "data": base64.b64encode(image).decode("ascii"),
                     }
             except Exception as e:
@@ -242,7 +261,7 @@ class WebotsRobotServer:
         command = cmd.get("cmd", "")
 
         if command == "get_state":
-            include_camera = cmd.get("include_camera", True)
+            include_camera = cmd.get("include_camera", False)
             return self.get_robot_state(include_camera=include_camera)
         elif command == "execute":
             action = cmd.get("action", {})
