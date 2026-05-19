@@ -185,29 +185,111 @@ class WebotsRobotServer:
         return state
 
     def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a robot action WITH motor persistence.
+        
+        CRITICAL FIX: Motor commands must be followed by robot.step() calls
+        to actually execute in the physics simulation. The original code set
+        motor velocity but never stepped the simulation, so motors never moved.
+        
+        Motor commands persist for ACTION_DURATION_STEPS simulation steps.
+        """
         atype = action.get("type", "stop")
         params = action.get("params", {})
+        
+        # How long motor commands should persist (in simulation steps)
+        # At 32ms timestep, 10 steps = 320ms of motor action
+        ACTION_DURATION_STEPS = 10
+        
         try:
+            import math
+            
+            start_pos = None
+            start_heading = None
+            motor_left_vel = 0.0
+            motor_right_vel = 0.0
+            
             if atype == "move":
                 v = float(params.get("velocity", 4.0))
-                if self.left_motor and self.right_motor:
-                    self.left_motor.setVelocity(v)
-                    self.right_motor.setVelocity(v)
-                return {"status": "ok", "action": atype, "velocity": v}
+                motor_left_vel = v
+                motor_right_vel = v
+                # Record starting state for feedback
+                try:
+                    if self.gps:
+                        start_pos = list(self.gps.getValues()[:2])
+                except:
+                    pass
+                    
             elif atype == "turn":
                 av = float(params.get("angular_velocity", 0.5))
-                if self.left_motor and self.right_motor:
-                    self.left_motor.setVelocity(-av)
-                    self.right_motor.setVelocity(av)
-                return {"status": "ok", "action": atype, "angular_velocity": av}
+                motor_left_vel = -av
+                motor_right_vel = av
+                # Record starting orientation for feedback
+                try:
+                    if self.compass:
+                        start_heading = list(self.compass.getValues())
+                except:
+                    pass
+                    
             elif atype == "stop":
-                if self.left_motor and self.right_motor:
-                    self.left_motor.setVelocity(0.0)
-                    self.right_motor.setVelocity(0.0)
-                return {"status": "ok", "action": "stop"}
+                motor_left_vel = 0.0
+                motor_right_vel = 0.0
             else:
                 return {"status": "error", "message": f"Unknown action: {atype}"}
+            
+            # Set motor velocities
+            if self.left_motor and self.right_motor:
+                self.left_motor.setVelocity(motor_left_vel)
+                self.right_motor.setVelocity(motor_right_vel)
+            else:
+                return {"status": "error", "message": "Motors not initialized"}
+            
+            # CRITICAL: Step the simulation to actually execute the motor command
+            # This is what was MISSING in the original code!
+            # Without these steps, the motor velocity is set but never applied.
+            step_count = 0
+            while step_count < ACTION_DURATION_STEPS:
+                if self.robot.step(self.timestep) == -1:
+                    break  # Simulation ended
+                step_count += 1
+            
+            # Record ending state for feedback
+            end_pos = None
+            end_heading = None
+            try:
+                if self.gps:
+                    end_pos = list(self.gps.getValues()[:2])
+            except:
+                pass
+            try:
+                if self.compass:
+                    end_heading = list(self.compass.getValues())
+            except:
+                pass
+            
+            # Build response with movement feedback
+            response = {"status": "ok", "action": atype, "duration_steps": step_count}
+            if start_pos and end_pos:
+                response["start_position"] = start_pos
+                response["end_position"] = end_pos
+                # Calculate distance traveled
+                dx = end_pos[0] - start_pos[0]
+                dy = end_pos[1] - start_pos[1]
+                distance = math.sqrt(dx*dx + dy*dy)
+                response["distance_traveled"] = distance
+            if start_heading and end_heading:
+                response["start_heading"] = start_heading
+                response["end_heading"] = end_heading
+                
+            if atype == "move":
+                response["velocity"] = motor_left_vel
+            elif atype == "turn":
+                response["angular_velocity"] = motor_left_vel
+                
+            return response
+            
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return {"status": "error", "message": str(e)}
 
     def handle_command(self, cmd: Dict[str, Any]) -> Dict[str, Any]:
