@@ -45,6 +45,19 @@ TURN_VELOCITY = 1.5
 OBSTACLE_THRESH = 600
 CRITICAL_OBSTACLE_THRESH = 950  # Very close collision (wall right in front)
 
+# === Global Stop Signal ===
+_STOP_SIGNAL = False
+
+def set_stop_signal(value: bool) -> None:
+    """Set the global stop signal."""
+    global _STOP_SIGNAL
+    _STOP_SIGNAL = value
+
+def get_stop_signal() -> bool:
+    """Get the current stop signal state."""
+    return _STOP_SIGNAL
+
+
 # === Target Keyword Map ===
 _TARGET_KEYWORDS: Dict[str, str] = {
     "kitchen": "kitchen",
@@ -426,6 +439,13 @@ def run_aria_agent(
     _emit(event_callback, {"type": "start", "step": 0, "goal": goal})
 
     for step in range(1, max_steps + 1):
+        # Check for stop signal
+        if get_stop_signal():
+            print(f"\n[ARIA] STOP SIGNAL RECEIVED - Stopping at step {step}")
+            _execute_motion("stop")
+            call_tool("stop", {})
+            break
+        
         cycle_start = time.time()
         state.step_count = step
 

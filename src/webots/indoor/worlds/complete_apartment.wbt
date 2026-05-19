@@ -2443,6 +2443,7 @@ Pioneer3dx {
   extensionSlot [
     Camera {
       translation 0.17 0 0.17
+      rotation 0 1 0 3.14159
       fieldOfView 1.8
       width 1080
       height 920

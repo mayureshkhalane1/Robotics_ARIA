@@ -146,7 +146,11 @@ class ConfidenceScorer:
                       proximity_front: float, 
                       vision_text: str,
                       is_doorway: bool = False) -> ObstacleConfidence:
-        """Score how confident we are there's an obstacle."""
+        """Score how confident we are there's an obstacle.
+        
+        Note: In Webots, proximity sensor returns 0 for "no obstacle" 
+        and increases with distance (up to 1000+ for far walls).
+        """
         
         # Record history
         self.sensor_history.append(proximity_front)
@@ -155,19 +159,22 @@ class ConfidenceScorer:
         
         # If vision says "living room ahead" or "doorway", lower confidence
         vision_lower = vision_text.lower()
-        semantic_keywords = ["room ahead", "doorway", "open", "entrance", "passage"]
+        semantic_keywords = ["room ahead", "doorway", "open", "entrance", "passage", "hallway", "staircase"]
         has_semantic_signal = any(kw in vision_lower for kw in semantic_keywords)
         
-        # Sensor-only scoring (relaxed thresholds)
-        if proximity_front < 300:  # Very close = obstacle
+        # Sensor-only scoring (RELAXED - Webots proximity is inverse!)
+        # proximity=0 means CLEAR PATH, proximity>900 means far wall ahead
+        if proximity_front == 0:  # Clear path ahead
+            confidence = ObstacleConfidence.NO_OBSTACLE
+        elif proximity_front < 250:  # Very close obstacle
             confidence = ObstacleConfidence.CRITICAL
-        elif proximity_front < 500:  # Close = likely obstacle
+        elif proximity_front < 400:  # Close obstacle
             confidence = ObstacleConfidence.HIGH
-        elif proximity_front < 700:  # Medium = uncertain
+        elif proximity_front < 600:  # Medium distance
             confidence = ObstacleConfidence.MEDIUM
-        elif proximity_front < 900:  # Far = low confidence
+        elif proximity_front < 800:  # Far obstacle
             confidence = ObstacleConfidence.LOW
-        else:  # Very far = probably wall way ahead
+        else:  # Very far (probably wall way ahead or open space)
             confidence = ObstacleConfidence.NO_OBSTACLE
         
         # Adjust if we have semantic signal

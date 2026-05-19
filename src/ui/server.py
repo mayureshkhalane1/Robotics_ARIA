@@ -15,7 +15,7 @@ from aiohttp import web
 from src.agent.graph import run_reactive_agent
 from src.agent.vision_agent import run_vision_aware_agent
 from src.agent.smart_vision_agent import run_smart_vision_agent
-from src.agent.aria_agent import run_aria_agent
+from src.agent.aria_agent import run_aria_agent, set_stop_signal
 from src.common.config import OLLAMA_MODEL
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
@@ -77,6 +77,9 @@ async def set_goal(request: web.Request) -> web.Response:
     # Always use the configured local VLM; UI is read-only.
     model = OLLAMA_MODEL
     loop = asyncio.get_running_loop()
+    
+    # Reset stop signal for new task
+    set_stop_signal(False)
 
     if dashboard.current_task and not dashboard.current_task.done():
         dashboard.current_task.cancel()
@@ -131,6 +134,8 @@ async def set_goal(request: web.Request) -> web.Response:
 
 
 async def stop(_request: web.Request) -> web.Response:
+    """Stop the current agent task."""
+    set_stop_signal(True)
     if dashboard.current_task and not dashboard.current_task.done():
         dashboard.current_task.cancel()
     result = call_tool("stop", {})
