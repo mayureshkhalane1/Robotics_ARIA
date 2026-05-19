@@ -73,8 +73,9 @@ async def set_goal(request: web.Request) -> web.Response:
     body = await request.json()
     goal = body.get("goal", "explore safely")
     steps = int(body.get("steps", 50))
-    policy = body.get("policy", "vision")
-    model = body.get("model") or None
+    policy = body.get("policy", "aria")
+    # Always use the configured local VLM; UI is read-only.
+    model = OLLAMA_MODEL
     loop = asyncio.get_running_loop()
 
     if dashboard.current_task and not dashboard.current_task.done():
