@@ -176,7 +176,7 @@ class WebotsRobotServer:
                     # before base64 and can make the TCP client time out or
                     # drop the connection. Keep the wire format unchanged but
                     # downsample to a connection-safe preview frame.
-                    max_dim = 480
+                    max_dim = 256
                     stride = max(1, (max(width, height) + max_dim - 1) // max_dim)
                     if stride > 1:
                         raw = bytes(img)

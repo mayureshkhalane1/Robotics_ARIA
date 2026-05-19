@@ -56,7 +56,7 @@ if not _env_path.exists():
 # Webots Connection Configuration
 WEBOTS_PORT = int(os.getenv("WEBOTS_PORT", 19997))
 WEBOTS_SIM_SPEED = float(os.getenv("WEBOTS_SIM_SPEED", 0.1))
-WEBOTS_TIMEOUT = int(os.getenv("WEBOTS_TIMEOUT", 15))  # seconds
+WEBOTS_TIMEOUT = int(os.getenv("WEBOTS_TIMEOUT", 30))  # seconds
 
 # Agent Configuration
 MAX_STEPS = int(os.getenv("MAX_STEPS", 50))
