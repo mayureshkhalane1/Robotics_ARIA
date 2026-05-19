@@ -511,7 +511,7 @@ def run_aria_agent(
             "proximity_scan_180": proximity_scan,
             "white_wall_view": white_wall_view,
             "all_proximity_sensors": {k: round(v, 1) for k, v in proximity.items()},
-            "image_is_yolo_annotated": bool(sample_vision),
+            "image_is_yolo_annotated": bool(annotated_frame_bgr is not None),
             "vision_sample_interval_seconds": OLLAMA_VISION_SAMPLE_INTERVAL,
             "yolo_detections_all_classes": detection_dicts[:20],
             "objects_seen_so_far": objects_seen_so_far,
@@ -525,22 +525,25 @@ def run_aria_agent(
         try:
             # Step 1: Get image description from VISION model (llava-phi3)
             vision_description = ""
-            try:
-                vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
-                vision_description = _query_vision_model(
-                    jpeg_b64=jpeg_b64,
-                    user_prompt=vision_prompt,
-                )
-                print(f"[ARIA] Vision: {vision_description[:100]}...")
-                # Emit vision event to UI
-                _emit(event_callback, {
-                    "type": "vision",
-                    "step": step,
-                    "description": vision_description,
-                })
-            except Exception as e:
-                print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
-                vision_description = ""
+            if jpeg_b64:
+                try:
+                    vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
+                    vision_description = _query_vision_model(
+                        jpeg_b64=jpeg_b64,
+                        user_prompt=vision_prompt,
+                    )
+                    print(f"[ARIA] Vision: {vision_description[:100]}...")
+                    # Emit vision event to UI
+                    _emit(event_callback, {
+                        "type": "vision",
+                        "step": step,
+                        "description": vision_description,
+                    })
+                except Exception as e:
+                    print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
+                    vision_description = ""
+            else:
+                print("[ARIA] No image available for vision model")
             
             # Step 2: Use REASONING model to decide action
             user_prompt_dict["vision_description"] = vision_description
