@@ -70,6 +70,9 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3-vl:8b")
+OLLAMA_VISION_TIMEOUT = int(os.getenv("OLLAMA_VISION_TIMEOUT", 25))
+OLLAMA_VISION_NUM_PREDICT = int(os.getenv("OLLAMA_VISION_NUM_PREDICT", 96))
+OLLAMA_VISION_IMAGE_MAX_DIM = int(os.getenv("OLLAMA_VISION_IMAGE_MAX_DIM", 128))
 
 # Project Paths
 WEBOTS_WORLDS_PATH = PROJECT_ROOT / "src" / "webots" / "worlds"

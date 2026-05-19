@@ -16,7 +16,13 @@ import numpy as np
 
 # === Project ===
 from src.agent.environment_graph import get_environment_graph
-from src.common.config import OLLAMA_BASE_URL, OLLAMA_MODEL
+from src.common.config import (
+    OLLAMA_BASE_URL,
+    OLLAMA_MODEL,
+    OLLAMA_VISION_IMAGE_MAX_DIM,
+    OLLAMA_VISION_NUM_PREDICT,
+    OLLAMA_VISION_TIMEOUT,
+)
 from src.common.types import AgentState
 from src.mcp_server.server import call_tool
 from src.perception.camera import Frame, FrameMetadata, get_camera_manager
@@ -58,29 +64,18 @@ _GOAL_STOPWORDS = {
 }
 
 # === System Prompt ===
-_SYSTEM_PROMPT = """You are ARIA, an autonomous indoor navigation robot.
-Hardware: Pioneer 3-DX differential-drive robot.
-  - Wheel radius: 0.097 m, half-track: 0.1564 m
-  - Forward velocity 4.0 rad/s → ~0.388 m/s linear speed
-  - 90-degree turn at angular_velocity 1.5 rad/s takes ~1.7 s
-  - Proximity sensors: higher raw value = closer obstacle (blocked above 600)
+_SYSTEM_PROMPT = """You are ARIA, an autonomous indoor robot. Be fast.
 
 Available actions (use EXACTLY these strings):
-  move_forward   - Drive straight ahead ~0.97 m
-  turn_left_90   - Rotate 90° counter-clockwise (CCW)
-  turn_right_90  - Rotate 90° clockwise (CW)
-  turn_around    - Rotate 180°
-  stop           - Declare target found and halt
+move_forward, turn_left_90, turn_right_90, turn_around, stop
 
 Rules:
-  1. Never choose move_forward if front_blocked is true.
-  2. Use yolo_detections with class names, confidence, center, and bbox first.
-  3. If YOLO cannot detect the target class, inspect the image directly with vision.
-  4. Only set target_found=true when the requested target object is clearly visible, not merely mentioned in text.
-  5. Prefer unexplored directions; avoid re-visiting visited_positions_last_8 whenever possible.
-  6. If stuck (blocked on all recent steps), alternate turns to escape.
+1. Never move_forward if front_blocked=true.
+2. Use YOLO boxes first. If target visible in image but not YOLO, you may still report it.
+3. Only target_found=true if requested target is clearly visible now.
+4. If not visible, choose a search action.
 
-Respond ONLY with a single JSON object — no markdown fences, no extra text:
+Return ONLY compact JSON, no markdown, no thinking:
 {"action": "<action>", "reasoning": "<one sentence>", "target_found": <true|false>, "target_visible_confidence": <0.0-1.0>, "target_direction": "<left|right|center|not_visible>", "target_bbox": [x1,y1,x2,y2] or null}
 """
 
@@ -153,8 +148,13 @@ def _decode_camera_frame(camera_data: Dict[str, Any]) -> Optional[np.ndarray]:
         return None
 
 
-def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 85) -> Optional[str]:
+def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 65) -> Optional[str]:
     try:
+        h, w = frame_bgr.shape[:2]
+        max_dim = max(32, OLLAMA_VISION_IMAGE_MAX_DIM)
+        scale = min(1.0, max_dim / max(h, w))
+        if scale < 1.0:
+            frame_bgr = cv2.resize(frame_bgr, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         ok, buf = cv2.imencode(".jpg", frame_bgr, [cv2.IMWRITE_JPEG_QUALITY, quality])
         if not ok:
             return None
@@ -210,7 +210,12 @@ def _query_vlm(
             {"role": "system", "content": system_prompt},
             user_msg,
         ],
-        "options": {"temperature": temperature},
+        "options": {
+            "temperature": temperature,
+            "num_predict": OLLAMA_VISION_NUM_PREDICT,
+            "num_ctx": 2048,
+        },
+        "keep_alive": "10m",
     }
     req = urllib.request.Request(
         url,
@@ -218,7 +223,7 @@ def _query_vlm(
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=60) as resp:
+    with urllib.request.urlopen(req, timeout=OLLAMA_VISION_TIMEOUT) as resp:
         raw = json.loads(resp.read().decode("utf-8"))
     return raw.get("message", {}).get("content", "")
 
