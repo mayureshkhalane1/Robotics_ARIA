@@ -59,6 +59,19 @@
     </section>
     <section>
       <h2>Thinking and Commands</h2>
+      <div style="margin-bottom: 20px;">
+        <h3 style="margin: 0 0 8px; font-size: 13px; color: #a9b8d6;">Current Step</h3>
+        <div class="stat-line"><span>Step:</span><span id="currentStep">0/0</span></div>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Vision Analysis</h3>
+        <pre id="visionOutput" style="font-size: 11px; background: #0f1419; padding: 8px; border-radius: 8px; margin: 0; color: #7ea8d8;"></pre>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Reasoning</h3>
+        <pre id="reasoningOutput" style="font-size: 11px; background: #0f1419; padding: 8px; border-radius: 8px; margin: 0; color: #7ea8d8;"></pre>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Next Action</h3>
+        <div style="background: #1a2332; padding: 8px; border-radius: 8px; border-left: 3px solid #00ff00;">
+          <span id="nextAction" style="font-size: 13px; font-weight: 500; color: #00ff00;">--</span>
+        </div>
+      </div>
+      <h2>All Steps Log</h2>
       <div id="log"></div>
     </section>
   </main>
@@ -69,6 +82,10 @@
     const cameraImg = document.getElementById('cameraImg');
     const cameraStatus = document.getElementById('cameraStatus');
     const cameraStats = document.getElementById('cameraStats');
+    const visionOutput = document.getElementById('visionOutput');
+    const reasoningOutput = document.getElementById('reasoningOutput');
+    const nextAction = document.getElementById('nextAction');
+    const currentStep = document.getElementById('currentStep');
 
     function appendLog(event) {
       const item = document.createElement('div');
@@ -89,6 +106,16 @@
           if (clean.camera_frame) clean.camera_frame = 'frame received';
           if (clean.camera) clean.camera = 'frame received';
           stateEl.textContent = JSON.stringify(clean, null, 2);
+          if (event.robot_state.step) {
+            currentStep.textContent = `${event.robot_state.step}/${event.robot_state.max_steps || 100}`;
+          }
+        }
+        if (event.type === 'vision') {
+          visionOutput.textContent = event.description || event.vision_description || '';
+        }
+        if (event.type === 'reasoning') {
+          reasoningOutput.textContent = event.reasoning || '';
+          nextAction.textContent = event.action || '--';
         }
         appendLog(event);
       };

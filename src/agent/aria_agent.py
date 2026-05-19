@@ -532,6 +532,12 @@ def run_aria_agent(
                     user_prompt=vision_prompt,
                 )
                 print(f"[ARIA] Vision: {vision_description[:100]}...")
+                # Emit vision event to UI
+                _emit(event_callback, {
+                    "type": "vision",
+                    "step": step,
+                    "description": vision_description,
+                })
             except Exception as e:
                 print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
                 vision_description = ""
@@ -546,6 +552,15 @@ def run_aria_agent(
                     )
                     if llm_response_text.strip():
                         print(f"[ARIA] Reasoning: {llm_response_text[:200]}")
+                        # Emit reasoning event to UI
+                        parsed = _extract_json(llm_response_text)
+                        if parsed:
+                            _emit(event_callback, {
+                                "type": "reasoning",
+                                "step": step,
+                                "action": parsed.get("action", "unknown"),
+                                "reasoning": parsed.get("reasoning", ""),
+                            })
                         break
                 except Exception as e:
                     if attempt < max_vlm_retries - 1:
