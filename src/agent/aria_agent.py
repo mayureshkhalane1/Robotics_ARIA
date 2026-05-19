@@ -21,6 +21,7 @@ from src.common.config import (
     OLLAMA_MODEL,
     OLLAMA_VISION_IMAGE_MAX_DIM,
     OLLAMA_VISION_NUM_PREDICT,
+    OLLAMA_VISION_SAMPLE_INTERVAL,
     OLLAMA_VISION_TIMEOUT,
 )
 from src.common.types import AgentState
@@ -71,7 +72,7 @@ move_forward, turn_left_90, turn_right_90, turn_around, stop
 
 Rules:
 1. Never move_forward if front_blocked=true.
-2. Use YOLO boxes first. If target visible in image but not YOLO, you may still report it.
+2. The image is YOLO-annotated with boxes and class labels. Use those boxes first.
 3. Only target_found=true if requested target is clearly visible now.
 4. If not visible, choose a search action.
 
@@ -275,6 +276,7 @@ def run_aria_agent(
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen_so_far: List[str] = []
     visited_positions: List[str] = []
+    last_vision_sample_time = 0.0
 
     print(f"\n[ARIA] Goal: {goal}")
     print(f"[ARIA] Target: {target}")
@@ -330,12 +332,19 @@ def run_aria_agent(
         else:
             print("[ARIA] No camera frame this cycle")
 
-        # === YOLO DETECTION ===
+        sample_vision = (
+            frame_bgr is not None
+            and (step == 1 or (time.time() - last_vision_sample_time) >= OLLAMA_VISION_SAMPLE_INTERVAL)
+        )
+
+        # === SAMPLED YOLO DETECTION ===
         detections = []
         target_found_yolo = False
-        if frame_bgr is not None:
+        annotated_frame_bgr: Optional[np.ndarray] = frame_bgr
+        if sample_vision and frame_bgr is not None:
             try:
                 detections = detector.detect(frame_bgr)
+                annotated_frame_bgr = detector.visualize_detections(frame_bgr, detections)
                 detected_names = [d.class_name for d in detections]
                 for name in detected_names:
                     if name not in objects_seen_so_far:
@@ -351,17 +360,20 @@ def run_aria_agent(
                     print("  - none")
             except Exception as e:
                 print(f"[ARIA] YOLO error: {e}")
+        elif frame_bgr is not None:
+            print(f"[ARIA] Skipping YOLO/VLM sample; interval={OLLAMA_VISION_SAMPLE_INTERVAL:.1f}s")
 
         detection_dicts = [_detection_to_dict(d) for d in detections]
         yolo_str = json.dumps(detection_dicts[:20]) if detection_dicts else "[]"
 
-        # === VLM QUERY ===
+        # === VLM QUERY ON SAME SAMPLED, ANNOTATED IMAGE ===
         jpeg_b64: Optional[str] = None
         vlm_scene = "No image available."
-        if frame_bgr is not None:
-            jpeg_b64 = _frame_to_jpeg_b64(frame_bgr)
+        if sample_vision and annotated_frame_bgr is not None:
+            jpeg_b64 = _frame_to_jpeg_b64(annotated_frame_bgr)
 
-        _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
+        if sample_vision:
+            _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
 
         user_prompt_dict = {
             "step": step,
@@ -374,6 +386,8 @@ def run_aria_agent(
             "front_blocked": front_blocked,
             "front_max_proximity": round(front_max_proximity, 1),
             "all_proximity_sensors": {k: round(v, 1) for k, v in proximity.items()},
+            "image_is_yolo_annotated": bool(sample_vision),
+            "vision_sample_interval_seconds": OLLAMA_VISION_SAMPLE_INTERVAL,
             "yolo_detections_all_classes": detection_dicts[:20],
             "objects_seen_so_far": objects_seen_so_far,
             "visited_positions_last_8": visited_last_8,
@@ -382,17 +396,21 @@ def run_aria_agent(
         }
 
         llm_response_text = ""
-        try:
-            llm_response_text = _query_vlm(
-                model=model,
-                system_prompt=_SYSTEM_PROMPT,
-                user_prompt=json.dumps(user_prompt_dict),
-                jpeg_b64=jpeg_b64,
-            )
-            print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
-        except Exception as e:
-            print(f"[ARIA] VLM error: {e}")
-            llm_response_text = '{"action":"move_forward","reasoning":"VLM unavailable, exploring","target_found":false,"target_direction":"not_visible"}'
+        if sample_vision:
+            last_vision_sample_time = time.time()
+            try:
+                llm_response_text = _query_vlm(
+                    model=model,
+                    system_prompt=_SYSTEM_PROMPT,
+                    user_prompt=json.dumps(user_prompt_dict),
+                    jpeg_b64=jpeg_b64,
+                )
+                print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
+            except Exception as e:
+                print(f"[ARIA] VLM error: {e}")
+                llm_response_text = '{"action":"move_forward","reasoning":"VLM unavailable, exploring","target_found":false,"target_direction":"not_visible"}'
+        else:
+            llm_response_text = '{"action":"move_forward","reasoning":"Between 10s vision samples, continue exploring safely","target_found":false,"target_direction":"not_visible"}'
 
         # === PARSE LLM RESPONSE ===
         parsed = _extract_json(llm_response_text)
