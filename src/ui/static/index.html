@@ -31,7 +31,7 @@
     <strong>ARIA</strong>
     <input id="goal" value="find cup and approach it" />
     <select id="policy"><option value="aria" selected>aria (YOLO+VLM)</option><option value="smart_vision">smart vision (VLM)</option><option value="vision">vision</option><option value="reactive">reactive</option><option value="ollama">ollama</option></select>
-    <input id="model" value="llava-phi3 + qwen3:8b" readonly style="max-width: 200px; opacity: .7; cursor: not-allowed;" title="Vision: llava-phi3, Reasoning: qwen3:8b (locked)" />
+    <input id="model" value="llava-phi3:latest (vision + reasoning)" readonly style="max-width: 200px; opacity: .7; cursor: not-allowed;" title="Both vision and reasoning use llava-phi3" />
     <button id="run">Run</button>
     <button id="stop" class="stop">Stop</button>
     <span id="status" class="status">connecting</span>
