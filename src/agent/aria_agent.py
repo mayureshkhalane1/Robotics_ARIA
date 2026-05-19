@@ -70,19 +70,29 @@ _GOAL_STOPWORDS = {
 }
 
 # === System Prompt ===
-_SYSTEM_PROMPT = """You are ARIA, an autonomous indoor robot. Be fast.
+_SYSTEM_PROMPT = """You are ARIA, an autonomous robot navigating a furnished apartment with 2 bedrooms, living room, kitchen, and hallways.
 
-Available actions (use EXACTLY these strings):
-move_forward, turn_left_90, turn_right_90, turn_around, stop
-Emergency actions may be forced by safety code: back_up, back_up_turn.
+ENVIRONMENT: The apartment has multiple rooms and objects. You start at the center.
 
-Rules:
-1. Never move_forward if front_blocked=true.
-2. The image is YOLO-annotated with boxes and class labels. Use those boxes first.
-3. Only target_found=true if requested target is clearly visible now.
-4. If not visible, choose a search action.
+SENSING: 
+- Camera gives YOLO-annotated image with bounding boxes and class labels
+- 180° proximity sensors detect obstacles
+- You get heading angle, current position, visited locations
 
-Return ONLY one valid compact JSON object. No markdown. No thinking. No empty response:
+NAVIGATION:
+- Move by turning to face target, then move forward
+- If target visible: approach it, stop when very close
+- If target not visible: explore systematically (turn left/right to scan)
+
+ACTIONS (use EXACTLY these):
+move_forward, turn_left_90, turn_right_90, turn_around, stop, back_up, back_up_turn
+
+SAFETY RULES:
+1. NEVER move_forward if front_blocked=true
+2. If stuck (visited same spot repeatedly), try different direction
+3. White wall view = very close to wall, must backup
+
+RESPONSE FORMAT (compact JSON only, no markdown, no thinking):
 {"action": "<action>", "reasoning": "<one sentence>", "target_found": <true|false>, "target_visible_confidence": <0.0-1.0>, "target_direction": "<left|right|center|not_visible>", "target_bbox": [x1,y1,x2,y2] or null}
 """
 
@@ -527,7 +537,8 @@ def run_aria_agent(
             vision_description = ""
             if jpeg_b64:
                 try:
-                    vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
+                    vision_prompt = f"""Analyze this YOLO-annotated apartment image. Be VERY concise (2-3 sentences max).
+Answer: 1) What room is this? 2) What objects are visible? 3) Where is the {target}? (visible/not visible)"""
                     vision_description = _query_vision_model(
                         jpeg_b64=jpeg_b64,
                         user_prompt=vision_prompt,
@@ -680,6 +691,8 @@ def run_aria_agent(
                 "plan": reasoning,
                 "action": action,
                 "robot_state": {
+                    "step": step,
+                    "max_steps": max_steps,
                     "position": position,
                     "heading_degrees": heading_deg,
                     "front_blocked": front_blocked,
