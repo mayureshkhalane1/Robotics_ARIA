@@ -396,7 +396,7 @@ def run_aria_agent(
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen_so_far: List[str] = []
     visited_positions: List[str] = []
-    last_vision_sample_time = 0.0
+
 
     print(f"\n[ARIA] Goal: {goal}")
     print(f"[ARIA] Target: {target}")
@@ -463,16 +463,11 @@ def run_aria_agent(
             f"blocked={front_blocked} critical={proximity_scan.get('critical', False)} white_wall={white_wall_view}"
         )
 
-        sample_vision = (
-            frame_bgr is not None
-            and (step == 1 or (time.time() - last_vision_sample_time) >= OLLAMA_VISION_SAMPLE_INTERVAL)
-        )
-
-        # === SAMPLED YOLO DETECTION ===
+        # === YOLO DETECTION ON EVERY FRAME ===
         detections = []
         target_found_yolo = False
         annotated_frame_bgr: Optional[np.ndarray] = frame_bgr
-        if sample_vision and frame_bgr is not None:
+        if frame_bgr is not None:
             try:
                 detections = detector.detect(frame_bgr)
                 annotated_frame_bgr = detector.visualize_detections(frame_bgr, detections)
@@ -491,20 +486,17 @@ def run_aria_agent(
                     print("  - none")
             except Exception as e:
                 print(f"[ARIA] YOLO error: {e}")
-        elif frame_bgr is not None:
-            print(f"[ARIA] Skipping YOLO/VLM sample; interval={OLLAMA_VISION_SAMPLE_INTERVAL:.1f}s")
 
         detection_dicts = [_detection_to_dict(d) for d in detections]
         yolo_str = json.dumps(detection_dicts[:20]) if detection_dicts else "[]"
 
-        # === VLM QUERY ON SAME SAMPLED, ANNOTATED IMAGE ===
+        # === VLM QUERY ON ANNOTATED IMAGE (EVERY FRAME) ===
         jpeg_b64: Optional[str] = None
         vlm_scene = "No image available."
-        if sample_vision and annotated_frame_bgr is not None:
+        if annotated_frame_bgr is not None:
             jpeg_b64 = _frame_to_jpeg_b64(annotated_frame_bgr)
 
-        if sample_vision:
-            _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
+        _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
 
         user_prompt_dict = {
             "step": step,
@@ -529,52 +521,43 @@ def run_aria_agent(
         }
 
         llm_response_text = ""
-        if sample_vision:
-            last_vision_sample_time = time.time()
-            max_vlm_retries = 2
+        max_vlm_retries = 2
+        try:
+            # Step 1: Get image description from VISION model (llava-phi3)
+            vision_description = ""
             try:
-                # Step 1: Get image description from VISION model (llava-phi3)
-                vision_description = ""
-                try:
-                    vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
-                    vision_description = _query_vision_model(
-                        jpeg_b64=jpeg_b64,
-                        user_prompt=vision_prompt,
-                    )
-                    print(f"[ARIA] Vision: {vision_description[:100]}...")
-                except Exception as e:
-                    print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
-                    vision_description = ""
-                
-                # Step 2: Use REASONING model (qwen3:8b) to decide action
-                user_prompt_dict["vision_description"] = vision_description
-                for attempt in range(max_vlm_retries):
-                    try:
-                        llm_response_text = _query_reasoning_model(
-                            system_prompt=_SYSTEM_PROMPT,
-                            user_prompt=json.dumps(user_prompt_dict),
-                        )
-                        if llm_response_text.strip():
-                            print(f"[ARIA] Reasoning: {llm_response_text[:200]}")
-                            break
-                    except Exception as e:
-                        if attempt < max_vlm_retries - 1:
-                            print(f"[ARIA] Reasoning attempt {attempt+1}/{max_vlm_retries} failed, retrying: {e}")
-                            time.sleep(0.5)
-                        else:
-                            raise
+                vision_prompt = f"Describe what you see in this image. Focus on: {target}. Be concise."
+                vision_description = _query_vision_model(
+                    jpeg_b64=jpeg_b64,
+                    user_prompt=vision_prompt,
+                )
+                print(f"[ARIA] Vision: {vision_description[:100]}...")
             except Exception as e:
-                print(f"[ARIA] VLM error (using sensor-safe fallback): {type(e).__name__}: {e}")
-                llm_response_text = json.dumps({
-                    "action": safe_action,
-                    "reasoning": f"VLM unavailable; {safe_reason}",
-                    "target_found": False,
-                    "target_direction": "not_visible",
-                })
-        else:
+                print(f"[ARIA] Vision model failed: {type(e).__name__}: {e}")
+                vision_description = ""
+            
+            # Step 2: Use REASONING model to decide action
+            user_prompt_dict["vision_description"] = vision_description
+            for attempt in range(max_vlm_retries):
+                try:
+                    llm_response_text = _query_reasoning_model(
+                        system_prompt=_SYSTEM_PROMPT,
+                        user_prompt=json.dumps(user_prompt_dict),
+                    )
+                    if llm_response_text.strip():
+                        print(f"[ARIA] Reasoning: {llm_response_text[:200]}")
+                        break
+                except Exception as e:
+                    if attempt < max_vlm_retries - 1:
+                        print(f"[ARIA] Reasoning attempt {attempt+1}/{max_vlm_retries} failed, retrying: {e}")
+                        time.sleep(0.5)
+                    else:
+                        raise
+        except Exception as e:
+            print(f"[ARIA] VLM error (using sensor-safe fallback): {type(e).__name__}: {e}")
             llm_response_text = json.dumps({
                 "action": safe_action,
-                "reasoning": safe_reason,
+                "reasoning": f"VLM unavailable; {safe_reason}",
                 "target_found": False,
                 "target_direction": "not_visible",
             })
