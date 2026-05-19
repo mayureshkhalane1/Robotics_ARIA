@@ -30,8 +30,8 @@
   <header>
     <strong>ARIA</strong>
     <input id="goal" value="find cup and approach it" />
-    <select id="policy"><option value="smart_vision" selected>smart vision (VLM)</option><option value="vision">vision</option><option value="reactive">reactive</option><option value="ollama">ollama</option><option value="langgraph">langgraph</option></select>
-    <input id="model" value="qwen3:8b" style="max-width: 140px" />
+    <select id="policy"><option value="aria" selected>aria (YOLO+VLM)</option><option value="smart_vision">smart vision (VLM)</option><option value="vision">vision</option><option value="reactive">reactive</option><option value="ollama">ollama</option><option value="langgraph">langgraph</option></select>
+    <input id="model" value="qwen2.5-vl:3b" readonly title="VLM model is fixed in this build" style="max-width: 160px; opacity: .7" />
     <button id="run">Run</button>
     <button id="stop" class="stop">Stop</button>
     <span id="status" class="status">connecting</span>
@@ -84,6 +84,22 @@
       ws.onclose = () => { statusEl.textContent = 'disconnected'; setTimeout(connectMainWS, 1000); };
       ws.onmessage = (msg) => {
         const event = JSON.parse(msg.data);
+        if (event.type === 'camera' && event.data) {
+          cameraImg.src = `data:image/jpeg;base64,${event.data}`;
+          cameraImg.style.display = 'block';
+          cameraStatus.textContent = `${event.width}x${event.height}${event.annotated ? ' (YOLO annotated)' : ''}`;
+          if (event.detections && event.detections.length > 0) {
+            let statsHtml = '<strong>Detected Objects:</strong><br>';
+            for (const det of event.detections) {
+              const conf = typeof det.confidence === 'number' ? (det.confidence*100).toFixed(0) : '?';
+              statsHtml += `&bull; ${det.class_name} (${conf}%)<br>`;
+            }
+            cameraStats.innerHTML = statsHtml;
+          } else {
+            cameraStats.innerHTML = '<em>No objects detected</em>';
+          }
+          return;
+        }
         if (event.robot_state) {
           const clean = {...event.robot_state};
           if (clean.camera_frame) clean.camera_frame = 'frame received';
@@ -155,7 +171,9 @@
     document.getElementById('stop').onclick = async () => fetch('/stop', {method:'POST'});
     
     connectMainWS();
-    connectCameraWS();
+    // NOTE: /camera WebSocket disabled: the ARIA agent now streams the same
+    // YOLO-annotated frame it gives to the VLM directly over /ws to avoid
+    // contending with the agent for the single Webots TCP slot.
   </script>
 </body>
 </html>

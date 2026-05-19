@@ -460,6 +460,32 @@ def run_aria_agent(
         detection_dicts = [_detection_to_dict(d) for d in detections]
         yolo_str = json.dumps(detection_dicts[:20]) if detection_dicts else "[]"
 
+        # Encode the same annotated frame for the UI (even when not sampling VLM,
+        # so users always see the most recent camera view).
+        ui_frame_b64: Optional[str] = None
+        ui_frame_source = annotated_frame_bgr if annotated_frame_bgr is not None else frame_bgr
+        if ui_frame_source is not None:
+            try:
+                _ok, _buf = cv2.imencode(".jpg", ui_frame_source, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                if _ok:
+                    ui_frame_b64 = base64.b64encode(_buf.tobytes()).decode("utf-8")
+            except Exception as _e:
+                print(f"[ARIA] UI frame encode error: {_e}")
+
+        if ui_frame_b64 is not None:
+            _emit(
+                event_callback,
+                {
+                    "type": "camera",
+                    "step": step,
+                    "data": ui_frame_b64,
+                    "width": int(ui_frame_source.shape[1]),
+                    "height": int(ui_frame_source.shape[0]),
+                    "annotated": bool(sample_vision and detection_dicts),
+                    "detections": detection_dicts[:20],
+                },
+            )
+
         # === VLM QUERY ON SAME SAMPLED, ANNOTATED IMAGE ===
         jpeg_b64: Optional[str] = None
         vlm_scene = "No image available."
