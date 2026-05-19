@@ -35,7 +35,7 @@ elif [[ "$OS_TYPE" == "Darwin" ]]; then
   echo "Platform: macOS"
   echo "Launching Webots..."
   
-  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/complete_apartment.wbt}"
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/indoor/worlds/complete_apartment.wbt}"
   export WEBOTS_WORLD
   
   open -a Webots "$WEBOTS_WORLD" || {
@@ -60,7 +60,7 @@ elif [[ "$OS_TYPE" == "Linux" ]]; then
   echo "Platform: Linux"
   echo "Launching Webots..."
   
-  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/complete_apartment.wbt}"
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/indoor/worlds/complete_apartment.wbt}"
   export WEBOTS_WORLD
   
   webots "$WEBOTS_WORLD" > /tmp/webots.log 2>&1 &
