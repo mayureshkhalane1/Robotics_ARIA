@@ -410,6 +410,8 @@ def run_aria_agent(
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen_so_far: List[str] = []
     visited_positions: List[str] = []
+    stuck_steps = 0  # Counter for consecutive stuck detections
+    last_successful_action = "move_forward"  # Track last action that worked
 
 
     print(f"\n[ARIA] Goal: {goal}")
@@ -458,6 +460,7 @@ def run_aria_agent(
         is_stuck = explorer.detect_stuck((position[0], position[1]))
         if is_stuck:
             print(f"[ARIA] STUCK DETECTION: Repeating position {pos_key}, need to change strategy")
+        
         visited_last_8 = visited_positions[-8:]
 
         # === DECODE CAMERA ===
@@ -653,6 +656,28 @@ Choose next action:"""
             print(f"[ARIA] Safety override: front blocked (front={front_max_proximity:.0f}), forcing {safe_action}")
             action = safe_action if safe_action != "move_forward" else proximity_scan.get("clearer_turn", "turn_left_90")
             reasoning = f"[sensor safety override] {safe_reason}; was:{reasoning}"
+        
+        # === STUCK HANDLING: FORCE INTELLIGENT TURNS ===
+        if is_stuck:
+            stuck_steps += 1
+            print(f"[ARIA] STUCK #{stuck_steps}: Force exploring different direction")
+            
+            # Rotate strategy: if front is blocked or we keep moving forward, force turns
+            if stuck_steps == 1:
+                action = "turn_left_90"
+                reasoning = "[stuck-escape-1] Force left turn to explore"
+            elif stuck_steps == 2:
+                action = "turn_right_90"
+                reasoning = "[stuck-escape-2] Force right turn to explore"
+            elif stuck_steps >= 3:
+                action = "back_up"
+                reasoning = "[stuck-escape-3] Back up to get unstuck"
+                stuck_steps = 0  # Reset after attempting escape
+        else:
+            # Reset stuck counter when not stuck
+            if action in {"move_forward", "back_up"}:
+                stuck_steps = 0
+                last_successful_action = action
 
         # === TARGET DETECTION (YOLO only) ===
         vlm_confident_found = (
