@@ -38,8 +38,8 @@ BACKUP_VELOCITY = -2.0
 TURN_90_DUR = 1.7
 TURN_180_DUR = 3.4
 TURN_VELOCITY = 1.5
-OBSTACLE_THRESH = 450
-CRITICAL_OBSTACLE_THRESH = 850
+OBSTACLE_THRESH = 600
+CRITICAL_OBSTACLE_THRESH = 950  # Very close collision (wall right in front)
 
 # === Target Keyword Map ===
 _TARGET_KEYWORDS: Dict[str, str] = {
@@ -494,16 +494,27 @@ def run_aria_agent(
         llm_response_text = ""
         if sample_vision:
             last_vision_sample_time = time.time()
+            max_vlm_retries = 2
             try:
-                llm_response_text = _query_vlm(
-                    model=model,
-                    system_prompt=_SYSTEM_PROMPT,
-                    user_prompt=json.dumps(user_prompt_dict),
-                    jpeg_b64=jpeg_b64,
-                )
-                print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
+                for attempt in range(max_vlm_retries):
+                    try:
+                        llm_response_text = _query_vlm(
+                            model=model,
+                            system_prompt=_SYSTEM_PROMPT,
+                            user_prompt=json.dumps(user_prompt_dict),
+                            jpeg_b64=jpeg_b64,
+                        )
+                        if llm_response_text.strip():
+                            print(f"[ARIA] LLM raw: {llm_response_text[:200]}")
+                            break
+                    except Exception as e:
+                        if attempt < max_vlm_retries - 1:
+                            print(f"[ARIA] VLM attempt {attempt+1}/{max_vlm_retries} failed, retrying: {e}")
+                            time.sleep(0.5)
+                        else:
+                            raise
             except Exception as e:
-                print(f"[ARIA] VLM error: {e}")
+                print(f"[ARIA] VLM error (using sensor-safe fallback): {type(e).__name__}: {e}")
                 llm_response_text = json.dumps({
                     "action": safe_action,
                     "reasoning": f"VLM unavailable; {safe_reason}",
