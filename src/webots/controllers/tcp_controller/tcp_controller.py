@@ -57,11 +57,16 @@ class WebotsRobotServer:
                     self.right_motor = devices[name]
                     break
             if self.left_motor and self.right_motor:
+                # Set to velocity mode with infinite rotation
                 self.left_motor.setPosition(float("inf"))
                 self.right_motor.setPosition(float("inf"))
+                # CRITICAL: Initialize to zero velocity (robot must be stopped initially)
                 self.left_motor.setVelocity(0.0)
                 self.right_motor.setVelocity(0.0)
-                print("[OK] Motors ready")
+                # Give motors time to settle
+                for _ in range(5):
+                    self.robot.step(self.timestep)
+                print("[OK] Motors ready (velocity initialized to 0.0)")
             else:
                 print("[WARN] Wheel motors not found")
             sys.stdout.flush()

@@ -147,41 +147,43 @@ class VisionLanguageAgent:
         return state
     
     def _analyze_scene_with_vlm(self, frame: np.ndarray, past_positions: List[tuple]) -> Dict[str, Any]:
-        """Use Qwen to analyze the scene.
+        """Use Qwen3-VL to analyze the scene with vision-language understanding.
         
         Args:
-            frame: Camera frame
+            frame: Camera frame (BGR numpy array)
             past_positions: Previously visited positions
             
         Returns:
-            Scene analysis dictionary
+            Scene analysis dictionary with objects, obstacles, and recommendations
         """
-        # Convert frame to base64 for encoding
+        # Convert frame to base64 for encoding to LLM
         _, buffer = cv2.imencode('.jpg', frame)
-        frame_b64 = base64.b64encode(buffer).tobytes().decode()
+        frame_b64 = base64.b64encode(buffer).decode('utf-8')
         
-        # Create a detailed prompt for Qwen
+        # Create a detailed prompt for Qwen3-VL
         scene_prompt = f"""
 You are analyzing a robot's camera view. The robot is searching for: {self.target_object}
 
-Look at this image and answer:
-1. What do you see in the image? (Describe objects, layout, colors, obstacles)
-2. Is there a {self.target_object}? If yes, where?
-3. What obstacles do you see? (Walls, furniture, clutter)
-4. What should the robot do next? (Move forward, turn left/right, backup)
+IMPORTANT: Analyze the image data provided and answer these questions:
 
-Provide a concise analysis and a specific recommendation for the next action.
-Previously visited: {len(past_positions)} locations
-Current position: Near entrance
+1. What objects do you see in the image? List them with colors and positions.
+2. Is there a {self.target_object}? If yes, describe its location (left, center, right, near, far).
+3. What obstacles do you see? (Walls, furniture, clutter, other objects blocking the path)
+4. What should the robot do next to find the {self.target_object}?
+   - Move forward to explore
+   - Turn left to see more
+   - Turn right to see more
+   - Back up if stuck
 
-Be specific and actionable.
+Provide a concise but detailed analysis.
+Previously visited: {len(past_positions)} locations.
+
+Be specific and actionable. End with a single action recommendation.
 """
         
         try:
-            # Call Qwen3:8b for scene analysis
-            # Since we can't pass images directly, we'll analyze the frame locally
-            # and ask Qwen strategic questions
-            response = self._ask_qwen_about_strategy(scene_prompt)
+            # Call Qwen3-VL with the image
+            response = self._ask_qwen_vision_about_scene(frame_b64, scene_prompt)
             
             return {
                 'analysis': response,
@@ -192,7 +194,7 @@ Be specific and actionable.
         except Exception as e:
             print(f"VLM error: {e}")
             return {
-                'analysis': 'Unable to analyze scene',
+                'analysis': 'Unable to analyze scene. The robot sees objects in the room.',
                 'objects': [],
                 'obstacles': [],
                 'recommendation': 'Move forward'
@@ -227,6 +229,58 @@ Be specific and actionable.
         except Exception as e:
             print(f"Qwen query error: {e}")
             return "The robot sees objects in the room. It should explore systematically."
+    
+    def _ask_qwen_vision_about_scene(self, frame_b64: str, prompt: str) -> str:
+        """Ask Qwen3-VL to analyze a scene with vision-language understanding.
+        
+        This method passes the base64-encoded image to the VLM for analysis.
+        
+        Args:
+            frame_b64: Base64-encoded JPEG image
+            prompt: Text prompt for the VLM
+            
+        Returns:
+            VLM analysis as text
+        """
+        try:
+            url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
+            
+            # Ollama API format for qwen3-vl:8b with images
+            # Images are passed as base64 data URLs
+            payload = {
+                "model": OLLAMA_MODEL,
+                "stream": False,
+                "messages": [
+                    {
+                        "role": "system", 
+                        "content": "You are a robot vision assistant. Analyze images carefully and provide actionable navigation advice."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                        "images": [frame_b64]  # Ollama supports images in messages
+                    },
+                ],
+                "options": {"temperature": 0.3},
+            }
+            
+            request = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode("utf-8"),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            
+            with urllib.request.urlopen(request, timeout=15) as response:
+                raw = json.loads(response.read().decode("utf-8"))
+            
+            content = raw.get("message", {}).get("content", "")
+            return content
+        except Exception as e:
+            print(f"Qwen3-VL query error: {e}")
+            # Fallback to text-only if VL fails
+            return self._ask_qwen_about_strategy(prompt)
+
     
     def _extract_objects(self, text: str) -> List[str]:
         """Extract mentioned objects from response."""

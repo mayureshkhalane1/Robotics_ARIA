@@ -110,16 +110,31 @@ class CameraManager:
 
             if encoding == "bgra8_base64":
                 # BGRA format: 4 bytes per pixel
-                frame_bgra = np.frombuffer(image_bytes, dtype=np.uint8).reshape((height, width, 4))
-                # Convert BGRA to BGR (drop alpha channel)
-                frame_bgr = frame_bgra[:, :, :3]
+                try:
+                    frame_bgra = np.frombuffer(image_bytes, dtype=np.uint8).reshape((height, width, 4))
+                    # Convert BGRA to BGR (drop alpha channel)
+                    frame_bgr = frame_bgra[:, :, :3].copy()  # Make copy to ensure contiguous
+                except Exception as e:
+                    print(f"[Camera] BGRA reshape failed: {e}. Trying JPEG fallback.")
+                    # Fallback: try to decode as JPEG
+                    nparr = np.frombuffer(image_bytes, np.uint8)
+                    frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            elif encoding == "jpeg_base64" or encoding.endswith("jpeg"):
+                # JPEG-encoded data
+                nparr = np.frombuffer(image_bytes, np.uint8)
+                frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
             else:
                 # Fallback: try to decode as image
                 nparr = np.frombuffer(image_bytes, np.uint8)
                 frame_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-            if frame_bgr is None:
-                print("[Camera] Failed to decode image")
+            if frame_bgr is None or frame_bgr.size == 0:
+                print(f"[Camera] Failed to decode image (encoding={encoding}, size={len(image_bytes)})")
+                return False
+            
+            # Validate frame shape
+            if len(frame_bgr.shape) != 3 or frame_bgr.shape[2] not in (3, 4):
+                print(f"[Camera] Invalid frame shape: {frame_bgr.shape}")
                 return False
 
             # Extract metadata
