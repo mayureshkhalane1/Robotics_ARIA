@@ -14,6 +14,7 @@ Tools exposed:
 import socket
 import json
 import logging
+import threading
 from typing import Dict, Any, Optional
 from dataclasses import asdict
 
@@ -39,6 +40,7 @@ class WebotsBridge:
         self._connected = False
         self._connection_failures = 0
         self._last_error: Optional[str] = None
+        self._lock = threading.Lock()
 
     def connect(self) -> bool:
         """Establish connection to Webots TCP server."""
@@ -124,32 +126,33 @@ class WebotsBridge:
 
     def send_command(self, cmd: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Send a command to Webots and receive response."""
-        last_error: Optional[Exception] = None
+        with self._lock:
+            last_error: Optional[Exception] = None
 
-        for attempt in range(2):
-            if not self._connected:
-                logger.warning(f"Not connected to Webots. Attempting reconnect (attempt {attempt + 1}/2)...")
-                if not self.connect():
-                    if self._last_error:
-                        return {"status": "error", "message": self._last_error}
-                    return {"status": "error", "message": "Failed to connect to Webots"}
+            for attempt in range(2):
+                if not self._connected:
+                    logger.warning(f"Not connected to Webots. Attempting reconnect (attempt {attempt + 1}/2)...")
+                    if not self.connect():
+                        if self._last_error:
+                            return {"status": "error", "message": self._last_error}
+                        return {"status": "error", "message": "Failed to connect to Webots"}
 
-            try:
-                cmd_json = json.dumps(cmd) + "\n"
-                assert self.socket is not None
-                self.socket.sendall(cmd_json.encode("utf-8"))
-                response = self._recv_json_line()
-                logger.debug(f"Webots response: {response}")
-                return response
+                try:
+                    cmd_json = json.dumps(cmd) + "\n"
+                    assert self.socket is not None
+                    self.socket.sendall(cmd_json.encode("utf-8"))
+                    response = self._recv_json_line()
+                    logger.debug(f"Webots response: {response}")
+                    return response
 
-            except (socket.timeout, ConnectionError, OSError, json.JSONDecodeError) as e:
-                last_error = e
-                logger.warning(f"Command failed on attempt {attempt + 1}/2: {e}")
-                self.disconnect()
+                except (socket.timeout, ConnectionError, OSError, json.JSONDecodeError) as e:
+                    last_error = e
+                    logger.warning(f"Command failed on attempt {attempt + 1}/2: {e}")
+                    self.disconnect()
 
-        message = str(last_error) if last_error else "Unknown TCP error"
-        logger.error(f"Command failed after retry: {message}")
-        return {"status": "error", "message": message}
+            message = str(last_error) if last_error else "Unknown TCP error"
+            logger.error(f"Command failed after retry: {message}")
+            return {"status": "error", "message": message}
 
     def get_state(self, include_camera: bool = False) -> Optional[Dict[str, Any]]:
         """Fetch current robot state from Webots.

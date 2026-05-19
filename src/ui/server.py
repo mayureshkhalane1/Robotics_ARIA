@@ -3,15 +3,20 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import io
 import json
 from pathlib import Path
 from typing import Any, Dict, Set
 
+import cv2
 from aiohttp import web
 
 from src.agent.graph import run_reactive_agent
 from src.agent.vision_agent import run_vision_aware_agent
 from src.agent.smart_vision_agent import run_smart_vision_agent
+from src.agent.aria_agent import run_aria_agent
+from src.common.config import OLLAMA_MODEL
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
@@ -94,6 +99,14 @@ async def set_goal(request: web.Request) -> web.Response:
                 0.1,
                 lambda event_type, event_data: dashboard.emit_threadsafe(loop, event_data),
             )
+        elif policy == "aria":
+            await asyncio.to_thread(
+                run_aria_agent,
+                goal,
+                steps,
+                model or OLLAMA_MODEL,
+                lambda event: dashboard.emit_threadsafe(loop, event),
+            )
         else:
             # Use reactive/ollama agent
             await asyncio.to_thread(
@@ -132,22 +145,16 @@ async def camera_stream(request: web.Request) -> web.WebSocketResponse:
     
     try:
         while not ws.closed:
-            # Get frame from camera
-            frame = camera.get_frame()
+            # Get a fresh frame from Webots
+            frame = await asyncio.to_thread(camera.get_frame, True)
             if frame is None:
                 await asyncio.sleep(0.1)
                 continue
-            
-            # Encode as JPEG
-            jpeg_b64 = camera.encode_frame_jpeg(quality=85)
-            if not jpeg_b64:
-                await asyncio.sleep(0.1)
-                continue
-            
+
             # Run detection (detector expects BGR format directly)
             try:
                 detections = detector.detect(frame)
-                
+
                 detection_data = [
                     {
                         "class_name": d.class_name,
@@ -158,13 +165,25 @@ async def camera_stream(request: web.Request) -> web.WebSocketResponse:
                     for d in detections[:5]  # Top 5 detections
                 ]
             except Exception as e:
+                detections = []
                 detection_data = []
                 print(f"[UI] Detection error: {e}")
-            
+
+            # Annotate frame with detections before encoding
+            if detections:
+                frame = detector.visualize_detections(frame, detections)
+
+            # Encode annotated frame as JPEG
+            success, encoded = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            jpeg_b64 = base64.b64encode(encoded.tobytes()).decode("utf-8") if success else None
+            if not jpeg_b64:
+                await asyncio.sleep(0.1)
+                continue
+
             # Get memory and graph stats
             memory = get_visual_memory()
             graph = get_environment_graph()
-            
+
             # Send frame with metadata
             msg = {
                 "type": "camera",

@@ -50,15 +50,34 @@ class CameraManager:
         self.frame_count = 0
         self.fps = 0.0
 
-    def get_frame(self) -> Optional[np.ndarray]:
+    def get_frame(self, refresh: bool = False) -> Optional[np.ndarray]:
         """Get latest camera frame as numpy array.
+
+        Args:
+            refresh: If True, always fetch a fresh frame from Webots first.
 
         Returns:
             BGR numpy array (HxWx3, uint8) or None if unavailable
         """
-        if self.last_frame is None:
+        if refresh or self.last_frame is None:
             self._fetch_frame()
         return self.last_frame.data if self.last_frame else None
+
+    def update_frame(self, frame_bgr: np.ndarray) -> None:
+        """Set the current frame from an externally-provided BGR numpy array.
+
+        Used by the aria_agent to push frames without re-fetching from Webots.
+
+        Args:
+            frame_bgr: BGR numpy array (HxWx3, uint8)
+        """
+        now = time.time()
+        metadata = FrameMetadata(
+            timestamp=now,
+            resolution=(frame_bgr.shape[0], frame_bgr.shape[1]),
+        )
+        self.last_frame = Frame(data=frame_bgr, metadata=metadata)
+        self.frame_count += 1
 
     def get_frame_with_metadata(self) -> Optional[Frame]:
         """Get latest frame with metadata including pose.
