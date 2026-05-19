@@ -74,9 +74,7 @@ async def set_goal(request: web.Request) -> web.Response:
     goal = body.get("goal", "explore safely")
     steps = int(body.get("steps", 50))
     policy = body.get("policy", "vision")
-    # UI lets the user see the model name but never override it: keep the
-    # configured local VLM in lockstep with the agent (qwen2.5-vl:3b by default).
-    model = OLLAMA_MODEL
+    model = body.get("model") or None
     loop = asyncio.get_running_loop()
 
     if dashboard.current_task and not dashboard.current_task.done():
@@ -90,7 +88,7 @@ async def set_goal(request: web.Request) -> web.Response:
                 run_smart_vision_agent,
                 goal,
                 steps,
-                model,
+                model or OLLAMA_MODEL,
                 lambda event: dashboard.emit_threadsafe(loop, event),
             )
         elif policy == "vision":
@@ -108,7 +106,7 @@ async def set_goal(request: web.Request) -> web.Response:
                 run_aria_agent,
                 goal,
                 steps,
-                model,
+                model or OLLAMA_MODEL,
                 lambda event: dashboard.emit_threadsafe(loop, event),
             )
         else:
