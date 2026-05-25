@@ -10,7 +10,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/plants/protos/PottedTree.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/computers/protos/Monitor.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/drinks/protos/WaterBottle.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/adept/pioneer3dx/protos/Pioneer3dx.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/adept/pioneer3/protos/Pioneer3dx.proto"
 
 WorldInfo {
   title "ARIA Basic Arena"
@@ -37,35 +37,42 @@ Floor {
 
 # Outer arena walls (8m x 8m)
 Wall {
+  name "arena_wall_north"
   translation 0 4 0
   rotation 0 0 1 1.5708
   size 0.1 8 1.2
 }
 Wall {
+  name "arena_wall_south"
   translation 0 -4 0
   rotation 0 0 1 1.5708
   size 0.1 8 1.2
 }
 Wall {
+  name "arena_wall_east"
   translation 4 0 0
   size 0.1 8 1.2
 }
 Wall {
+  name "arena_wall_west"
   translation -4 0 0
   size 0.1 8 1.2
 }
 
 # Internal obstacle walls
 Wall {
+  name "arena_obstacle_1"
   translation -1.2 0.8 0
   rotation 0 0 1 1.5708
   size 0.1 2.4 1.2
 }
 Wall {
+  name "arena_obstacle_2"
   translation 1.6 -0.9 0
   size 0.1 2.8 1.2
 }
 Wall {
+  name "arena_obstacle_3"
   translation 0.6 2.2 0
   rotation 0 0 1 1.5708
   size 0.1 2.2 1.2
@@ -87,7 +94,6 @@ WaterBottle {
 PottedTree {
   translation -2.8 2.9 0
   name "goal_potted_plant"
-  scale 0.65
 }
 OfficeChair {
   translation -2.5 -2.0 0
