@@ -1,0 +1,119 @@
+#VRML_SIM R2025a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/tables/protos/Table.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/chairs/protos/OfficeChair.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/plants/protos/PottedTree.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/computers/protos/Monitor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/drinks/protos/WaterBottle.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/robots/adept/pioneer3dx/protos/Pioneer3dx.proto"
+
+WorldInfo {
+  title "ARIA Basic Arena"
+  basicTimeStep 32
+}
+Viewpoint {
+  orientation 0.25 0.95 -0.2 1.1
+  position 0 7.5 6.5
+}
+TexturedBackground {
+  texture "empty_office"
+  luminosity 0.7
+}
+TexturedBackgroundLight {
+  texture "empty_office"
+}
+Floor {
+  translation 0 0 0
+  size 10 10
+  appearance Parquetry {
+    type "light strip"
+  }
+}
+
+# Outer arena walls (8m x 8m)
+Wall {
+  translation 0 4 0
+  rotation 0 0 1 1.5708
+  size 0.1 8 1.2
+}
+Wall {
+  translation 0 -4 0
+  rotation 0 0 1 1.5708
+  size 0.1 8 1.2
+}
+Wall {
+  translation 4 0 0
+  size 0.1 8 1.2
+}
+Wall {
+  translation -4 0 0
+  size 0.1 8 1.2
+}
+
+# Internal obstacle walls
+Wall {
+  translation -1.2 0.8 0
+  rotation 0 0 1 1.5708
+  size 0.1 2.4 1.2
+}
+Wall {
+  translation 1.6 -0.9 0
+  size 0.1 2.8 1.2
+}
+Wall {
+  translation 0.6 2.2 0
+  rotation 0 0 1 1.5708
+  size 0.1 2.2 1.2
+}
+
+# YOLO-friendly target objects
+Table {
+  translation 2.5 2.7 0
+  name "goal_table"
+}
+Monitor {
+  translation 2.45 2.7 0.77
+  name "goal_tv_monitor"
+}
+WaterBottle {
+  translation 2.65 2.7 0.77
+  name "goal_bottle"
+}
+PottedTree {
+  translation -2.8 2.9 0
+  name "goal_potted_plant"
+  scale 0.65
+}
+OfficeChair {
+  translation -2.5 -2.0 0
+  name "goal_chair"
+}
+WaterBottle {
+  translation 0.4 -2.2 0
+  name "goal_bottle_2"
+}
+
+# Robot spawn with camera + sensors for ARIA stack
+Pioneer3dx {
+  translation -3.2 -3.2 0.097
+  rotation 0 0 1 0.78
+  controller "tcp_controller"
+  extensionSlot [
+    Camera {
+      translation 0.17 0 0.17
+      fieldOfView 1.8
+      width 320
+      height 240
+      antiAliasing FALSE
+    }
+    Compass {
+    }
+    GPS {
+    }
+  ]
+}
