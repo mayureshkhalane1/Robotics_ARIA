@@ -30,5 +30,10 @@ Robotics_ARIA/
 *.wbt.bak
 controllers/*/build/
 
+# Webots cached thumbnails / previews (often dotfiles in worlds/)
+*.jpg
+*.jpeg
+*.png
+
 # Packaging artifacts
 *.egg-info/

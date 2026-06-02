@@ -24,6 +24,7 @@ if [[ "$IN_WSL" == true ]]; then
   # WSL2 - Launch via PowerShell
   echo "Platform: WSL2 (Windows Subsystem for Linux)"
   echo ""
+
   PS1_WIN="$(wslpath -w "$ROOT/scripts/run_webots.ps1")"
   WINDOWS_HOST="$(ip route show default 2>/dev/null | awk '/via/{print $3; exit}' || echo '172.20.128.1')"
   
@@ -35,7 +36,7 @@ elif [[ "$OS_TYPE" == "Darwin" ]]; then
   echo "Platform: macOS"
   echo "Launching Webots..."
   
-  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/indoor/worlds/complete_apartment.wbt}"
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/hall.wbt}"
   export WEBOTS_WORLD
   
   open -a Webots "$WEBOTS_WORLD" || {
@@ -60,7 +61,7 @@ elif [[ "$OS_TYPE" == "Linux" ]]; then
   echo "Platform: Linux"
   echo "Launching Webots..."
   
-  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/indoor/worlds/complete_apartment.wbt}"
+  WEBOTS_WORLD="${WEBOTS_WORLD:-$ROOT/src/webots/worlds/worlds/hall.wbt}"
   export WEBOTS_WORLD
   
   webots "$WEBOTS_WORLD" > /tmp/webots.log 2>&1 &
