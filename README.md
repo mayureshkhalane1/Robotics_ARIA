@@ -1,454 +1,187 @@
-# ARIA: Agent Robotics Intelligence Architecture
+# ARIA: Autonomous Robot Intelligence Architecture
 
-A LangGraph-based robotic agent that reasons visually and acts on real-time sensor feedback. Combines local LLMs (Qwen via Ollama), Webots simulation, advanced vision system (YOLO object detection, visual memory, spatial reasoning), and a web UI for interactive goal setting.
+Pioneer 3-DX robot in Webots R2025a that systematically explores a room, builds a spatial memory of what it finds, and on subsequent runs navigates directly to previously-seen objects.  Runs entirely in WSL2 (Python agent) + Windows (Webots + Ollama).
 
-## ✨ What's New: Smart Vision Language Agent
+---
 
-The ARIA robot now **SEES and UNDERSTANDS** using Qwen3-VL LLM:
+## How it works
 
-- 🎥 **Real-time Camera Streaming** (15 FPS to browser)
-- 🧠 **Scene Understanding** (Qwen3-VL LLM analyzes "What do you see?")
-- 💡 **Intelligent Planning** (LLM decides "Should I move forward or turn?")
-- 🗺️ **Spatial Memory** (Remembers observations, avoids redundant exploration)
-- 🎯 **Smart Search** (Find objects by understanding the environment)
+```
+┌─────────────────── Browser UI (http://localhost:8080) ───────────────────┐
+│  live camera · YOLO detections · grid progress · spatial memory summary  │
+└───────────────────────────────┬──────────────────────────────────────────┘
+                                │ WebSocket
+              ┌─────────────────▼──────────────────┐
+              │           ARIA Agent               │
+              │  ┌───────────┐  ┌────────────────┐ │
+              │  │GridExplor │  │ SpatialMemory  │ │   ← NEW
+              │  │ (vacuum)  │  │ (JSON on disk) │ │
+              │  └─────┬─────┘  └───────┬────────┘ │
+              │        │  nav_action     │ recall   │
+              │  ┌─────▼─────────────── ▼────────┐ │
+              │  │  Sense → Navigate → Act        │ │
+              │  │  YOLO · Compass · GPS · Sonar  │ │
+              │  └────────────────────────────────┘ │
+              │  (LLM via Ollama — optional layer)  │
+              └─────────────────┬──────────────────┘
+                                │ TCP 19997
+              ┌─────────────────▼──────────────────┐
+              │   Webots  (Windows)                │
+              │   Pioneer 3-DX  ·  break_room.wbt  │
+              └────────────────────────────────────┘
+```
 
-**New:** Smart Vision Agent is now the default policy! Robot uses LLM reasoning to make intelligent navigation decisions, not just obstacle avoidance.
+**First run** — robot has no prior knowledge, visits 32 waypoints in a lawnmower grid (every 1.5 m), does a 360° YOLO scan at each stop, and records every detection + GPS position to `logs/spatial_memory.json`.
 
-**Quick test:** `find cup` - robot will search intelligently using vision + reasoning
+**Subsequent runs** — agent loads `spatial_memory.json` and navigates straight to the nearest known position of the requested object.
 
-See [SMART_VISION_GUIDE.md](./SMART_VISION_GUIDE.md) for complete documentation.
+---
 
-## Quick Start
+## Quick start
 
 ### Prerequisites
 
-```bash
-# Python 3.10+
-python --version
+| Tool    | Version | Notes                                     |
+| ------- | ------- | ----------------------------------------- |
+| Python  | 3.10+   | run in WSL2                               |
+| Webots  | R2025a  | run on Windows                            |
+| Ollama  | any     | run on Windows — optional but recommended |
 
-# Webots simulator (download from https://cyberbotics.com)
-# or install via homebrew: brew install webots
-```
-
-### 1. Install Dependencies
+### 1. Install Python dependencies (WSL2)
 
 ```bash
-cd /Users/mayureshkhalane/Documents/ARIA
-uv sync --group dev
+cd /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA
+pip install -r requirements.txt   # or: uv sync --group dev
 ```
 
-### 2. Start Webots Simulator
+### 2. Open the world in Webots (Windows)
+
+Open Webots → **File → Open World**:
+```
+src/webots/worlds/Project/worlds/break_room.wbt
+```
+Press **Play (▶)**.  The TCP controller starts automatically and listens on port 19997.
+
+### 3. Start the ARIA agent (WSL2)
 
 ```bash
-# In a new terminal
-./scripts/run_webots.sh
+python -m src.ui.server
 ```
 
-**Wait for Webots to fully load** - you'll see:
-- The simulation window open
-- A robot in the house
-- The status bar showing "Running"
+Open `http://localhost:8080`, type a goal (e.g. `find the dog`), click **Run**.
 
-### 3. Start Vision System (New!)
+### 4. Ollama — make it reachable from WSL2 (Windows PowerShell)
 
-```bash
-# In another new terminal
-uv run python -m src.ui.server
+By default Ollama binds only to `127.0.0.1` on Windows and WSL2 cannot reach it.  Run this **before** starting `ollama serve`:
+
+```powershell
+$env:OLLAMA_HOST = "0.0.0.0"
+ollama serve
 ```
 
-Then open **http://127.0.0.1:8080** and you'll see:
-- Live robot camera feed
-- Detected objects with confidence scores
-- Memory & graph statistics
-- Real-time agent reasoning
+The agent auto-detects the WSL2 gateway IP and uses `http://172.20.x.x:11434`.  Without Ollama the grid navigation still works — the LLM layer is optional.
 
-Click "Run" to start searching for objects!
-
-### 4. Alternative: CLI with Vision Agent
-
-```bash
-uv run python -c "
-from src.agent.vision_agent import run_vision_aware_agent
-state = run_vision_aware_agent('find cup', max_steps=100)
-print(f'Success: {state.success}')
-"
-```
-
-## Troubleshooting
-
-### "timed out" or "Failed to connect to Webots"
-
-Run the diagnostic:
-```bash
-uv run python scripts/diagnose_webots.py
-```
-
-See [WEBOTS_TROUBLESHOOTING.md](./WEBOTS_TROUBLESHOOTING.md) for detailed fixes.
-
-**Quick checks:**
-1. Is Webots window open and showing "Running" (not "Paused")?
-2. Is the robot visible in the simulation?
-3. Try clicking the Play button (▶️) in Webots
-
-### "Connection refused on localhost:19997"
-
-Webots isn't running. Start it:
-```bash
-./scripts/run_webots.sh
-```
-
-### "No response from Webots after 5s"
-
-Webots is paused. Click Play (▶️) in the Webots window or press SPACE.
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────┐
-│              Browser UI (WebSocket)                 │
-│         Camera + Detections + Memory/Graph          │
-└──────────────────────┬──────────────────────────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-    Camera        Detector       Vision Agent
-    Stream          (YOLO)         Planning
-        │              │              │
-        └──────────────┼──────────────┘
-                       │
-        ┌──────────────┴──────────────┐
-        │                             │
-  Visual Memory         Environment Graph
-  (Loop Closure)        (Spatial Mapping)
-        │                             │
-        └──────────────┬──────────────┘
-                       │
-            ┌──────────▼──────────┐
-            │   Agent Loop        │
-            │  Sense→Plan→Act     │
-            └──────────┬──────────┘
-                       │
-            ┌──────────▼──────────┐
-            │  Webots Simulator   │
-            │  (Pioneer 3-DX)     │
-            └─────────────────────┘
-```
-
-## Agent Policies
-
-1. **vision** (NEW!) - Object search using memory + graph
-2. **reactive** - Simple obstacle avoidance, no LLM
-3. **ollama** - Local Qwen LLM with zero-shot ReAct prompting
-4. **langgraph** - Full multi-step reasoning with function calls (Claude only)
+---
 
 ## Configuration
 
-Edit `.env` to customize:
-```bash
-# Webots
-WEBOTS_HOST=localhost
-WEBOTS_PORT=19997
-WEBOTS_TIMEOUT=5
-WEBOTS_SIM_SPEED=0.1
-
-# Agent
-MAX_STEPS=50
-STATE_CACHE_SIZE=10
-
-# LLM
-LLM_PROVIDER=ollama  # or 'anthropic'
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:8b
-```
-
-## Running Tests
+Copy `.env.example` to `.env` and edit if needed:
 
 ```bash
-# Test vision system
-uv run python tests/test_vision_integration.py
-
-# Run all tests
-uv run pytest tests -v
+cp .env.example .env
 ```
 
-## File Structure
+| Variable                | Default              | Notes                          |
+| ----------------------- | -------------------- | ------------------------------ |
+| `WEBOTS_HOST`           | auto-detected        | WSL2 gateway or `localhost`    |
+| `OLLAMA_BASE_URL`       | auto-detected        | WSL2 gateway or `localhost`    |
+| `OLLAMA_VISION_MODEL`   | `llava-phi3:latest`  | image description              |
+| `OLLAMA_REASONING_MODEL`| `llava-phi3:latest`  | action decisions               |
+| `WEBOTS_WORLD_FILE`     | `break_room.wbt`     | path to active world           |
+| `MAX_STEPS`             | 50                   | UI run limit                   |
+
+---
+
+## Project structure
 
 ```
 src/
-├── agent/           # Agent loop + vision search
-│   ├── llm.py       # Ollama/Qwen LLM client
-│   ├── graph.py     # LangGraph state machine
-│   ├── nodes.py     # Agent nodes (sense, plan, act)
-│   ├── prompts.py   # LLM prompt templates
-│   ├── main.py      # CLI entry point
-│   ├── vision_agent.py      # NEW: Vision search agent
-│   ├── visual_memory.py      # NEW: Observation storage + loop closure
-│   └── environment_graph.py  # NEW: Spatial mapping
-├── perception/      # NEW: Vision components
-│   ├── camera.py           # NEW: Webots camera capture
-│   ├── object_detector.py  # NEW: YOLO-Nano wrapper
-│   └── __init__.py
-├── ui/              # Web UI server
-│   ├── server.py    # Flask app + camera WebSocket
-│   └── static/      # HTML/CSS/JS
-├── mcp_server/      # MCP tool server
-│   └── server.py    # Webots bridge & tools
-├── webots/
-│   ├── controllers/ # Robot control script
-│   └── worlds/      # .wbt simulation worlds
-└── common/
-    ├── config.py    # Configuration loader
-    └── types.py     # Data types
+├── agent/
+│   ├── aria_agent.py          # main agent loop (grid nav + spatial mem + LLM)
+│   ├── grid_explorer.py       # boustrophedon waypoint grid from .wbt floor
+│   ├── spatial_memory.py      # persistent discovery store (logs/spatial_memory.json)
+│   ├── world_knowledge.py     # .wbt parser → room/object positions
+│   ├── graph.py               # simple reactive agent (python main.py)
+│   └── nodes.py               # reactive agent nodes
+├── common/
+│   └── config.py              # all settings; auto-detects WSL2 gateway
+├── mcp_server/
+│   └── server.py              # MCP bridge → Webots TCP commands
+├── perception/
+│   ├── object_detector.py     # YOLOv8n (conf=0.5)
+│   └── camera.py              # frame manager
+└── ui/
+    └── server.py              # aiohttp dashboard (default policy: aria)
 
-tests/               # Unit & integration tests
-scripts/            # Utility scripts
+src/webots/worlds/Project/
+├── worlds/break_room.wbt      # active Webots world
+└── controllers/tcp_controller/
+    └── tcp_controller.py      # Webots-side TCP server (step-based motion)
+
+logs/
+└── spatial_memory.json        # persists object locations between sessions
 ```
 
-## Key Features
+---
 
-- **Local LLM**: Qwen 8B running via Ollama (no API calls)
-- **Vision System**: YOLO object detection + memory + spatial graph
-- **Object Search**: Find and approach target objects using reasoning
-- **Loop Closure**: Recognize revisited locations
-- **Real-time Streaming**: Live camera to browser (15 FPS)
-- **Interactive Web UI**: Live camera, state log, natural-language goals
-- **Safety Fallback**: Reverts to reactive policy if LLM fails
-- **Multi-policy Agent**: Reactive, vision-based, planning, or full reasoning
+## Navigation behaviour
 
-## Documentation
+### Grid exploration (no prior memory)
 
-- **Vision Quick Start**: [VISION_QUICKSTART.md](./VISION_QUICKSTART.md) - 60-second setup
-- **Vision System Details**: [VISION_SYSTEM.md](./VISION_SYSTEM.md) - Architecture & API
-- **Architecture Overview**: [ARCHITECTURE_VISION.md](./ARCHITECTURE_VISION.md) - Design docs
-- **Working Guide**: [WORKING_GUIDE.md](./WORKING_GUIDE.md) - Detailed setup & usage
+The room floor (`Floor` node in the `.wbt`) is parsed to extract bounds (12.9 × 7.7 m navigable area).  32 waypoints at 1.5 m spacing are generated in a **boustrophedon** (vacuum-cleaner) pattern.
 
-## Next Steps
+At each waypoint:
 
-- [x] Implement object detection (YOLO on camera frames)
-- [x] Add visual memory system
-- [x] Build spatial reasoning with graphs
-- [x] Real-time camera streaming to UI
-- [ ] Semantic SLAM (loop closure + feature matching)
-- [ ] 3D reconstruction from observations
-- [ ] Multi-robot coordination
-- [ ] Extend to real robot hardware (TurtleBot3, etc.)
-- [ ] Fine-tune Qwen on domain-specific tasks
+1. Navigate using compass heading + GPS bearing
+2. On arrival: do a **360° scan** (4 × 90° turns, YOLO at each orientation)
+3. Record every detection to `spatial_memory.json`
+4. Move to nearest unvisited waypoint
 
-## References
+### Recall navigation (object seen before)
 
-- Webots Docs: https://cyberbotics.com/doc
-- LangGraph: https://langchain-ai.github.io/langgraph/
-- YOLO: https://docs.ultralytics.com/
-- Ollama: https://ollama.ai
-- Qwen Models: https://huggingface.co/Qwen/
+On startup, `SpatialMemory` loads prior detections.  If the requested target is in memory, the agent skips the grid and navigates straight to the nearest known position.
 
+### Sensor safety (always active, cannot be overridden)
 
-## Quick Start
+- `OBSTACLE_THRESH = 800` — Pioneer 3DX sonar value above which something is within ≈0.5 m
+- Front blocked → turn toward clearer side
+- Critical proximity (>970) → back up + turn
 
-### Prerequisites
-
-```bash
-# Python 3.10+
-python --version
-
-# Webots simulator (download from https://cyberbotics.com)
-# or install via homebrew: brew install webots
-```
-
-### 1. Install Dependencies
-
-```bash
-cd /Users/mayureshkhalane/Documents/ARIA
-uv sync --group dev
-```
-
-### 2. Start Webots Simulator
-
-```bash
-# In a new terminal
-./scripts/run_webots.sh
-```
-
-**Wait for Webots to fully load** - you'll see:
-- The simulation window open
-- A robot in the arena
-- The status bar showing "Running"
-
-### 3. Start Ollama/Qwen (for LLM-based planning)
-
-```bash
-# In another new terminal
-./scripts/start_ollama.sh
-```
-
-This downloads the Qwen 8B model (~5GB) on first run. Once running, Ollama listens on `http://localhost:11434`.
-
-### 4. Run the Agent
-
-Choose one of these:
-
-**Option A: Web UI (Interactive)**
-```bash
-uv run python -m src.ui.server
-```
-Then open http://127.0.0.1:8080 and type goals in the chat box.
-
-**Option B: CLI (Programmatic)**
-```bash
-uv run python -m src.agent.main \
-  --policy ollama \
-  --model qwen3:8b \
-  --goal "explore the arena and avoid obstacles" \
-  --steps 50
-```
-
-**Option C: Reactive Policy (No LLM)**
-```bash
-uv run python -m src.agent.main \
-  --policy reactive \
-  --goal "move forward and avoid obstacles" \
-  --steps 20
-```
+---
 
 ## Troubleshooting
 
-### "timed out" or "Failed to connect to Webots"
+### Robot spins in place / goes wrong direction
 
-Run the diagnostic:
-```bash
-uv run python scripts/diagnose_webots.py
+Bearing calculation uses `heading = atan2(compass.bx, compass.bz)` where `heading=0°` = east, `heading=90°` = north.  The grid_explorer uses `atan2(dy, dx)` to compute target bearing.  If anything looks inverted, check these two conventions match.
+
+### Steps take 45–60 seconds
+
+Ollama is not reachable — each LLM call waits for a timeout.  Start Ollama with `$env:OLLAMA_HOST = "0.0.0.0"` (see step 4 above).  The agent detects the failure and skips LLM calls for 10 steps before retrying.
+
+### "Connection refused" on port 19997
+
+Webots is not running or the simulation is paused.  Click **Play (▶)** in Webots.
+
+### Spatial memory has wrong positions
+
+Delete `logs/spatial_memory.json` to start fresh.  Or from Python:
+
+```python
+from src.agent.spatial_memory import SpatialMemory
+SpatialMemory().clear_world()
 ```
 
-See [WEBOTS_TROUBLESHOOTING.md](./WEBOTS_TROUBLESHOOTING.md) for detailed fixes.
+### Webots world not loading / missing sensors
 
-**Quick checks:**
-1. Is Webots window open and showing "Running" (not "Paused")?
-2. Is the robot visible in the simulation?
-3. Try clicking the Play button (▶️) in Webots
-
-### "Connection refused on localhost:19997"
-
-Webots isn't running. Start it:
-```bash
-./scripts/run_webots.sh
-```
-
-### "No response from Webots after 5s"
-
-Webots is paused. Click Play (▶️) in the Webots window or press SPACE.
-
-## Architecture
-
-```
-┌─────────────┐
-│   Web UI    │  (browser-based goal setting + live camera)
-│ :8080       │
-└──────┬──────┘
-       │
-    HTTP (POST /goal)
-       │
-       ▼
-┌─────────────────────────────────────┐
-│  Agent Server                       │
-│  - LangGraph loop                   │
-│  - Policy selection (reactive/      │
-│    ollama/langgraph)                │
-│  - State tracking & visualization   │
-└──────┬──────────────────────────────┘
-       │
-    TCP (localhost:19997)
-       │
-       ▼
-┌─────────────────────────────────────┐
-│  Webots TCP Controller              │
-│  - Robot state (GPS, compass,       │
-│    distance sensors)                │
-│  - Camera frames (base64)           │
-│  - Motor control                    │
-└──────────────────────────────────────┘
-```
-
-## Agent Policies
-
-1. **reactive** - Simple obstacle avoidance, no LLM
-2. **ollama** - Local Qwen LLM with zero-shot ReAct prompting
-3. **langgraph** - Full multi-step reasoning with function calls (Claude only)
-
-## Configuration
-
-Edit `.env` to customize:
-```bash
-# Webots
-WEBOTS_HOST=localhost
-WEBOTS_PORT=19997
-WEBOTS_TIMEOUT=5
-WEBOTS_SIM_SPEED=0.1
-
-# Agent
-MAX_STEPS=50
-STATE_CACHE_SIZE=10
-
-# LLM
-LLM_PROVIDER=ollama  # or 'anthropic'
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=qwen3:8b
-```
-
-## Running Tests
-
-```bash
-uv run pytest tests -v
-```
-
-14 tests pass (7 Webots-specific tests skip if simulator not running).
-
-## File Structure
-
-```
-src/
-├── agent/           # LangGraph agent loop
-│   ├── llm.py       # Ollama/Qwen LLM client
-│   ├── graph.py     # LangGraph state machine
-│   ├── nodes.py     # Agent nodes (sense, plan, act)
-│   ├── prompts.py   # LLM prompt templates
-│   └── main.py      # CLI entry point
-├── ui/              # Web UI server
-│   ├── server.py    # Flask app
-│   └── static/      # HTML/CSS/JS
-├── mcp_server/      # MCP tool server
-│   └── server.py    # Webots bridge & tools
-├── webots/
-│   ├── controllers/ # Robot control script
-│   └── worlds/      # .wbt simulation worlds
-└── common/
-    ├── config.py    # Configuration loader
-    └── types.py     # Data types
-
-tests/               # Unit & integration tests
-scripts/            # Utility scripts
-```
-
-## Key Features
-
-- **Local LLM**: Qwen 8B running via Ollama (no API calls)
-- **Visual Reasoning**: Camera feed → base64 encoding → LLM analysis
-- **Real-time Feedback**: Sensor data → agent loop every 100ms
-- **Interactive Web UI**: Live camera, state log, natural-language goals
-- **Safety Fallback**: Reverts to reactive policy if LLM fails
-- **Multi-policy Agent**: Reactive, planning, or full reasoning
-
-## Next Steps
-
-- [ ] Implement object detection (YOLO on camera frames)
-- [ ] Add multi-robot coordination
-- [ ] Extend to real robot hardware (TurtleBot3, etc.)
-- [ ] Fine-tune Qwen on domain-specific tasks
-- [ ] Add sim-to-real transfer learning
-
-## References
-
-- Webots Docs: https://cyberbotics.com/doc
-- LangGraph: https://langchain-ai.github.io/langgraph/
-- Ollama: https://ollama.ai
-- Qwen Models: https://huggingface.co/Qwen/
-
+The Pioneer3dx in `break_room.wbt` needs `controller "tcp_controller"` plus Camera, Compass, and GPS in `extensionSlot`.  These are already in place — do not revert to the Webots default controller.

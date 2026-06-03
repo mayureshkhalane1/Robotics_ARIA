@@ -6,9 +6,29 @@ Loads from environment variables with sensible defaults.
 import os
 import subprocess
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
+
+
+def _wsl2_gateway() -> Optional[str]:
+    """Return the Windows gateway IP when running inside WSL2, else None."""
+    try:
+        osrelease = Path("/proc/sys/kernel/osrelease").read_text().lower()
+        if "microsoft" not in osrelease:
+            return None
+        out = subprocess.run(
+            ["ip", "route", "show", "default"],
+            capture_output=True, text=True, timeout=2,
+        ).stdout
+        for line in out.splitlines():
+            parts = line.split()
+            if "via" in parts:
+                return parts[parts.index("via") + 1]
+    except Exception:
+        pass
+    return None
 
 
 def _default_webots_host() -> str:
@@ -21,20 +41,20 @@ def _default_webots_host() -> str:
     """
     if env_val := os.getenv("WEBOTS_HOST"):
         return env_val
-    try:
-        osrelease = Path("/proc/sys/kernel/osrelease").read_text().lower()
-        if "microsoft" in osrelease:
-            out = subprocess.run(
-                ["ip", "route", "show", "default"],
-                capture_output=True, text=True, timeout=2,
-            ).stdout
-            for line in out.splitlines():
-                parts = line.split()
-                if "via" in parts:
-                    return parts[parts.index("via") + 1]
-    except Exception:
-        pass
-    return "127.0.0.1"
+    gw = _wsl2_gateway()
+    return gw if gw else "127.0.0.1"
+
+
+def _default_ollama_base_url() -> str:
+    """Return the right Ollama base URL for the current environment.
+
+    Ollama running on Windows is reachable from WSL2 via the Windows gateway
+    IP, not via localhost.  An explicit OLLAMA_BASE_URL env var always wins.
+    """
+    if env_val := os.getenv("OLLAMA_BASE_URL"):
+        return env_val
+    gw = _wsl2_gateway()
+    return f"http://{gw}:11434" if gw else "http://localhost:11434"
 
 
 # Step 1: load user's real .env (explicit overrides, if it exists)
@@ -42,10 +62,12 @@ _env_path = PROJECT_ROOT / ".env"
 if _env_path.exists():
     load_dotenv(_env_path)
 
-# Step 2: resolve WEBOTS_HOST *before* loading .env.example, which contains
-# the dummy default 'localhost' and would prevent WSL2 auto-detection.
+# Step 2: resolve WEBOTS_HOST and OLLAMA_BASE_URL *before* loading .env.example,
+# which contains dummy 'localhost' defaults that would block WSL2 auto-detection.
 WEBOTS_HOST = _default_webots_host()
-os.environ.setdefault("WEBOTS_HOST", WEBOTS_HOST)  # keep .env.example from overriding it
+os.environ.setdefault("WEBOTS_HOST", WEBOTS_HOST)
+_ollama_url = _default_ollama_base_url()
+os.environ.setdefault("OLLAMA_BASE_URL", _ollama_url)
 
 # Step 3: load .env.example for all other settings (load_dotenv skips already-set vars)
 if not _env_path.exists():
@@ -83,6 +105,10 @@ OLLAMA_VISION_SAMPLE_INTERVAL = float(os.getenv("OLLAMA_VISION_SAMPLE_INTERVAL",
 # Project Paths
 WEBOTS_WORLDS_PATH = PROJECT_ROOT / "src" / "webots" / "worlds"
 WEBOTS_CONTROLLERS_PATH = PROJECT_ROOT / "src" / "webots" / "controllers"
+WEBOTS_WORLD_FILE = os.getenv(
+    "WEBOTS_WORLD_FILE",
+    str(PROJECT_ROOT / "src" / "webots" / "worlds" / "Project" / "worlds" / "break_room.wbt"),
+)
 LOGS_PATH = PROJECT_ROOT / "logs"
 LOGS_PATH.mkdir(exist_ok=True)
 
@@ -98,5 +124,6 @@ if LLM_PROVIDER not in ("anthropic", "ollama"):
 
 print(f"[Config] Loaded configuration:")
 print(f"  Webots: {WEBOTS_HOST}:{WEBOTS_PORT} (sim_speed={WEBOTS_SIM_SPEED}x)")
+print(f"  Ollama: {OLLAMA_BASE_URL}  vision={OLLAMA_VISION_MODEL}  reasoning={OLLAMA_REASONING_MODEL}")
 print(f"  Agent: MAX_STEPS={MAX_STEPS}, STATE_CACHE={STATE_CACHE_SIZE}")
 print(f"  LLM: {LLM_PROVIDER} ({ANTHROPIC_MODEL if LLM_PROVIDER == 'anthropic' else OLLAMA_MODEL})")
