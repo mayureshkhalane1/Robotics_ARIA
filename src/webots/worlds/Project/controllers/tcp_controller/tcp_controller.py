@@ -13,7 +13,7 @@ import sys
 from typing import Dict, Any, Optional
 
 try:
-    from controller import Robot, Motor, DistanceSensor, GPS, Compass, Camera
+    from controller import Robot, Motor, DistanceSensor, GPS, Compass, Camera, Lidar
 except ImportError:
     print("[FATAL] Webots controller module not found. Must run inside Webots.")
     sys.exit(1)
@@ -36,6 +36,7 @@ class WebotsRobotServer:
         self.gps: Optional[GPS] = None
         self.compass: Optional[Compass] = None
         self.camera: Optional[Camera] = None
+        self.lidar: Optional[Lidar] = None
 
         self._setup_motors()
         self._setup_sensors()
@@ -93,8 +94,13 @@ class WebotsRobotServer:
             self.camera = devices.get("camera")
             if self.camera:
                 self.camera.enable(self.timestep)
+            self.lidar = devices.get("lidar")
+            if self.lidar:
+                self.lidar.enable(self.timestep)
+                # point cloud not needed — we only read the range image
             print(f"[OK] Sensors: {len(self.proximity_sensors)} proximity, "
-                  f"GPS={self.gps is not None}, Camera={self.camera is not None}")
+                  f"GPS={self.gps is not None}, Camera={self.camera is not None}, "
+                  f"Lidar={self.lidar is not None}")
             sys.stdout.flush()
         except Exception as e:
             print(f"[WARN] Sensor setup failed: {e}")
@@ -131,6 +137,32 @@ class WebotsRobotServer:
             pass
         return out
 
+    def _gps_xy(self):
+        """Return (x, y) ground-plane position, or None."""
+        try:
+            if self.gps:
+                v = self.gps.getValues()
+                if v:
+                    return (v[0], v[1])
+        except Exception:
+            pass
+        return None
+
+    def _compass_xy(self):
+        """Return the horizontal (x, y) components of the compass north vector.
+
+        The world is Z-up (ENU), so the z component carries no heading
+        information — only x and y do.  Returned as a tuple, or None.
+        """
+        try:
+            if self.compass:
+                v = self.compass.getValues()
+                if v:
+                    return (v[0], v[1])
+        except Exception:
+            pass
+        return None
+
     def _close_client(self) -> None:
         if hasattr(self, "client_socket") and self.client_socket:
             try:
@@ -151,6 +183,7 @@ class WebotsRobotServer:
             "proximity": {},
             "wheel_velocities": [0.0, 0.0],
             "camera": None,
+            "lidar": None,
         }
         try:
             if self.gps:
@@ -180,107 +213,149 @@ class WebotsRobotServer:
                         "height": int(self.camera.getHeight()),
                         "data": base64.b64encode(img).decode("ascii"),
                     }
+            if self.lidar:
+                ranges = self.lidar.getRangeImage()
+                if ranges:
+                    # inf/NaN -> -1.0 (no return); keep it JSON-safe and compact
+                    clean = [
+                        (round(float(r), 3) if (r == r and r != float("inf")) else -1.0)
+                        for r in ranges
+                    ]
+                    state["lidar"] = {
+                        "ranges": clean,
+                        "fov": float(self.lidar.getFov()),
+                        "resolution": int(self.lidar.getHorizontalResolution()),
+                        "max_range": float(self.lidar.getMaxRange()),
+                    }
         except Exception as e:
             state["error"] = str(e)
         return state
 
     def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute a robot action WITH motor persistence.
+        """Execute a robot action as a CLOSED-LOOP, self-terminating motion.
 
-        Motor commands persist for ACTION_DURATION_STEPS simulation steps.
-        Steps are passed explicitly from the agent so movement is always
-        the correct physical distance regardless of the Webots speed slider.
-          move forward ~0.5 m  → 40 steps × 32 ms = 1.28 s sim time
-          turn 90°             → 27 steps × 32 ms = 0.86 s sim time
-          turn 180°            → 54 steps × 32 ms = 1.73 s sim time
+        The motion stops when the sensor goal is reached, then the motors are
+        ALWAYS set back to zero before returning.  This makes every motion
+        deterministic and independent of the Webots speed slider, and removes
+        the old failure mode where the wheels kept spinning between the time
+        this call returned and the agent's separate "stop" command arrived.
+
+        Recognised params:
+          velocity         wheel velocity (rad/s) for "move"
+          angular_velocity differential wheel velocity (rad/s) for "turn"
+          target_distance  metres to travel before stopping (closed-loop, GPS)
+          target_angle     degrees to rotate before stopping (closed-loop, compass)
+          steps            hard safety cap on simulation steps (anti-runaway)
+
+        If target_distance / target_angle are omitted it falls back to running
+        the step cap (legacy open-loop behaviour) but still stops the motors.
         """
+        import math
+
         atype = action.get("type", "stop")
         params = action.get("params", {})
 
-        # Steps driven by caller so distance/angle is independent of sim speed.
-        DEFAULT_STEPS = {"move": 40, "turn": 27, "stop": 0}
-        ACTION_DURATION_STEPS = int(params.get("steps", DEFAULT_STEPS.get(atype, 10)))
+        # Hard safety cap so a missing/!noisy sensor can never spin forever.
+        DEFAULT_STEP_CAP = {"move": 120, "turn": 160, "stop": 0}
+        max_steps = int(params.get("steps", DEFAULT_STEP_CAP.get(atype, 10)))
+        target_distance = params.get("target_distance")
+        target_angle = params.get("target_angle")
+        target_rad = math.radians(float(target_angle)) if target_angle is not None else None
 
         try:
-            import math
-
-            start_pos = None
-            start_heading = None
             motor_left_vel = 0.0
             motor_right_vel = 0.0
 
             if atype == "move":
                 v = float(params.get("velocity", 4.0))
-                motor_left_vel = v
-                motor_right_vel = v
-                try:
-                    if self.gps:
-                        start_pos = list(self.gps.getValues()[:2])
-                except Exception:
-                    pass
-
+                motor_left_vel = motor_right_vel = v
             elif atype == "turn":
                 av = float(params.get("angular_velocity", 0.5))
-                motor_left_vel = -av
-                motor_right_vel = av
-                try:
-                    if self.compass:
-                        start_heading = list(self.compass.getValues())
-                except Exception:
-                    pass
-
+                motor_left_vel, motor_right_vel = -av, av
             elif atype == "stop":
-                motor_left_vel = 0.0
-                motor_right_vel = 0.0
+                motor_left_vel = motor_right_vel = 0.0
             else:
                 return {"status": "error", "message": f"Unknown action: {atype}"}
 
-            if self.left_motor and self.right_motor:
-                self.left_motor.setVelocity(motor_left_vel)
-                self.right_motor.setVelocity(motor_right_vel)
-            else:
+            if not (self.left_motor and self.right_motor):
                 return {"status": "error", "message": "Motors not initialized"}
 
+            start_pos = self._gps_xy()
+            start_heading = list(self.compass.getValues()) if self.compass else None
+            prev_xy = self._compass_xy()
+            accum_angle = 0.0
+            reached = False
+
+            self.left_motor.setVelocity(motor_left_vel)
+            self.right_motor.setVelocity(motor_right_vel)
+
             step_count = 0
-            while step_count < ACTION_DURATION_STEPS:
+            while step_count < max_steps:
                 if self.robot.step(self.timestep) == -1:
                     break
                 step_count += 1
 
-            end_pos = None
-            end_heading = None
-            try:
-                if self.gps:
-                    end_pos = list(self.gps.getValues()[:2])
-            except Exception:
-                pass
-            try:
-                if self.compass:
-                    end_heading = list(self.compass.getValues())
-            except Exception:
-                pass
+                if atype == "move" and target_distance is not None and start_pos:
+                    cur = self._gps_xy()
+                    if cur:
+                        d = math.hypot(cur[0] - start_pos[0], cur[1] - start_pos[1])
+                        if d >= float(target_distance):
+                            reached = True
+                            break
 
-            response = {"status": "ok", "action": atype, "duration_steps": step_count}
+                elif atype == "turn" and target_rad is not None and prev_xy:
+                    cur = self._compass_xy()
+                    if cur:
+                        # Signed incremental rotation between consecutive samples,
+                        # accumulated so it stays correct through 180°/360°.
+                        dot = prev_xy[0] * cur[0] + prev_xy[1] * cur[1]
+                        crs = prev_xy[0] * cur[1] - prev_xy[1] * cur[0]
+                        accum_angle += math.atan2(crs, dot)
+                        prev_xy = cur
+                        if abs(accum_angle) >= target_rad:
+                            reached = True
+                            break
+
+            # ALWAYS stop the wheels once the motion is complete.
+            self.left_motor.setVelocity(0.0)
+            self.right_motor.setVelocity(0.0)
+
+            end_pos = self._gps_xy()
+            end_heading = list(self.compass.getValues()) if self.compass else None
+
+            response = {
+                "status": "ok",
+                "action": atype,
+                "duration_steps": step_count,
+                "reached_target": reached,
+            }
             if start_pos and end_pos:
-                response["start_position"] = start_pos
-                response["end_position"] = end_pos
-                dx = end_pos[0] - start_pos[0]
-                dy = end_pos[1] - start_pos[1]
-                response["distance_traveled"] = math.sqrt(dx * dx + dy * dy)
+                response["start_position"] = list(start_pos)
+                response["end_position"] = list(end_pos)
+                response["distance_traveled"] = math.hypot(
+                    end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]
+                )
             if start_heading and end_heading:
                 response["start_heading"] = start_heading
                 response["end_heading"] = end_heading
-
-            if atype == "move":
-                response["velocity"] = motor_left_vel
-            elif atype == "turn":
+            if atype == "turn":
+                response["degrees_turned"] = math.degrees(accum_angle)
                 response["angular_velocity"] = motor_left_vel
+            elif atype == "move":
+                response["velocity"] = motor_left_vel
 
             return response
 
         except Exception as e:
             import traceback
             traceback.print_exc()
+            # Best-effort safety stop even on error.
+            try:
+                if self.left_motor and self.right_motor:
+                    self.left_motor.setVelocity(0.0)
+                    self.right_motor.setVelocity(0.0)
+            except Exception:
+                pass
             return {"status": "error", "message": str(e)}
 
     def handle_command(self, cmd: Dict[str, Any]) -> Dict[str, Any]:

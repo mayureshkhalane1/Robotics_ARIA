@@ -7,6 +7,10 @@ __pycache__/
 .venv/
 venv/
 
+# Large vendored archive (Valetudo reference firmware) — keep local, never commit
+Valetudo-master.zip
+*.zip
+
 # Environment / secrets
 .env
 !.env.example

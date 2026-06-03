@@ -7,7 +7,7 @@ import re
 import time
 import urllib.request
 from base64 import b64decode
-from math import atan2, degrees
+from math import atan2, degrees, hypot
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # === Third-Party ===
@@ -16,8 +16,8 @@ import numpy as np
 
 # === Project ===
 from src.agent.environment_graph import get_environment_graph
-from src.agent.exploration_agent import ExplorationPlanner, RoomMapper
 from src.agent.grid_explorer import GridExplorer
+from src.agent.online_map import OnlineOccupancyGrid, parse_floor_extent
 from src.agent.spatial_memory import SpatialMemory
 from src.common.config import (
     OLLAMA_BASE_URL,
@@ -36,14 +36,18 @@ from src.perception.camera import Frame, FrameMetadata, get_camera_manager
 from src.perception.object_detector import get_detector
 
 # === Motion Constants ===
-CYCLE_INTERVAL = 2.5        # seconds per decision cycle (reduced for faster exploration)
-MOVE_DURATION = 1.2
-BACKUP_DURATION = 1.0
-MOVE_VELOCITY = 2.2
-BACKUP_VELOCITY = -2.0
-TURN_90_DUR = 1.7
-TURN_180_DUR = 3.4
-TURN_VELOCITY = 1.5
+# Motion is now closed-loop in the Webots controller (it drives until the GPS
+# distance / compass angle goal is met, then stops the wheels itself), so the
+# agent no longer sleeps to time a motion.  CYCLE_INTERVAL is just a small floor
+# between decision cycles.
+CYCLE_INTERVAL = 0.4        # seconds — minimum spacing between decision cycles
+MOVE_VELOCITY = 4.0         # wheel velocity (rad/s) for forward motion
+BACKUP_VELOCITY = -3.0      # wheel velocity (rad/s) for reversing
+TURN_VELOCITY = 2.0         # differential wheel velocity (rad/s) for turns
+MOVE_DISTANCE = 0.6         # metres travelled per move_forward (closed-loop)
+BACKUP_DISTANCE = 0.4       # metres travelled per back_up (closed-loop)
+MOVE_STEP_CAP = 120         # sim-step safety cap for a single move
+TURN_STEP_CAP = 160         # sim-step safety cap for a single turn
 
 # Proximity threshold: Pioneer 3DX sonar values 0=no reading, ~800=obstacle ~0.5m away.
 # Break_room walls 2m away read ~600–650; raise threshold so walls don't count as blocked.
@@ -263,10 +267,25 @@ def _frame_to_jpeg_b64(frame_bgr: np.ndarray, quality: int = 90) -> Optional[str
 
 
 def _heading_from_orientation(orientation: List[float]) -> float:
-    if len(orientation) < 3:
+    """Convert a Webots compass reading to an absolute heading in degrees.
+
+    The world is Z-up (ENU), so the compass north vector lies in the X-Y plane
+    and its Z component is ~0 — heading comes from the X and Y components only.
+
+        heading = atan2(bx, by)       0° = +X (east), 90° = +Y (north)
+
+    This convention was derived EMPIRICALLY from the GPS displacement seen on
+    every move_forward (a "move" at heading h always advanced along bearing h),
+    and it matches GridExplorer.get_nav_action's bearing = atan2(dy, dx).
+
+    NOTE: if a future run shows the robot driving 90° off from where it aims,
+    the compass axis order differs for your build — this is the single line to
+    re-derive (it depends on WorldInfo.northDirection / coordinate system).
+    """
+    if len(orientation) < 2:
         return 0.0
-    bx, _by, bz = orientation[0], orientation[1], orientation[2]
-    return degrees(atan2(bx, bz))
+    bx, by = orientation[0], orientation[1]
+    return degrees(atan2(bx, by))
 
 
 def _extract_json(text: str) -> Optional[Dict[str, Any]]:
@@ -351,41 +370,40 @@ def _query_reasoning_model(system_prompt: str, user_prompt: str) -> str:
     return text
 
 
+def _fwd(distance: float = MOVE_DISTANCE, velocity: float = MOVE_VELOCITY) -> None:
+    call_tool("execute_action", {
+        "action_type": "move", "velocity": velocity,
+        "target_distance": distance, "steps": MOVE_STEP_CAP,
+    })
+
+
+def _turn(degrees_: float, direction: int) -> None:
+    """direction: +1 = left/CCW, -1 = right/CW."""
+    call_tool("execute_action", {
+        "action_type": "turn", "angular_velocity": direction * TURN_VELOCITY,
+        "target_angle": abs(degrees_), "steps": TURN_STEP_CAP,
+    })
+
+
 def _execute_motion(action: str) -> None:
+    """Issue one closed-loop motion. Each call blocks until the controller has
+    reached the sensor goal and stopped the wheels — no agent-side sleeps."""
     if action == "move_forward":
-        call_tool("execute_action", {"action_type": "move", "velocity": MOVE_VELOCITY})
-        time.sleep(MOVE_DURATION)
-        call_tool("stop", {})
+        _fwd()
     elif action == "turn_left_90":
-        call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
-        time.sleep(TURN_90_DUR)
-        call_tool("stop", {})
+        _turn(90, +1)
     elif action == "turn_right_90":
-        call_tool("execute_action", {"action_type": "turn", "angular_velocity": -TURN_VELOCITY})
-        time.sleep(TURN_90_DUR)
-        call_tool("stop", {})
+        _turn(90, -1)
     elif action == "turn_around":
-        call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
-        time.sleep(TURN_180_DUR)
-        call_tool("stop", {})
+        _turn(180, +1)
     elif action == "back_up":
-        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
-        time.sleep(BACKUP_DURATION)
-        call_tool("stop", {})
+        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
     elif action in ("back_up_turn", "back_up_turn_left"):
-        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
-        time.sleep(BACKUP_DURATION)
-        call_tool("stop", {})
-        call_tool("execute_action", {"action_type": "turn", "angular_velocity": TURN_VELOCITY})
-        time.sleep(TURN_90_DUR)
-        call_tool("stop", {})
+        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
+        _turn(90, +1)
     elif action == "back_up_turn_right":
-        call_tool("execute_action", {"action_type": "move", "velocity": BACKUP_VELOCITY})
-        time.sleep(BACKUP_DURATION)
-        call_tool("stop", {})
-        call_tool("execute_action", {"action_type": "turn", "angular_velocity": -TURN_VELOCITY})
-        time.sleep(TURN_90_DUR)
-        call_tool("stop", {})
+        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
+        _turn(90, -1)
     elif action == "stop":
         call_tool("stop", {})
 
@@ -416,23 +434,52 @@ def run_aria_agent(
     detector = get_detector()
     env_graph = get_environment_graph()
 
-    # --- Systematic exploration infrastructure ---
+    # --- Autonomous exploration infrastructure ---
+    # GridExplorer is kept ONLY for its map-agnostic helpers (heading→turn
+    # action and the 360° scan state machine) — its lattice is not used.
     grid = GridExplorer(WEBOTS_WORLD_FILE, grid_spacing=1.5)
+    # The robot discovers the room itself: a live occupancy grid built from the
+    # Lidar, driven by frontier exploration.  No wall positions are read from
+    # the .wbt — only the floor bounding box, to size the grid's frame.
+    omap = OnlineOccupancyGrid(
+        *parse_floor_extent(WEBOTS_WORLD_FILE), resolution=0.10, robot_radius=0.25
+    )
     spatial_mem = SpatialMemory()
 
-    # Active waypoint being navigated to
-    active_wp_idx: Optional[int] = None
-    active_wp_pos: Optional[Tuple[float, float]] = None
+    def _plan_action(cur_xy, goal_xy):
+        """Heading-aware action toward goal_xy, routed around DISCOVERED
+        obstacles via the live occupancy map.  Returns (action, dist_to_goal)."""
+        d = hypot(goal_xy[0] - cur_xy[0], goal_xy[1] - cur_xy[1])
+        if d <= grid.ARRIVAL_RADIUS:
+            return "arrived", d
+        carrot = omap.next_step_toward(cur_xy, tuple(goal_xy), lookahead=0.7)
+        steer_to = carrot if carrot is not None else tuple(goal_xy)
+        action, _sub = grid.get_nav_action(cur_xy, steer_to, heading_deg)
+        if action == "arrived":          # close to carrot but not the goal → push on
+            action = "move_forward"
+        return action, d
 
-    # Are we doing a 360° scan at the current waypoint?
+    # Current exploration target (a frontier — edge of the unknown)
+    active_frontier: Optional[Tuple[float, float]] = None
+    no_frontier_count: int = 0          # consecutive steps with no frontier → done
+
+    # Progress watchdog: if we can't get meaningfully closer to the active
+    # frontier for a while, it's blocked — blacklist it and pick another.
+    best_dist_to_wp: float = float("inf")
+    no_progress_count: int = 0
+    NO_PROGRESS_LIMIT = 6            # steps without getting closer → abandon
+    PROGRESS_EPS = 0.15             # metres of improvement that counts as progress
+
+    # Are we doing a 360° scan (look-around for YOLO + fill the map)?
     scanning = False
-
-    # Estimated heading (updated immediately on turn; avoids 1-step sensor lag)
-    estimated_heading: Optional[float] = None   # None until first sensor reading
 
     # Ollama connectivity tracking (fail-fast: skip LLM when offline)
     ollama_online = True
     ollama_skip_until_step = 0   # re-try every _OLLAMA_RETRY_INTERVAL steps
+    # LLM is an optional refinement layer. YOLO (every step) is the real target
+    # detector, so we only pay for the slow vision+reasoning calls periodically
+    # instead of on every single step.
+    last_llm_ts = 0.0
 
     state = AgentState(goal=goal, step_count=0, success=False)
     objects_seen: List[str] = []
@@ -480,25 +527,19 @@ def run_aria_agent(
         timestamp = robot_state_raw.get("timestamp", time.time())
         camera_data = robot_state_raw.get("camera", {})
 
-        sensor_heading = _heading_from_orientation(orientation)
-
-        # Seed estimated heading from sensors on first step, then keep our own
-        # prediction to avoid the 1-step lag (sensors show pre-turn heading for
-        # one full cycle after a turn command is issued).
-        if estimated_heading is None:
-            estimated_heading = sensor_heading
-        else:
-            # Sync back to sensor value only when they agree (turn has settled)
-            diff = abs(sensor_heading - estimated_heading)
-            if diff > 180:
-                diff = 360 - diff
-            if diff < 25:
-                estimated_heading = sensor_heading
-
-        heading_deg = estimated_heading
+        # Closed-loop motions fully settle and stop the wheels before the
+        # controller returns, so the compass read at the start of each cycle is
+        # accurate — no dead-reckoning / 1-step-lag compensation is needed.
+        heading_deg = _heading_from_orientation(orientation)
         scan_result = _proximity_scan(proximity)
         front_blocked = bool(scan_result["front_blocked"])
         pos_xy = (float(position[0]), float(position[1]))
+
+        # Fuse this step's Lidar scan into the live occupancy map (the robot's
+        # only source of obstacle knowledge — discovered, never pre-loaded).
+        lidar_data = robot_state_raw.get("lidar")
+        if lidar_data and (pos_xy[0] != 0.0 or pos_xy[1] != 0.0 or step == 1):
+            omap.update_lidar(pos_xy[0], pos_xy[1], heading_deg, lidar_data)
 
         print(
             f"[ARIA] Pos=({pos_xy[0]:.2f},{pos_xy[1]:.2f}) hdg={heading_deg:.0f}°  "
@@ -558,70 +599,92 @@ def run_aria_agent(
 
         # ============================================================
         # DETERMINE BASE NAVIGATION ACTION
-        # Hierarchy: scanning > known-target waypoint > grid waypoint
+        # Hierarchy: scanning > known-target recall > frontier exploration
         # ============================================================
         nav_action: str
         nav_reason: str
 
         if scanning:
-            # Mid-360° sweep — keep turning
+            # Mid-360° look-around (fills the map + lets YOLO see all directions)
             nav_action = grid.scan_step()
-            nav_reason = f"360° scan at waypoint {active_wp_idx} ({grid.progress()})"
+            nav_reason = f"360° look-around ({omap.stats()['unknown']} cells unknown)"
             if grid.scan_done():
                 scanning = False
-                grid.mark_current_visited()
-                active_wp_idx = None
-                active_wp_pos = None
-                print(f"[ARIA] Scan complete. {grid.progress()}")
+                active_frontier = None      # pick a fresh frontier next cycle
+                print("[ARIA] Look-around complete")
 
         elif spatial_mem.has_target(target):
-            # We've seen this target before — go straight to it
+            # We've seen this target before — route to it through known-free space
             known_pos = spatial_mem.nearest(target, list(pos_xy))
-            nav_action, dist = grid.get_nav_action(pos_xy, tuple(known_pos), heading_deg)
+            nav_action, dist = _plan_action(pos_xy, tuple(known_pos))
+            if nav_action == "arrived":
+                nav_action = "turn_right_90"   # at the known spot — sweep to reacquire
             nav_reason = (
                 f"navigating to known {target} position "
-                f"({known_pos[0]:.1f},{known_pos[1]:.1f}) dist={dist:.1f}m"
+                f"({known_pos[0]:.1f},{known_pos[1]:.1f}) dist={dist:.1f}m → {nav_action}"
             )
             print(f"[ARIA] Known target position → {nav_action}  {nav_reason}")
 
         else:
-            # No known position — follow grid exploration
-            if active_wp_pos is None or (
-                active_wp_idx is not None and grid.visited[active_wp_idx]
-            ):
-                result_wp = grid.nearest_unvisited(pos_xy)
-                if result_wp:
-                    active_wp_idx, active_wp_pos = result_wp
-                    grid.set_active(active_wp_idx)
-                    print(
-                        f"[ARIA] New waypoint: #{active_wp_idx} "
-                        f"({active_wp_pos[0]:.1f},{active_wp_pos[1]:.1f})  "
-                        f"{grid.progress()}"
-                    )
-                else:
-                    # All waypoints visited — full scan done without finding target
-                    print(f"[ARIA] ALL WAYPOINTS VISITED — target '{target}' not found")
-                    nav_action = "stop"
-                    nav_reason = "full room scan complete, target not found"
-                    active_wp_pos = None
+            # ---- Autonomous frontier exploration ----
+            # Pick a new frontier when we have none, reached the current one, or
+            # it is no longer on the boundary of the unknown.
+            if active_frontier is None or not omap.is_free(*active_frontier) or \
+                    hypot(active_frontier[0] - pos_xy[0], active_frontier[1] - pos_xy[1]) < grid.ARRIVAL_RADIUS:
+                active_frontier = omap.nearest_frontier(pos_xy)
+                best_dist_to_wp = float("inf")
+                no_progress_count = 0
+                if active_frontier is not None:
+                    no_frontier_count = 0
+                    print(f"[ARIA] New frontier target "
+                          f"({active_frontier[0]:.1f},{active_frontier[1]:.1f})  "
+                          f"map: {omap.stats()}")
 
-            if active_wp_pos is not None:
-                nav_action, dist = grid.get_nav_action(
-                    pos_xy, active_wp_pos, heading_deg
-                )
-                nav_reason = (
-                    f"grid wp#{active_wp_idx} "
-                    f"({active_wp_pos[0]:.1f},{active_wp_pos[1]:.1f}) "
-                    f"dist={dist:.1f}m → {nav_action}"
-                )
-                print(f"[ARIA] Grid nav: {nav_reason}")
+            if active_frontier is None:
+                # Nothing left to explore that we can reach.
+                no_frontier_count += 1
+                if no_frontier_count >= 3:
+                    print(f"[ARIA] EXPLORATION COMPLETE — '{target}' not found  {omap.stats()}")
+                    nav_action = "stop"
+                    nav_reason = "explored all reachable space, target not found"
+                else:
+                    # give the map a couple of turns to find a frontier behind us
+                    nav_action = "turn_right_90"
+                    nav_reason = "no frontier visible — turning to map more"
+            else:
+                nav_action, dist = _plan_action(pos_xy, active_frontier)
+
+                if dist < best_dist_to_wp - PROGRESS_EPS:
+                    best_dist_to_wp = dist
+                    no_progress_count = 0
+                else:
+                    no_progress_count += 1
 
                 if nav_action == "arrived":
-                    print(f"[ARIA] Arrived at waypoint #{active_wp_idx} — starting 360° scan")
+                    print("[ARIA] Reached frontier — 360° look-around")
                     scanning = True
                     grid.start_scan()
-                    nav_action = grid.scan_step()  # first turn of the sweep
-                    nav_reason = f"arrived at wp#{active_wp_idx}, starting 360° scan"
+                    nav_action = grid.scan_step()
+                    nav_reason = "reached frontier, starting 360° look-around"
+
+                elif no_progress_count >= NO_PROGRESS_LIMIT:
+                    # Couldn't make headway (furniture the Lidar didn't catch).
+                    # Blacklist this frontier so we don't keep retrying it.
+                    print(f"[ARIA] Frontier ({active_frontier[0]:.1f},"
+                          f"{active_frontier[1]:.1f}) blocked — blacklisting")
+                    omap.blacklist(*active_frontier)
+                    active_frontier = None
+                    best_dist_to_wp = float("inf")
+                    no_progress_count = 0
+                    nav_action = "turn_around"
+                    nav_reason = "blocked frontier — turning away to re-plan"
+                else:
+                    nav_reason = (
+                        f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                        f"dist={dist:.1f}m → {nav_action}  "
+                        f"[progress {no_progress_count}/{NO_PROGRESS_LIMIT}]"
+                    )
+                    print(f"[ARIA] Explore: {nav_reason}")
 
         # Sensor-safe fallback for when nav_action isn't set
         if 'nav_action' not in dir() or nav_action is None:
@@ -643,10 +706,16 @@ def run_aria_agent(
 
         _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
 
-        # Only call LLM if it was reachable recently
-        attempt_llm = ollama_online or (step >= ollama_skip_until_step)
+        # Call the LLM only if (a) it was reachable recently AND (b) enough
+        # wall-clock time has passed since the last call.  This caps the slow
+        # vision+reasoning round-trips to ~once per OLLAMA_VISION_SAMPLE_INTERVAL
+        # seconds; YOLO still runs every step so target detection is unaffected.
+        reachable = ollama_online or (step >= ollama_skip_until_step)
+        due = (cycle_start - last_llm_ts) >= OLLAMA_VISION_SAMPLE_INTERVAL
+        attempt_llm = reachable and due
 
         if attempt_llm:
+            last_llm_ts = cycle_start
             try:
                 if jpeg_b64:
                     try:
@@ -693,8 +762,11 @@ def run_aria_agent(
                 print(f"[ARIA] LLM unavailable ({err_type}) — skipping for {_OLLAMA_RETRY_INTERVAL} steps")
                 ollama_online = False
                 ollama_skip_until_step = step + _OLLAMA_RETRY_INTERVAL
-        else:
+        elif not reachable:
             print(f"[ARIA] LLM offline — retry at step {ollama_skip_until_step}")
+        else:
+            print(f"[ARIA] LLM throttled (grid nav this step; next LLM in "
+                  f"≤{OLLAMA_VISION_SAMPLE_INTERVAL:.0f}s)")
 
         # ============================================================
         # ACTION SELECTION
@@ -797,7 +869,7 @@ def run_aria_agent(
                     "proximity": proximity,
                     "detections": detection_dicts[:20],
                     "graph_stats": graph_stats,
-                    "grid_progress": grid.progress(),
+                    "map_stats": omap.stats(),
                     "spatial_memory": spatial_mem.summary(),
                 },
                 "reasoning_tail": reasoning,
@@ -825,21 +897,6 @@ def run_aria_agent(
         except Exception as e:
             print(f"[ARIA] Motion error: {e}")
 
-        # Update estimated_heading immediately so the next step uses the
-        # predicted post-turn heading instead of the lagged sensor value.
-        if estimated_heading is not None:
-            if action == "turn_left_90":
-                estimated_heading += 90
-            elif action == "turn_right_90":
-                estimated_heading -= 90
-            elif action == "turn_around":
-                estimated_heading += 180
-            # Normalise to (-180, 180]
-            while estimated_heading > 180:
-                estimated_heading -= 360
-            while estimated_heading <= -180:
-                estimated_heading += 360
-
         # Pad to cycle interval
         elapsed = time.time() - cycle_start
         remaining = CYCLE_INTERVAL - elapsed
@@ -851,11 +908,8 @@ def run_aria_agent(
     if state.success:
         print(f"[ARIA] SUCCESS: '{target}' found in {state.step_count} steps")
     else:
-        if grid.all_visited():
-            print(f"[ARIA] FULL SCAN COMPLETE: '{target}' not found after {state.step_count} steps")
-        else:
-            print(f"[ARIA] STOPPED: '{target}' not found after {state.step_count} steps "
-                  f"({grid.progress()})")
+        print(f"[ARIA] STOPPED: '{target}' not found after {state.step_count} steps")
+    print(f"[ARIA] Map: {omap.stats()}")
     print(f"[ARIA] Spatial memory: {spatial_mem.summary()}")
     print(f"{'='*60}\n")
 
@@ -864,7 +918,7 @@ def run_aria_agent(
         "step": state.step_count,
         "goal": goal,
         "success": state.success,
-        "grid_progress": grid.progress(),
+        "map_stats": omap.stats(),
         "spatial_memory": spatial_mem.summary(),
     })
     return state

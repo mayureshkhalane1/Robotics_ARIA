@@ -12,15 +12,11 @@ from typing import Any, Dict, Set
 import cv2
 from aiohttp import web
 
-from src.agent.graph import run_reactive_agent
-from src.agent.vision_agent import run_vision_aware_agent
-from src.agent.smart_vision_agent import run_smart_vision_agent
 from src.agent.aria_agent import run_aria_agent, set_stop_signal
 from src.common.config import OLLAMA_MODEL
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
-from src.agent.visual_memory import get_visual_memory
 from src.agent.environment_graph import get_environment_graph
 
 ROOT = Path(__file__).parent
@@ -86,47 +82,14 @@ async def set_goal(request: web.Request) -> web.Response:
         call_tool("stop", {})
 
     async def runner() -> None:
-        if policy == "smart_vision":
-            # Use smart vision language agent
-            await asyncio.to_thread(
-                run_smart_vision_agent,
-                goal,
-                steps,
-                model or OLLAMA_MODEL,
-                lambda event: dashboard.emit_threadsafe(loop, event),
-            )
-        elif policy == "vision":
-            # Use vision-aware agent
-            await asyncio.to_thread(
-                run_vision_aware_agent,
-                goal,
-                steps,
-                800.0,
-                0.1,
-                lambda event_type, event_data: dashboard.emit_threadsafe(loop, event_data),
-            )
-        elif policy == "aria":
-            await asyncio.to_thread(
-                run_aria_agent,
-                goal,
-                steps,
-                model or OLLAMA_MODEL,
-                lambda event: dashboard.emit_threadsafe(loop, event),
-            )
-        else:
-            # Use reactive/ollama agent
-            await asyncio.to_thread(
-                run_reactive_agent,
-                goal,
-                steps,
-                800.0,
-                0.1,
-                None,
-                None,
-                policy,
-                model,
-                lambda event: dashboard.emit_threadsafe(loop, event),
-            )
+        # The ARIA grid + spatial-memory agent is the only supported policy.
+        await asyncio.to_thread(
+            run_aria_agent,
+            goal,
+            steps,
+            model or OLLAMA_MODEL,
+            lambda event: dashboard.emit_threadsafe(loop, event),
+        )
 
     dashboard.current_task = asyncio.create_task(runner())
     await dashboard.broadcast({"type": "goal", "plan": goal, "policy": policy, "step": 0})
@@ -188,8 +151,7 @@ async def camera_stream(request: web.Request) -> web.WebSocketResponse:
                 await asyncio.sleep(0.1)
                 continue
 
-            # Get memory and graph stats
-            memory = get_visual_memory()
+            # Environment-graph stats for the dashboard
             graph = get_environment_graph()
 
             # Send frame with metadata
@@ -199,7 +161,6 @@ async def camera_stream(request: web.Request) -> web.WebSocketResponse:
                 "width": frame.shape[1],
                 "height": frame.shape[0],
                 "detections": detection_data,
-                "memory_stats": memory.get_stats(),
                 "graph_stats": graph.get_stats(),
             }
             

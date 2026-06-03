@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from benchmarks.tasks import TASKS, get_task
-from src.agent.graph import run_reactive_agent
+from src.agent.aria_agent import run_aria_agent
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,7 +35,7 @@ def run_once(task_name: str, policy: str) -> Dict[str, Any]:
     if policy != "reactive":
         raise ValueError(f"Unsupported policy: {policy}")
 
-    state = run_reactive_agent(goal=task.goal, max_steps=task.max_steps)
+    state = run_aria_agent(goal=task.goal, max_steps=task.max_steps)
     elapsed = time.time() - started
     return {
         "task": task.name,

@@ -228,15 +228,21 @@ def tool_get_state(include_camera: bool = True) -> Dict[str, Any]:
 
 def tool_execute_action(action_type: str, velocity: Optional[float] = None,
                         angular_velocity: Optional[float] = None,
-                        duration: Optional[float] = None) -> Dict[str, Any]:
+                        duration: Optional[float] = None,
+                        target_distance: Optional[float] = None,
+                        target_angle: Optional[float] = None,
+                        steps: Optional[int] = None) -> Dict[str, Any]:
     """
     MCP Tool: Execute an action on the robot.
 
     Args:
         action_type: Type of action ('move', 'turn', 'stop', 'grab')
-        velocity: Linear velocity (m/s) for move actions
-        angular_velocity: Rotational velocity (rad/s) for turn actions
+        velocity: Wheel velocity (rad/s) for move actions
+        angular_velocity: Differential wheel velocity (rad/s) for turn actions
         duration: Duration of action (not yet used)
+        target_distance: Metres to travel before stopping (closed-loop on GPS)
+        target_angle: Degrees to rotate before stopping (closed-loop on compass)
+        steps: Hard safety cap on simulation steps (anti-runaway)
 
     Returns:
         Execution result with status and feedback.
@@ -251,6 +257,12 @@ def tool_execute_action(action_type: str, velocity: Optional[float] = None,
         params["angular_velocity"] = angular_velocity
     if duration is not None:
         params["duration"] = duration
+    if target_distance is not None:
+        params["target_distance"] = target_distance
+    if target_angle is not None:
+        params["target_angle"] = target_angle
+    if steps is not None:
+        params["steps"] = steps
 
     try:
         action = Action(

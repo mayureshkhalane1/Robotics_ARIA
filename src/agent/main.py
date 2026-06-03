@@ -1,4 +1,8 @@
-"""Command-line entry point for the ARIA robot agent."""
+"""Command-line entry point for the ARIA robot agent.
+
+Headless counterpart to the browser dashboard — runs the same ARIA grid +
+spatial-memory agent (`run_aria_agent`) without the UI.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +11,7 @@ import json
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
-from src.agent.graph import run_reactive_agent
+from src.agent.aria_agent import run_aria_agent
 from src.common.config import OLLAMA_MODEL
 from src.mcp_server.server import call_tool, list_tools
 
@@ -22,17 +26,9 @@ def _json_default(value: Any) -> Any:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run the ARIA robot agent")
-    parser.add_argument("--goal", default="avoid obstacles and explore", help="Natural language robot goal")
-    parser.add_argument("--steps", type=int, default=50, help="Maximum sense-plan-act steps")
-    parser.add_argument(
-        "--policy",
-        choices=("reactive", "ollama", "langgraph"),
-        default="reactive",
-        help="Policy to run. langgraph currently uses the same evented ReAct loop with Ollama planning.",
-    )
-    parser.add_argument("--model", default=OLLAMA_MODEL, help="Ollama model for ollama/langgraph policies")
-    parser.add_argument("--obstacle-threshold", type=float, default=800.0)
-    parser.add_argument("--sleep", type=float, default=0.1, help="Seconds to sleep between actions")
+    parser.add_argument("--goal", default="explore the room", help="Natural language robot goal")
+    parser.add_argument("--steps", type=int, default=50, help="Maximum sense-decide-act steps")
+    parser.add_argument("--model", default=OLLAMA_MODEL, help="Ollama model for the optional LLM layer")
     parser.add_argument("--list-tools", action="store_true", help="Print available bridge tools and exit")
     parser.add_argument("--validate-only", action="store_true", help="Validate local tool registry without Webots")
     parser.add_argument("--json", action="store_true", help="Print final state as JSON")
@@ -51,12 +47,9 @@ def main() -> int:
         print(json.dumps(result, indent=2, default=_json_default))
         return 0 if result.get("valid") else 1
 
-    state = run_reactive_agent(
+    state = run_aria_agent(
         goal=args.goal,
         max_steps=args.steps,
-        obstacle_threshold=args.obstacle_threshold,
-        sleep_seconds=args.sleep,
-        policy=args.policy,
         model=args.model,
     )
 

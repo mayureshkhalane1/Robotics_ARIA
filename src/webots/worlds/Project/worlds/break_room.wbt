@@ -163,6 +163,15 @@ Pioneer3dx {
     }
     GPS {
     }
+    Lidar {
+      translation 0 0 0.30
+      name "lidar"
+      horizontalResolution 360
+      fieldOfView 6.2831853
+      numberOfLayers 1
+      maxRange 8
+      near 0.05
+    }
   ]
 }
 Wall {
