@@ -15,11 +15,28 @@ Valetudo-master.zip
 .env
 !.env.example
 
-# Logs and generated outputs
-logs/
+# Logs and generated outputs.
+# NOTE: .gitignore is pattern-based — it CANNOT auto-keep "the latest N logs by
+# time". We ignore everything in logs/ and all *.log files, then explicitly
+# whitelist (with `!`) the specific run logs we want to publish. Update the
+# whitelist below when you want newer logs committed. (spatial_memory.json and
+# every non-listed run log stay ignored.)
+logs/*
 *.log
 benchmark_results/
 results/
+
+# --- Run logs to publish. AUTO-MANAGED on `python -m src.ui.server` shutdown by
+#     src/common/log_retention.py, which keeps only the latest N (default 5,
+#     override with ARIA_LOG_KEEP). Do NOT hand-edit between the markers — it is
+#     rewritten. Run manually with: python -m src.common.log_retention [N] ---
+# >>> ARIA log-whitelist >>>
+!logs/run_20260604_173647.log
+!logs/run_20260604_173851.log
+!logs/run_20260604_173814.log
+!logs/run_20260604_173853.log
+!logs/run_20260604_173448.log
+# <<< ARIA log-whitelist <<<
 
 # OS / editor
 .DS_Store
@@ -38,6 +55,9 @@ controllers/*/build/
 *.jpg
 *.jpeg
 *.png
+
+# YOLO model weights — auto-download on first use, don't commit (~22MB+)
+*.pt
 
 # Packaging artifacts
 *.egg-info/

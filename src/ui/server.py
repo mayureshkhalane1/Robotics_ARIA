@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import base64
 import io
 import json
@@ -14,6 +15,7 @@ from aiohttp import web
 
 from src.agent.aria_agent import run_aria_agent, set_stop_signal
 from src.common.config import OLLAMA_MODEL
+from src.common.log_retention import update_log_whitelist
 from src.mcp_server.server import call_tool
 from src.perception.camera import get_camera_manager
 from src.perception.object_detector import get_detector
@@ -190,8 +192,16 @@ def make_app() -> web.Application:
 
 
 def main() -> None:
+    # When the server stops (Ctrl-C or normal exit), trim the .gitignore log
+    # whitelist to only the latest few run logs so old logs never pile into git.
+    atexit.register(update_log_whitelist)
     # Bind on all interfaces so Windows browsers can reach the UI from WSL2.
-    web.run_app(make_app(), host="0.0.0.0", port=8080)
+    try:
+        web.run_app(make_app(), host="0.0.0.0", port=8080)
+    finally:
+        # Also run it directly here in case atexit is bypassed; the helper is
+        # idempotent so running twice is harmless.
+        update_log_whitelist()
 
 
 if __name__ == "__main__":

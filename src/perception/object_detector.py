@@ -88,14 +88,30 @@ class ObjectDetector:
         self.model_name = model_name
         self.confidence_threshold = confidence_threshold
         self.iou_threshold = iou_threshold
+        # Open-vocabulary models (YOLO-World) detect arbitrary text-named classes
+        # (e.g. "duck", "wooden box") instead of only the 80 fixed COCO classes.
+        self.is_open_vocab = "world" in model_name.lower()
 
         # Load model (auto-downloads on first use)
         try:
             self.model = YOLO(f"{model_name}.pt")
-            print(f"[Detector] Loaded {model_name} successfully (conf={confidence_threshold}, iou={iou_threshold})")
+            print(f"[Detector] Loaded {model_name} successfully "
+                  f"(conf={confidence_threshold}, iou={iou_threshold}, "
+                  f"open_vocab={self.is_open_vocab})")
         except Exception as e:
             print(f"[Detector] Failed to load model: {e}")
             self.model = None
+
+    def set_classes(self, names) -> None:
+        """For open-vocabulary (YOLO-World) models, set the text classes to look
+        for.  No-op for standard COCO models (their classes are fixed)."""
+        if not self.is_open_vocab or self.model is None:
+            return
+        try:
+            self.model.set_classes(list(names))
+            print(f"[Detector] Open-vocab classes set: {list(names)}")
+        except Exception as e:
+            print(f"[Detector] set_classes failed: {e}")
 
     def detect(self, frame: np.ndarray) -> list[Detection]:
         """Detect objects in frame.
@@ -262,20 +278,18 @@ _detector: Optional[ObjectDetector] = None
 
 
 def get_detector() -> ObjectDetector:
-    """Get or create global object detector.
-
-    Returns:
-        ObjectDetector instance configured with:
-        - Model: yolov8n (nano, ~3.3M params)
-        - Confidence threshold: 0.5
-        - NMS IoU threshold: 0.45
-    """
+    """Get or create global object detector, configured from env (config.py):
+    YOLO_MODEL (default yolov8s), YOLO_CONF (0.35), YOLO_IOU (0.45)."""
     global _detector
     if _detector is None:
+        try:
+            from src.common.config import YOLO_MODEL, YOLO_CONF, YOLO_IOU
+        except Exception:
+            YOLO_MODEL, YOLO_CONF, YOLO_IOU = "yolov8s", 0.35, 0.45
         _detector = ObjectDetector(
-            model_name="yolov8n",
-            confidence_threshold=0.5,
-            iou_threshold=0.45
+            model_name=YOLO_MODEL,
+            confidence_threshold=YOLO_CONF,
+            iou_threshold=YOLO_IOU,
         )
     return _detector
 

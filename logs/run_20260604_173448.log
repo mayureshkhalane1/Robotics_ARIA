@@ -1,0 +1,1301 @@
+# ARIA run log — goal='find plant and approach it' — 2026-06-04 17:34:48
+17:34:48.913 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+17:34:48.921 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+17:34:48.931 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+17:34:48.932 [GridExplorer] 32 waypoints across the room
+17:34:48.932   wp00 (-5.3,-2.0)
+17:34:48.932   wp01 (-5.3,-0.5)
+17:34:48.932   wp02 (-5.3,1.0)
+17:34:48.932   wp03 (-5.3,2.5)
+17:34:48.932   wp04 (-3.8,2.5)
+17:34:48.932   wp05 (-3.8,1.0)
+17:34:48.932   wp06 (-3.8,-0.5)
+17:34:48.932   wp07 (-3.8,-2.0)
+17:34:48.932   wp08 (-2.3,-2.0)
+17:34:48.932   wp09 (-2.3,-0.5)
+17:34:48.932   wp10 (-2.3,1.0)
+17:34:48.932   wp11 (-2.3,2.5)
+17:34:48.932   wp12 (-0.8,2.5)
+17:34:48.932   wp13 (-0.8,1.0)
+17:34:48.932   wp14 (-0.8,-0.5)
+17:34:48.932   wp15 (-0.8,-2.0)
+17:34:48.933   wp16 (0.7,-2.0)
+17:34:48.933   wp17 (0.7,-0.5)
+17:34:48.933   wp18 (0.7,1.0)
+17:34:48.933   wp19 (0.7,2.5)
+17:34:48.933   wp20 (2.2,2.5)
+17:34:48.933   wp21 (2.2,1.0)
+17:34:48.933   wp22 (2.2,-0.5)
+17:34:48.933   wp23 (2.2,-2.0)
+17:34:48.933   wp24 (3.7,-2.0)
+17:34:48.933   wp25 (3.7,-0.5)
+17:34:48.933   wp26 (3.7,1.0)
+17:34:48.933   wp27 (3.7,2.5)
+17:34:48.933   wp28 (5.2,2.5)
+17:34:48.933   wp29 (5.2,1.0)
+17:34:48.933   wp30 (5.2,-0.5)
+17:34:48.933   wp31 (5.2,-2.0)
+17:34:48.950 [SpatialMemory] Loaded 45 discoveries for 'empt_room'
+17:34:48.950   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8]]
+17:34:48.950   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8]]
+17:34:48.950   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2]]
+17:34:48.950   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3]]
+17:34:48.950   baseball bat: [[-1.6, -1.1]]
+17:34:48.950   person: [[5.2, 3.2], [1.1, 2.9]]
+17:34:48.950   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+17:34:48.950   bed: [[-4.6, -0.6]]
+17:34:48.950   book: [[1.0, 2.9]]
+17:34:48.950   bench: [[1.1, 2.9]]
+17:34:48.950   fridge: [[-5.3, -1.8]]
+17:34:48.950   clock: [[-5.3, -1.8]]
+17:34:48.951 
+17:34:48.951 [ARIA] Goal: find plant and approach it
+17:34:48.951 [ARIA] Target: plant  aliases: ['plant', 'potted plant']  mode: APPROACH (drive to it)
+17:34:48.951 [ARIA] Model: llava-phi3:latest
+17:34:48.951 [ARIA] Spatial memory: {'traffic light': 12, 'airplane': 9, 'plant': 9, 'umbrella': 5, 'baseball bat': 1, 'person': 2, 'sink': 2, 'bed': 1, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 1}
+17:34:48.952 
+17:34:48.952 ============================================================
+17:34:48.952 [ARIA] Step 1/100  |  goal: find plant and approach it
+17:34:48.952 ============================================================
+17:34:48.979 [ARIA] Pos=(-2.93,1.29) hdg=128°  front=399 left=398 right=399  blocked=False
+17:34:49.009 [ARIA] YOLO:
+17:34:49.009   (none)
+17:34:49.009 [ARIA] Starting 360° look-around
+17:34:49.009 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:49.009 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:34:49.344 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:34:49.344 [ARIA] dt sense+yolo=0.06s plan=0.00s llm=0.00s move=0.34s total=0.39s
+17:34:49.345 
+17:34:49.345 ============================================================
+17:34:49.345 [ARIA] Step 2/100  |  goal: find plant and approach it
+17:34:49.345 ============================================================
+17:34:49.413 [ARIA] Pos=(-2.93,1.29) hdg=82°  front=391 left=389 right=391  blocked=False
+17:34:49.429 [ARIA] YOLO:
+17:34:49.429   (none)
+17:34:49.433 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:49.433 [ARIA] → ACTION: turn_right_45 | 360° scan (4276 cells unknown)
+17:34:50.105 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:34:50.105 [ARIA] dt sense+yolo=0.08s plan=0.00s llm=0.00s move=0.67s total=0.76s
+17:34:50.105 
+17:34:50.105 ============================================================
+17:34:50.106 [ARIA] Step 3/100  |  goal: find plant and approach it
+17:34:50.106 ============================================================
+17:34:50.203 [ARIA] Pos=(-2.93,1.29) hdg=37°  front=404 left=415 right=338  blocked=False
+17:34:50.232 [ARIA] YOLO:
+17:34:50.232   (none)
+17:34:50.236 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:50.237 [ARIA] → ACTION: turn_right_45 | 360° scan (4226 cells unknown)
+17:34:50.913 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:34:50.913 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.68s total=0.81s
+17:34:50.913 
+17:34:50.913 ============================================================
+17:34:50.913 [ARIA] Step 4/100  |  goal: find plant and approach it
+17:34:50.913 ============================================================
+17:34:51.029 [ARIA] Pos=(-2.94,1.29) hdg=-9°  front=338 left=421 right=331  blocked=False
+17:34:51.055 [ARIA] YOLO:
+17:34:51.055   sink conf=0.42
+17:34:51.065 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:51.066 [ARIA] → ACTION: turn_right_45 | 360° scan (4201 cells unknown)
+17:34:51.796 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:34:51.796 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.01s move=0.73s total=0.88s
+17:34:51.796 
+17:34:51.796 ============================================================
+17:34:51.796 [ARIA] Step 5/100  |  goal: find plant and approach it
+17:34:51.796 ============================================================
+17:34:51.908 [ARIA] Pos=(-2.94,1.29) hdg=-54°  front=341 left=411 right=178  blocked=False
+17:34:51.927 [ARIA] YOLO:
+17:34:51.928   (none)
+17:34:51.931 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:51.932 [ARIA] → ACTION: turn_right_45 | 360° scan (4159 cells unknown)
+17:34:52.581 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:34:52.581 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.65s total=0.79s
+17:34:52.581 
+17:34:52.581 ============================================================
+17:34:52.581 [ARIA] Step 6/100  |  goal: find plant and approach it
+17:34:52.581 ============================================================
+17:34:52.683 [ARIA] Pos=(-2.94,1.29) hdg=-100°  front=338 left=381 right=393  blocked=False
+17:34:52.711 [ARIA] YOLO:
+17:34:52.711   (none)
+17:34:52.715 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:52.715 [ARIA] → ACTION: turn_right_45 | 360° scan (4152 cells unknown)
+17:34:53.406 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:34:53.406 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.69s total=0.82s
+17:34:53.406 
+17:34:53.406 ============================================================
+17:34:53.406 [ARIA] Step 7/100  |  goal: find plant and approach it
+17:34:53.406 ============================================================
+17:34:53.504 [ARIA] Pos=(-2.94,1.29) hdg=-145°  front=199 left=350 right=404  blocked=False
+17:34:53.527 [ARIA] YOLO:
+17:34:53.527   (none)
+17:34:53.563 [ARIA] Scan done → frontier (-4.5,-0.5)  map: {'free': 7574, 'occupied': 375, 'unknown': 4144}
+17:34:53.564 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:53.564 [ARIA] → ACTION: turn_right_45 | 360° scan (4144 cells unknown)
+17:34:54.282 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:34:54.282 [ARIA] dt sense+yolo=0.12s plan=0.04s llm=0.00s move=0.72s total=0.88s
+17:34:54.282 
+17:34:54.282 ============================================================
+17:34:54.282 [ARIA] Step 8/100  |  goal: find plant and approach it
+17:34:54.282 ============================================================
+17:34:54.378 [ARIA] Pos=(-2.94,1.29) hdg=170°  front=359 left=323 right=401  blocked=False
+17:34:54.404 [ARIA] YOLO:
+17:34:54.404   (none)
+17:34:54.419 [ARIA] Explore: → frontier (-4.5,-0.5) dist=2.4m → move_forward  [progress 0/6]
+17:34:54.420 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:54.420 [ARIA] → ACTION: move_forward | → frontier (-4.5,-0.5) dist=2.4m → move_forward  [progress 0/6]
+17:34:56.132 [ARIA] MOVED dist=0.601m turned=0.0° reached=True steps=49
+17:34:56.133 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.71s total=1.85s
+17:34:56.133 
+17:34:56.133 ============================================================
+17:34:56.133 [ARIA] Step 9/100  |  goal: find plant and approach it
+17:34:56.133 ============================================================
+17:34:56.246 [ARIA] Pos=(-3.53,1.41) hdg=170°  front=498 left=347 right=525  blocked=False
+17:34:56.260 [ARIA] YOLO:
+17:34:56.261   (none)
+17:34:56.264 [ARIA] Explore: → frontier (-4.5,-0.5) dist=2.1m → turn_left_45  [progress 0/6]
+17:34:56.265 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:56.265 [ARIA] → ACTION: turn_left_45 | → frontier (-4.5,-0.5) dist=2.1m → turn_left_45  [progress 0/6]
+17:34:57.013 [ARIA] MOVED dist=0.014m turned=-47.1° reached=True steps=23
+17:34:57.013 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.75s total=0.88s
+17:34:57.013 
+17:34:57.013 ============================================================
+17:34:57.013 [ARIA] Step 10/100  |  goal: find plant and approach it
+17:34:57.013 ============================================================
+17:34:57.133 [ARIA] Pos=(-3.52,1.41) hdg=-143°  front=181 left=382 right=517  blocked=False
+17:34:57.155 [ARIA] YOLO:
+17:34:57.155   (none)
+17:34:57.160 [ARIA] Explore: → frontier (-4.5,-0.5) dist=2.1m → move_forward  [progress 1/6]
+17:34:57.161 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:57.161 [ARIA] → ACTION: move_forward | → frontier (-4.5,-0.5) dist=2.1m → move_forward  [progress 1/6]
+17:34:58.764 [ARIA] MOVED dist=0.607m turned=0.0° reached=True steps=49
+17:34:58.764 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=1.60s total=1.75s
+17:34:58.764 
+17:34:58.764 ============================================================
+17:34:58.764 [ARIA] Step 11/100  |  goal: find plant and approach it
+17:34:58.764 ============================================================
+17:34:58.870 [ARIA] Pos=(-4.01,1.03) hdg=-143°  front=256 left=301 right=611  blocked=False
+17:34:58.897 [ARIA] YOLO:
+17:34:58.897   (none)
+17:34:58.899 [ARIA] Explore: → frontier (-4.5,-0.5) dist=1.6m → move_forward  [progress 0/6]
+17:34:58.899 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:34:58.899 [ARIA] → ACTION: move_forward | → frontier (-4.5,-0.5) dist=1.6m → move_forward  [progress 0/6]
+17:35:00.549 [ARIA] MOVED dist=0.611m turned=0.0° reached=True steps=50
+17:35:00.549 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=1.65s total=1.78s
+17:35:00.549 
+17:35:00.549 ============================================================
+17:35:00.549 [ARIA] Step 12/100  |  goal: find plant and approach it
+17:35:00.549 ============================================================
+17:35:00.660 [ARIA] Pos=(-4.50,0.66) hdg=-143°  front=333 left=227 right=712  blocked=False
+17:35:00.681 [ARIA] YOLO:
+17:35:00.681   (none)
+17:35:00.682 [ARIA] Explore: → frontier (-4.5,-0.5) dist=1.1m → turn_left_45  [progress 0/6]
+17:35:00.682 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:00.682 [ARIA] → ACTION: turn_left_45 | → frontier (-4.5,-0.5) dist=1.1m → turn_left_45  [progress 0/6]
+17:35:01.388 [ARIA] MOVED dist=0.011m turned=-46.5° reached=True steps=22
+17:35:01.388 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.71s total=0.84s
+17:35:01.388 
+17:35:01.388 ============================================================
+17:35:01.388 [ARIA] Step 13/100  |  goal: find plant and approach it
+17:35:01.388 ============================================================
+17:35:01.505 [ARIA] Pos=(-4.49,0.67) hdg=-96°  front=0 left=717 right=723  blocked=False
+17:35:01.528 [ARIA] YOLO:
+17:35:01.528   (none)
+17:35:01.529 [ARIA] Explore: → frontier (-4.5,-0.5) dist=1.1m → move_forward  [progress 1/6]
+17:35:01.530 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:01.530 [ARIA] → ACTION: move_forward | → frontier (-4.5,-0.5) dist=1.1m → move_forward  [progress 1/6]
+17:35:03.181 [ARIA] MOVED dist=0.612m turned=0.0° reached=True steps=50
+17:35:03.181 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=1.65s total=1.79s
+17:35:03.181 
+17:35:03.181 ============================================================
+17:35:03.181 [ARIA] Step 14/100  |  goal: find plant and approach it
+17:35:03.181 ============================================================
+17:35:03.281 [ARIA] Pos=(-4.56,0.05) hdg=-96°  front=0 left=728 right=738  blocked=False
+17:35:03.303 [ARIA] YOLO:
+17:35:03.303   (none)
+17:35:03.303 [ARIA] Reached frontier (-4.5,-0.5) — will re-scan
+17:35:03.303 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:03.303 [ARIA] → ACTION: move_forward | reached frontier
+17:35:04.936 [ARIA] MOVED dist=0.601m turned=0.0° reached=True steps=50
+17:35:04.936 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=1.63s total=1.76s
+17:35:04.936 
+17:35:04.936 ============================================================
+17:35:04.936 [ARIA] Step 15/100  |  goal: find plant and approach it
+17:35:04.936 ============================================================
+17:35:05.031 [ARIA] Pos=(-4.63,-0.55) hdg=-96°  front=0 left=739 right=745  blocked=False
+17:35:05.052 [ARIA] YOLO:
+17:35:05.052   (none)
+17:35:05.052 [ARIA] Starting 360° look-around
+17:35:05.053 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:05.053 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:35:05.748 [ARIA] MOVED dist=0.008m turned=45.2° reached=True steps=21
+17:35:05.748 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.69s total=0.81s
+17:35:05.748 
+17:35:05.748 ============================================================
+17:35:05.748 [ARIA] Step 16/100  |  goal: find plant and approach it
+17:35:05.748 ============================================================
+17:35:05.858 [ARIA] Pos=(-4.63,-0.55) hdg=-141°  front=577 left=0 right=741  blocked=False
+17:35:05.880 [ARIA] YOLO:
+17:35:05.880   (none)
+17:35:05.885 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:05.886 [ARIA] → ACTION: turn_right_45 | 360° scan (4008 cells unknown)
+17:35:06.579 [ARIA] MOVED dist=0.002m turned=45.3° reached=True steps=21
+17:35:06.579 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.69s total=0.83s
+17:35:06.579 
+17:35:06.579 ============================================================
+17:35:06.579 [ARIA] Step 17/100  |  goal: find plant and approach it
+17:35:06.579 ============================================================
+17:35:06.683 [ARIA] Pos=(-4.62,-0.55) hdg=173°  front=580 left=580 right=754  blocked=False
+17:35:06.706 [ARIA] YOLO:
+17:35:06.706   (none)
+17:35:06.710 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:06.710 [ARIA] → ACTION: turn_right_45 | 360° scan (4003 cells unknown)
+17:35:07.378 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:07.378 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.67s total=0.80s
+17:35:07.378 
+17:35:07.378 ============================================================
+17:35:07.378 [ARIA] Step 18/100  |  goal: find plant and approach it
+17:35:07.378 ============================================================
+17:35:07.483 [ARIA] Pos=(-4.62,-0.55) hdg=128°  front=750 left=594 right=750  blocked=False
+17:35:07.505 [ARIA] YOLO:
+17:35:07.505   (none)
+17:35:07.509 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:07.510 [ARIA] → ACTION: turn_right_45 | 360° scan (4000 cells unknown)
+17:35:08.226 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:08.226 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.72s total=0.85s
+17:35:08.226 
+17:35:08.226 ============================================================
+17:35:08.226 [ARIA] Step 19/100  |  goal: find plant and approach it
+17:35:08.227 ============================================================
+17:35:08.333 [ARIA] Pos=(-4.62,-0.55) hdg=82°  front=733 left=733 right=727  blocked=False
+17:35:08.349 [ARIA] YOLO:
+17:35:08.349   (none)
+17:35:08.353 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:08.353 [ARIA] → ACTION: turn_right_45 | 360° scan (3982 cells unknown)
+17:35:09.038 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:09.038 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.69s total=0.81s
+17:35:09.038 
+17:35:09.038 ============================================================
+17:35:09.038 [ARIA] Step 20/100  |  goal: find plant and approach it
+17:35:09.038 ============================================================
+17:35:09.146 [ARIA] Pos=(-4.62,-0.55) hdg=37°  front=760 left=767 right=0  blocked=False
+17:35:09.171 [ARIA] YOLO:
+17:35:09.171   bed conf=0.50
+17:35:09.175 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:09.175 [ARIA] → ACTION: turn_right_45 | 360° scan (3982 cells unknown)
+17:35:09.834 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:09.834 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.66s total=0.80s
+17:35:09.834 
+17:35:09.834 ============================================================
+17:35:09.834 [ARIA] Step 21/100  |  goal: find plant and approach it
+17:35:09.834 ============================================================
+17:35:09.930 [ARIA] Pos=(-4.63,-0.55) hdg=-8°  front=0 left=764 right=578  blocked=False
+17:35:09.946 [ARIA] YOLO:
+17:35:09.946   (none)
+17:35:09.973 [ARIA] Scan done → frontier (1.5,4.2)  map: {'free': 7716, 'occupied': 395, 'unknown': 3982}
+17:35:09.974 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:09.974 [ARIA] → ACTION: turn_right_45 | 360° scan (3982 cells unknown)
+17:35:10.657 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:10.657 [ARIA] dt sense+yolo=0.11s plan=0.03s llm=0.00s move=0.68s total=0.82s
+17:35:10.657 
+17:35:10.657 ============================================================
+17:35:10.657 [ARIA] Step 22/100  |  goal: find plant and approach it
+17:35:10.657 ============================================================
+17:35:10.754 [ARIA] Pos=(-4.63,-0.55) hdg=-54°  front=0 left=758 right=576  blocked=False
+17:35:10.769 [ARIA] YOLO:
+17:35:10.769   (none)
+17:35:10.779 [ARIA] Explore: → frontier (1.5,4.2) dist=7.7m → turn_left_45  [progress 0/6]
+17:35:10.780 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:10.780 [ARIA] → ACTION: turn_left_45 | → frontier (1.5,4.2) dist=7.7m → turn_left_45  [progress 0/6]
+17:35:11.457 [ARIA] MOVED dist=0.001m turned=-45.2° reached=True steps=21
+17:35:11.457 [ARIA] dt sense+yolo=0.11s plan=0.01s llm=0.00s move=0.68s total=0.80s
+17:35:11.457 
+17:35:11.457 ============================================================
+17:35:11.457 [ARIA] Step 23/100  |  goal: find plant and approach it
+17:35:11.457 ============================================================
+17:35:11.554 [ARIA] Pos=(-4.63,-0.55) hdg=-9°  front=0 left=771 right=564  blocked=False
+17:35:11.573 [ARIA] YOLO:
+17:35:11.574   (none)
+17:35:11.584 [ARIA] Explore: → frontier (1.5,4.2) dist=7.7m → move_forward  [progress 1/6]
+17:35:11.585 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:11.585 [ARIA] → ACTION: move_forward | → frontier (1.5,4.2) dist=7.7m → move_forward  [progress 1/6]
+17:35:13.168 [ARIA] MOVED dist=0.604m turned=0.0° reached=True steps=49
+17:35:13.168 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=1.58s total=1.71s
+17:35:13.168 
+17:35:13.168 ============================================================
+17:35:13.168 [ARIA] Step 24/100  |  goal: find plant and approach it
+17:35:13.168 ============================================================
+17:35:13.268 [ARIA] Pos=(-4.02,-0.63) hdg=-7°  front=0 left=642 right=593  blocked=False
+17:35:13.287 [ARIA] YOLO:
+17:35:13.287   (none)
+17:35:13.297 [ARIA] Explore: → frontier (1.5,4.2) dist=7.3m → move_forward  [progress 0/6]
+17:35:13.298 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:13.298 [ARIA] → ACTION: move_forward | → frontier (1.5,4.2) dist=7.3m → move_forward  [progress 0/6]
+17:35:14.930 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:35:14.930 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=1.63s total=1.76s
+17:35:14.930 
+17:35:14.930 ============================================================
+17:35:14.930 [ARIA] Step 25/100  |  goal: find plant and approach it
+17:35:14.930 ============================================================
+17:35:15.034 [ARIA] Pos=(-3.41,-0.72) hdg=-8°  front=885 left=885 right=612  blocked=True
+17:35:15.059 [ARIA] YOLO:
+17:35:15.059   sink conf=0.37
+17:35:15.072 [ARIA] Explore: → frontier (1.5,4.2) dist=6.9m → move_forward  [progress 0/6]
+17:35:15.072 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:15.073 [ARIA] Front-blocked override → turn_right_45
+17:35:15.073 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (885), turning to clearer side
+17:35:15.777 [ARIA] MOVED dist=0.012m turned=45.8° reached=True steps=22
+17:35:15.777 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=0.70s total=0.85s
+17:35:15.777 
+17:35:15.777 ============================================================
+17:35:15.777 [ARIA] Step 26/100  |  goal: find plant and approach it
+17:35:15.778 ============================================================
+17:35:15.880 [ARIA] Pos=(-3.42,-0.72) hdg=-54°  front=0 left=508 right=621  blocked=False
+17:35:15.895 [ARIA] YOLO:
+17:35:15.895   (none)
+17:35:15.906 [ARIA] Explore: → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 1/6]
+17:35:15.907 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:15.907 [ARIA] → ACTION: turn_left_45 | → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 1/6]
+17:35:16.597 [ARIA] MOVED dist=0.000m turned=-45.1° reached=True steps=21
+17:35:16.597 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.69s total=0.82s
+17:35:16.597 
+17:35:16.597 ============================================================
+17:35:16.597 [ARIA] Step 27/100  |  goal: find plant and approach it
+17:35:16.598 ============================================================
+17:35:16.692 [ARIA] Pos=(-3.42,-0.72) hdg=-8°  front=890 left=890 right=600  blocked=True
+17:35:16.718 [ARIA] YOLO:
+17:35:16.718   (none)
+17:35:16.730 [ARIA] Explore: → frontier (1.5,4.2) dist=7.0m → move_forward  [progress 2/6]
+17:35:16.730 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:16.731 [ARIA] Front-blocked override → turn_right_45
+17:35:16.731 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (890), turning to clearer side
+17:35:17.433 [ARIA] MOVED dist=0.001m turned=45.0° reached=True steps=21
+17:35:17.433 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.70s total=0.84s
+17:35:17.433 
+17:35:17.434 ============================================================
+17:35:17.434 [ARIA] Step 28/100  |  goal: find plant and approach it
+17:35:17.434 ============================================================
+17:35:17.542 [ARIA] Pos=(-3.42,-0.72) hdg=-53°  front=0 left=507 right=608  blocked=False
+17:35:17.564 [ARIA] YOLO:
+17:35:17.564   (none)
+17:35:17.575 [ARIA] Explore: → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 3/6]
+17:35:17.576 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:17.576 [ARIA] → ACTION: turn_left_45 | → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 3/6]
+17:35:18.242 [ARIA] MOVED dist=0.000m turned=-45.1° reached=True steps=21
+17:35:18.242 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=0.67s total=0.81s
+17:35:18.242 
+17:35:18.242 ============================================================
+17:35:18.242 [ARIA] Step 29/100  |  goal: find plant and approach it
+17:35:18.242 ============================================================
+17:35:18.338 [ARIA] Pos=(-3.42,-0.72) hdg=-8°  front=860 left=860 right=611  blocked=True
+17:35:18.355 [ARIA] YOLO:
+17:35:18.355   (none)
+17:35:18.366 [ARIA] Explore: → frontier (1.5,4.2) dist=7.0m → move_forward  [progress 4/6]
+17:35:18.367 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:18.367 [ARIA] Front-blocked override → turn_right_45
+17:35:18.367 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (860), turning to clearer side
+17:35:19.082 [ARIA] MOVED dist=0.001m turned=45.0° reached=True steps=21
+17:35:19.083 [ARIA] dt sense+yolo=0.11s plan=0.01s llm=0.00s move=0.72s total=0.84s
+17:35:19.083 
+17:35:19.083 ============================================================
+17:35:19.083 [ARIA] Step 30/100  |  goal: find plant and approach it
+17:35:19.083 ============================================================
+17:35:19.178 [ARIA] Pos=(-3.42,-0.72) hdg=-53°  front=0 left=512 right=618  blocked=False
+17:35:19.195 [ARIA] YOLO:
+17:35:19.195   (none)
+17:35:19.205 [ARIA] Explore: → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 5/6]
+17:35:19.206 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:19.206 [ARIA] → ACTION: turn_left_45 | → frontier (1.5,4.2) dist=7.0m → turn_left_45  [progress 5/6]
+17:35:19.894 [ARIA] MOVED dist=0.000m turned=-45.0° reached=True steps=21
+17:35:19.894 [ARIA] dt sense+yolo=0.11s plan=0.01s llm=0.00s move=0.69s total=0.81s
+17:35:19.894 
+17:35:19.894 ============================================================
+17:35:19.894 [ARIA] Step 31/100  |  goal: find plant and approach it
+17:35:19.894 ============================================================
+17:35:20.010 [ARIA] Pos=(-3.42,-0.72) hdg=-8°  front=880 left=880 right=597  blocked=True
+17:35:20.027 [ARIA] YOLO:
+17:35:20.027   (none)
+17:35:20.038 [ARIA] Frontier (1.5,4.2) blocked — blacklisting, will re-scan
+17:35:20.039 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:20.039 [ARIA] → ACTION: turn_around | blocked frontier — turning away
+17:35:22.813 [ARIA] MOVED dist=0.009m turned=-181.9° reached=True steps=84
+17:35:22.813 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=2.77s total=2.92s
+17:35:22.813 
+17:35:22.813 ============================================================
+17:35:22.813 [ARIA] Step 32/100  |  goal: find plant and approach it
+17:35:22.813 ============================================================
+17:35:22.918 [ARIA] Pos=(-3.42,-0.73) hdg=174°  front=616 left=616 right=608  blocked=False
+17:35:22.939 [ARIA] YOLO:
+17:35:22.939   (none)
+17:35:22.940 [ARIA] Starting 360° look-around
+17:35:22.940 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:22.941 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:35:23.638 [ARIA] MOVED dist=0.001m turned=45.4° reached=True steps=21
+17:35:23.638 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.70s total=0.83s
+17:35:23.638 
+17:35:23.638 ============================================================
+17:35:23.638 [ARIA] Step 33/100  |  goal: find plant and approach it
+17:35:23.638 ============================================================
+17:35:23.741 [ARIA] Pos=(-3.43,-0.73) hdg=128°  front=625 left=635 right=493  blocked=False
+17:35:23.758 [ARIA] YOLO:
+17:35:23.758   (none)
+17:35:23.762 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:23.762 [ARIA] → ACTION: turn_right_45 | 360° scan (3914 cells unknown)
+17:35:24.497 [ARIA] MOVED dist=0.001m turned=47.1° reached=True steps=22
+17:35:24.497 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.74s total=0.86s
+17:35:24.497 
+17:35:24.497 ============================================================
+17:35:24.498 [ARIA] Step 34/100  |  goal: find plant and approach it
+17:35:24.498 ============================================================
+17:35:24.585 [ARIA] Pos=(-3.43,-0.73) hdg=81°  front=535 left=643 right=489  blocked=False
+17:35:24.601 [ARIA] YOLO:
+17:35:24.601   (none)
+17:35:24.605 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:24.605 [ARIA] → ACTION: turn_right_45 | 360° scan (3875 cells unknown)
+17:35:25.279 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:25.279 [ARIA] dt sense+yolo=0.10s plan=0.00s llm=0.00s move=0.67s total=0.78s
+17:35:25.279 
+17:35:25.279 ============================================================
+17:35:25.279 [ARIA] Step 35/100  |  goal: find plant and approach it
+17:35:25.279 ============================================================
+17:35:25.384 [ARIA] Pos=(-3.43,-0.73) hdg=36°  front=504 left=640 right=0  blocked=False
+17:35:25.405 [ARIA] YOLO:
+17:35:25.405   traffic light conf=0.48
+17:35:25.406 [SpatialMemory] NEW discovery: 'traffic light' @ (-3.43,-0.73) conf=0.48
+17:35:25.414 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:25.415 [ARIA] → ACTION: turn_right_45 | 360° scan (3851 cells unknown)
+17:35:26.109 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:26.110 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.70s total=0.83s
+17:35:26.110 
+17:35:26.110 ============================================================
+17:35:26.110 [ARIA] Step 36/100  |  goal: find plant and approach it
+17:35:26.110 ============================================================
+17:35:26.221 [ARIA] Pos=(-3.43,-0.73) hdg=-10°  front=877 left=877 right=598  blocked=True
+17:35:26.247 [ARIA] YOLO:
+17:35:26.247   (none)
+17:35:26.251 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:26.251 [ARIA] → ACTION: turn_right_45 | 360° scan (3848 cells unknown)
+17:35:26.974 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:26.974 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=0.72s total=0.86s
+17:35:26.974 
+17:35:26.974 ============================================================
+17:35:26.974 [ARIA] Step 37/100  |  goal: find plant and approach it
+17:35:26.974 ============================================================
+17:35:27.069 [ARIA] Pos=(-3.43,-0.73) hdg=-55°  front=0 left=525 right=624  blocked=False
+17:35:27.089 [ARIA] YOLO:
+17:35:27.089   (none)
+17:35:27.093 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:27.094 [ARIA] → ACTION: turn_right_45 | 360° scan (3844 cells unknown)
+17:35:27.781 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:27.781 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.69s total=0.81s
+17:35:27.781 
+17:35:27.781 ============================================================
+17:35:27.781 [ARIA] Step 38/100  |  goal: find plant and approach it
+17:35:27.781 ============================================================
+17:35:27.875 [ARIA] Pos=(-3.44,-0.72) hdg=-101°  front=604 left=885 right=620  blocked=False
+17:35:27.895 [ARIA] YOLO:
+17:35:27.895   (none)
+17:35:27.925 [ARIA] Scan done → frontier (4.2,-2.4)  map: {'free': 7815, 'occupied': 435, 'unknown': 3843}
+17:35:27.926 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:27.927 [ARIA] → ACTION: turn_right_45 | 360° scan (3843 cells unknown)
+17:35:28.687 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:28.687 [ARIA] dt sense+yolo=0.11s plan=0.03s llm=0.00s move=0.76s total=0.91s
+17:35:28.687 
+17:35:28.687 ============================================================
+17:35:28.687 [ARIA] Step 39/100  |  goal: find plant and approach it
+17:35:28.687 ============================================================
+17:35:28.788 [ARIA] Pos=(-3.43,-0.72) hdg=-146°  front=617 left=0 right=617  blocked=False
+17:35:28.809 [ARIA] YOLO:
+17:35:28.809   (none)
+17:35:28.824 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 0/6]
+17:35:28.825 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:28.825 [ARIA] → ACTION: turn_left_45 | → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 0/6]
+17:35:29.472 [ARIA] MOVED dist=0.001m turned=-45.2° reached=True steps=21
+17:35:29.472 [ARIA] dt sense+yolo=0.12s plan=0.02s llm=0.00s move=0.65s total=0.79s
+17:35:29.472 
+17:35:29.472 ============================================================
+17:35:29.472 [ARIA] Step 40/100  |  goal: find plant and approach it
+17:35:29.472 ============================================================
+17:35:29.574 [ARIA] Pos=(-3.43,-0.72) hdg=-101°  front=594 left=479 right=618  blocked=False
+17:35:29.596 [ARIA] YOLO:
+17:35:29.596   (none)
+17:35:29.611 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 1/6]
+17:35:29.612 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:29.612 [ARIA] → ACTION: turn_left_45 | → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 1/6]
+17:35:30.329 [ARIA] MOVED dist=0.002m turned=-45.2° reached=True steps=21
+17:35:30.329 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.72s total=0.86s
+17:35:30.329 
+17:35:30.329 ============================================================
+17:35:30.329 [ARIA] Step 41/100  |  goal: find plant and approach it
+17:35:30.329 ============================================================
+17:35:30.436 [ARIA] Pos=(-3.44,-0.72) hdg=-56°  front=0 left=522 right=620  blocked=False
+17:35:30.460 [ARIA] YOLO:
+17:35:30.460   (none)
+17:35:30.475 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 2/6]
+17:35:30.475 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:30.475 [ARIA] → ACTION: turn_left_45 | → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 2/6]
+17:35:31.176 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:35:31.176 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=0.70s total=0.85s
+17:35:31.176 
+17:35:31.177 ============================================================
+17:35:31.177 [ARIA] Step 42/100  |  goal: find plant and approach it
+17:35:31.177 ============================================================
+17:35:31.265 [ARIA] Pos=(-3.44,-0.72) hdg=-10°  front=890 left=890 right=607  blocked=True
+17:35:31.282 [ARIA] YOLO:
+17:35:31.282   (none)
+17:35:31.295 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → move_forward  [progress 3/6]
+17:35:31.296 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:31.296 [ARIA] Front-blocked override → turn_right_45
+17:35:31.296 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (890), turning to clearer side
+17:35:31.978 [ARIA] MOVED dist=0.001m turned=45.4° reached=True steps=21
+17:35:31.978 [ARIA] dt sense+yolo=0.11s plan=0.01s llm=0.00s move=0.68s total=0.80s
+17:35:31.978 
+17:35:31.978 ============================================================
+17:35:31.978 [ARIA] Step 43/100  |  goal: find plant and approach it
+17:35:31.978 ============================================================
+17:35:32.082 [ARIA] Pos=(-3.44,-0.72) hdg=-56°  front=0 left=520 right=618  blocked=False
+17:35:32.099 [ARIA] YOLO:
+17:35:32.099   (none)
+17:35:32.113 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 4/6]
+17:35:32.113 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:32.113 [ARIA] → ACTION: turn_left_45 | → frontier (4.2,-2.4) dist=7.8m → turn_left_45  [progress 4/6]
+17:35:32.800 [ARIA] MOVED dist=0.002m turned=-45.3° reached=True steps=21
+17:35:32.800 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.69s total=0.82s
+17:35:32.800 
+17:35:32.800 ============================================================
+17:35:32.800 [ARIA] Step 44/100  |  goal: find plant and approach it
+17:35:32.800 ============================================================
+17:35:32.905 [ARIA] Pos=(-3.44,-0.72) hdg=-10°  front=893 left=893 right=600  blocked=True
+17:35:32.925 [ARIA] YOLO:
+17:35:32.925   (none)
+17:35:32.940 [ARIA] Explore: → frontier (4.2,-2.4) dist=7.8m → move_forward  [progress 5/6]
+17:35:32.941 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:32.941 [ARIA] Front-blocked override → turn_right_45
+17:35:32.941 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (893), turning to clearer side
+17:35:33.665 [ARIA] MOVED dist=0.001m turned=45.4° reached=True steps=21
+17:35:33.665 [ARIA] dt sense+yolo=0.13s plan=0.02s llm=0.00s move=0.72s total=0.86s
+17:35:33.665 
+17:35:33.665 ============================================================
+17:35:33.665 [ARIA] Step 45/100  |  goal: find plant and approach it
+17:35:33.665 ============================================================
+17:35:33.766 [ARIA] Pos=(-3.44,-0.72) hdg=-56°  front=0 left=540 right=618  blocked=False
+17:35:33.788 [ARIA] YOLO:
+17:35:33.788   (none)
+17:35:33.804 [ARIA] Frontier (4.2,-2.4) blocked — blacklisting, will re-scan
+17:35:33.805 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:33.805 [ARIA] → ACTION: turn_around | blocked frontier — turning away
+17:35:36.595 [ARIA] MOVED dist=0.010m turned=-181.8° reached=True steps=84
+17:35:36.595 [ARIA] dt sense+yolo=0.12s plan=0.02s llm=0.00s move=2.79s total=2.93s
+17:35:36.595 
+17:35:36.595 ============================================================
+17:35:36.595 [ARIA] Step 46/100  |  goal: find plant and approach it
+17:35:36.595 ============================================================
+17:35:36.699 [ARIA] Pos=(-3.44,-0.73) hdg=126°  front=626 left=626 right=505  blocked=False
+17:35:36.719 [ARIA] YOLO:
+17:35:36.719   (none)
+17:35:36.719 [ARIA] Starting 360° look-around
+17:35:36.720 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:36.720 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:35:37.398 [ARIA] MOVED dist=0.000m turned=45.1° reached=True steps=21
+17:35:37.398 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.68s total=0.80s
+17:35:37.398 
+17:35:37.398 ============================================================
+17:35:37.398 [ARIA] Step 47/100  |  goal: find plant and approach it
+17:35:37.398 ============================================================
+17:35:37.499 [ARIA] Pos=(-3.44,-0.73) hdg=81°  front=538 left=643 right=487  blocked=False
+17:35:37.530 [ARIA] YOLO:
+17:35:37.530   person conf=0.39
+17:35:37.530 [SpatialMemory] NEW discovery: 'person' @ (-3.44,-0.73) conf=0.39
+17:35:37.540 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:37.540 [ARIA] → ACTION: turn_right_45 | 360° scan (3839 cells unknown)
+17:35:38.276 [ARIA] MOVED dist=0.002m turned=45.4° reached=True steps=21
+17:35:38.276 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=0.74s total=0.88s
+17:35:38.276 
+17:35:38.276 ============================================================
+17:35:38.276 [ARIA] Step 48/100  |  goal: find plant and approach it
+17:35:38.276 ============================================================
+17:35:38.376 [ARIA] Pos=(-3.45,-0.73) hdg=36°  front=510 left=630 right=0  blocked=False
+17:35:38.397 [ARIA] YOLO:
+17:35:38.397   traffic light conf=0.41
+17:35:38.401 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:38.401 [ARIA] → ACTION: turn_right_45 | 360° scan (3837 cells unknown)
+17:35:39.093 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:39.093 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.69s total=0.82s
+17:35:39.093 
+17:35:39.093 ============================================================
+17:35:39.093 [ARIA] Step 49/100  |  goal: find plant and approach it
+17:35:39.093 ============================================================
+17:35:39.196 [ARIA] Pos=(-3.45,-0.73) hdg=-10°  front=881 left=881 right=618  blocked=True
+17:35:39.212 [ARIA] YOLO:
+17:35:39.212   (none)
+17:35:39.217 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:39.217 [ARIA] → ACTION: turn_right_45 | 360° scan (3832 cells unknown)
+17:35:39.924 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:39.924 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.71s total=0.83s
+17:35:39.924 
+17:35:39.924 ============================================================
+17:35:39.924 [ARIA] Step 50/100  |  goal: find plant and approach it
+17:35:39.924 ============================================================
+17:35:40.020 [ARIA] Pos=(-3.45,-0.73) hdg=-55°  front=0 left=522 right=613  blocked=False
+17:35:40.039 [ARIA] YOLO:
+17:35:40.040   (none)
+17:35:40.045 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:40.045 [ARIA] → ACTION: turn_right_45 | 360° scan (3832 cells unknown)
+17:35:40.738 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:40.738 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=0.69s total=0.81s
+17:35:40.738 
+17:35:40.738 ============================================================
+17:35:40.738 [ARIA] Step 51/100  |  goal: find plant and approach it
+17:35:40.738 ============================================================
+17:35:40.828 [ARIA] Pos=(-3.45,-0.72) hdg=-101°  front=599 left=880 right=610  blocked=False
+17:35:40.850 [ARIA] YOLO:
+17:35:40.850   (none)
+17:35:40.854 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:40.855 [ARIA] → ACTION: turn_right_45 | 360° scan (3832 cells unknown)
+17:35:41.520 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:41.520 [ARIA] dt sense+yolo=0.11s plan=0.00s llm=0.00s move=0.67s total=0.78s
+17:35:41.520 
+17:35:41.520 ============================================================
+17:35:41.520 [ARIA] Step 52/100  |  goal: find plant and approach it
+17:35:41.520 ============================================================
+17:35:41.624 [ARIA] Pos=(-3.45,-0.72) hdg=-146°  front=625 left=0 right=625  blocked=False
+17:35:41.644 [ARIA] YOLO:
+17:35:41.644   (none)
+17:35:41.673 [ARIA] Scan done → frontier (4.3,-1.8)  map: {'free': 7824, 'occupied': 437, 'unknown': 3832}
+17:35:41.674 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:41.674 [ARIA] → ACTION: turn_right_45 | 360° scan (3832 cells unknown)
+17:35:42.406 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:42.407 [ARIA] dt sense+yolo=0.12s plan=0.03s llm=0.00s move=0.73s total=0.89s
+17:35:42.407 
+17:35:42.407 ============================================================
+17:35:42.407 [ARIA] Step 53/100  |  goal: find plant and approach it
+17:35:42.407 ============================================================
+17:35:42.514 [ARIA] Pos=(-3.45,-0.72) hdg=169°  front=608 left=608 right=602  blocked=False
+17:35:42.531 [ARIA] YOLO:
+17:35:42.531   (none)
+17:35:42.545 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 0/6]
+17:35:42.546 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:42.546 [ARIA] → ACTION: turn_right_45 | → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 0/6]
+17:35:43.217 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:43.217 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.67s total=0.81s
+17:35:43.217 
+17:35:43.217 ============================================================
+17:35:43.217 [ARIA] Step 54/100  |  goal: find plant and approach it
+17:35:43.217 ============================================================
+17:35:43.317 [ARIA] Pos=(-3.44,-0.72) hdg=123°  front=620 left=635 right=532  blocked=False
+17:35:43.335 [ARIA] YOLO:
+17:35:43.335   (none)
+17:35:43.348 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 1/6]
+17:35:43.348 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:43.349 [ARIA] → ACTION: turn_right_45 | → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 1/6]
+17:35:44.009 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:35:44.009 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.66s total=0.79s
+17:35:44.010 
+17:35:44.010 ============================================================
+17:35:44.010 [ARIA] Step 55/100  |  goal: find plant and approach it
+17:35:44.010 ============================================================
+17:35:44.105 [ARIA] Pos=(-3.44,-0.72) hdg=78°  front=502 left=643 right=482  blocked=False
+17:35:44.133 [ARIA] YOLO:
+17:35:44.133   (none)
+17:35:44.146 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 2/6]
+17:35:44.147 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:44.147 [ARIA] → ACTION: turn_right_45 | → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 2/6]
+17:35:44.831 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:44.831 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.68s total=0.82s
+17:35:44.831 
+17:35:44.831 ============================================================
+17:35:44.831 [ARIA] Step 56/100  |  goal: find plant and approach it
+17:35:44.831 ============================================================
+17:35:44.931 [ARIA] Pos=(-3.45,-0.73) hdg=32°  front=497 left=622 right=0  blocked=False
+17:35:44.950 [ARIA] YOLO:
+17:35:44.950   (none)
+17:35:44.964 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 3/6]
+17:35:44.964 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:44.964 [ARIA] → ACTION: turn_right_45 | → frontier (4.3,-1.8) dist=7.8m → turn_right_45  [progress 3/6]
+17:35:45.632 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:35:45.632 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=0.67s total=0.80s
+17:35:45.632 
+17:35:45.632 ============================================================
+17:35:45.632 [ARIA] Step 57/100  |  goal: find plant and approach it
+17:35:45.633 ============================================================
+17:35:45.745 [ARIA] Pos=(-3.45,-0.73) hdg=-13°  front=0 left=601 right=605  blocked=False
+17:35:45.763 [ARIA] YOLO:
+17:35:45.763   (none)
+17:35:45.777 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.8m → move_forward  [progress 4/6]
+17:35:45.778 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:45.778 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=7.8m → move_forward  [progress 4/6]
+17:35:47.384 [ARIA] MOVED dist=0.602m turned=0.0° reached=True steps=49
+17:35:47.384 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.61s total=1.75s
+17:35:47.384 
+17:35:47.384 ============================================================
+17:35:47.385 [ARIA] Step 58/100  |  goal: find plant and approach it
+17:35:47.385 ============================================================
+17:35:47.489 [ARIA] Pos=(-2.86,-0.87) hdg=-13°  front=0 left=621 right=637  blocked=False
+17:35:47.511 [ARIA] YOLO:
+17:35:47.511   (none)
+17:35:47.525 [ARIA] Explore: → frontier (4.3,-1.8) dist=7.2m → move_forward  [progress 0/6]
+17:35:47.526 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:47.526 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=7.2m → move_forward  [progress 0/6]
+17:35:49.184 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:35:49.184 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.66s total=1.80s
+17:35:49.184 
+17:35:49.184 ============================================================
+17:35:49.184 [ARIA] Step 59/100  |  goal: find plant and approach it
+17:35:49.184 ============================================================
+17:35:49.287 [ARIA] Pos=(-2.26,-1.01) hdg=-13°  front=0 left=657 right=851  blocked=False
+17:35:49.306 [ARIA] YOLO:
+17:35:49.306   (none)
+17:35:49.321 [ARIA] Explore: → frontier (4.3,-1.8) dist=6.6m → move_forward  [progress 0/6]
+17:35:49.322 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:49.322 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=6.6m → move_forward  [progress 0/6]
+17:35:50.972 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:35:50.972 [ARIA] dt sense+yolo=0.12s plan=0.01s llm=0.00s move=1.65s total=1.79s
+17:35:50.973 
+17:35:50.973 ============================================================
+17:35:50.973 [ARIA] Step 60/100  |  goal: find plant and approach it
+17:35:50.973 ============================================================
+17:35:51.064 [ARIA] Pos=(-1.66,-1.16) hdg=-14°  front=0 left=859 right=872  blocked=False
+17:35:51.086 [ARIA] YOLO:
+17:35:51.086   (none)
+17:35:51.099 [ARIA] Explore: → frontier (4.3,-1.8) dist=6.0m → move_forward  [progress 0/6]
+17:35:51.100 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:51.101 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=6.0m → move_forward  [progress 0/6]
+17:35:52.775 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:35:52.775 [ARIA] dt sense+yolo=0.11s plan=0.01s llm=0.00s move=1.67s total=1.80s
+17:35:52.775 
+17:35:52.775 ============================================================
+17:35:52.775 [ARIA] Step 61/100  |  goal: find plant and approach it
+17:35:52.775 ============================================================
+17:35:52.879 [ARIA] Pos=(-1.06,-1.32) hdg=-14°  front=0 left=899 right=904  blocked=False
+17:35:52.898 [ARIA] YOLO:
+17:35:52.898   plant conf=0.42
+17:35:52.898 [SpatialMemory] NEW discovery: 'plant' @ (-1.06,-1.32) conf=0.42
+17:35:52.902 [ARIA] TARGET[approach] → move_forward | centered — advancing | dog img-RIGHT x-err=+0.01 bbox=27% conf=0.42
+17:35:52.903 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:52.903 [ARIA] → ACTION: move_forward | centered — advancing
+17:35:54.605 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:35:54.606 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=1.70s total=1.83s
+17:35:54.606 
+17:35:54.606 ============================================================
+17:35:54.606 [ARIA] Step 62/100  |  goal: find plant and approach it
+17:35:54.606 ============================================================
+17:35:54.715 [ARIA] Pos=(-0.47,-1.48) hdg=-15°  front=0 left=742 right=752  blocked=False
+17:35:54.737 [ARIA] YOLO:
+17:35:54.737   (none)
+17:35:54.737 [ARIA] re-acquiring 'plant' (lost 1/6)
+17:35:54.738 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:54.738 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 1/6)
+17:35:55.460 [ARIA] MOVED dist=0.013m turned=-45.4° reached=True steps=22
+17:35:55.460 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.72s total=0.85s
+17:35:55.461 
+17:35:55.461 ============================================================
+17:35:55.461 [ARIA] Step 63/100  |  goal: find plant and approach it
+17:35:55.461 ============================================================
+17:35:55.573 [ARIA] Pos=(-0.48,-1.48) hdg=30°  front=0 left=766 right=0  blocked=False
+17:35:55.591 [ARIA] YOLO:
+17:35:55.591   (none)
+17:35:55.591 [ARIA] re-acquiring 'plant' (lost 2/6)
+17:35:55.592 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:55.592 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 2/6)
+17:35:56.270 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:35:56.270 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.68s total=0.81s
+17:35:56.270 
+17:35:56.270 ============================================================
+17:35:56.270 [ARIA] Step 64/100  |  goal: find plant and approach it
+17:35:56.270 ============================================================
+17:35:56.378 [ARIA] Pos=(-0.48,-1.48) hdg=76°  front=0 left=799 right=485  blocked=False
+17:35:56.397 [ARIA] YOLO:
+17:35:56.397   (none)
+17:35:56.397 [ARIA] re-acquiring 'plant' (lost 3/6)
+17:35:56.398 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:56.398 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 3/6)
+17:35:57.098 [ARIA] MOVED dist=0.004m turned=-45.5° reached=True steps=21
+17:35:57.098 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.70s total=0.83s
+17:35:57.099 
+17:35:57.099 ============================================================
+17:35:57.099 [ARIA] Step 65/100  |  goal: find plant and approach it
+17:35:57.099 ============================================================
+17:35:57.204 [ARIA] Pos=(-0.48,-1.48) hdg=121°  front=779 left=780 right=0  blocked=False
+17:35:57.223 [ARIA] YOLO:
+17:35:57.224   (none)
+17:35:57.224 [ARIA] re-acquiring 'plant' (lost 4/6)
+17:35:57.224 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:57.224 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 4/6)
+17:35:57.916 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:35:57.916 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.69s total=0.82s
+17:35:57.916 
+17:35:57.916 ============================================================
+17:35:57.916 [ARIA] Step 66/100  |  goal: find plant and approach it
+17:35:57.916 ============================================================
+17:35:58.028 [ARIA] Pos=(-0.48,-1.49) hdg=167°  front=767 left=767 right=756  blocked=False
+17:35:58.050 [ARIA] YOLO:
+17:35:58.050   (none)
+17:35:58.050 [ARIA] re-acquiring 'plant' (lost 5/6)
+17:35:58.051 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:58.051 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 5/6)
+17:35:58.732 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:35:58.732 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.68s total=0.82s
+17:35:58.732 
+17:35:58.732 ============================================================
+17:35:58.732 [ARIA] Step 67/100  |  goal: find plant and approach it
+17:35:58.732 ============================================================
+17:35:58.830 [ARIA] Pos=(-0.48,-1.48) hdg=-148°  front=768 left=0 right=768  blocked=False
+17:35:58.845 [ARIA] YOLO:
+17:35:58.845   (none)
+17:35:58.845 [ARIA] re-acquiring 'plant' (lost 6/6)
+17:35:58.846 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:58.846 [ARIA] → ACTION: turn_left_45 | re-acquiring 'plant' (lost 6/6)
+17:35:59.545 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:35:59.545 [ARIA] dt sense+yolo=0.11s plan=0.00s llm=0.00s move=0.70s total=0.81s
+17:35:59.546 
+17:35:59.546 ============================================================
+17:35:59.546 [ARIA] Step 68/100  |  goal: find plant and approach it
+17:35:59.546 ============================================================
+17:35:59.643 [ARIA] Pos=(-0.47,-1.48) hdg=-102°  front=751 left=0 right=761  blocked=False
+17:35:59.675 [ARIA] YOLO:
+17:35:59.675   (none)
+17:35:59.675 [ARIA] Lost 'plant' — resuming exploration
+17:35:59.686 [ARIA] Explore: → frontier (4.3,-1.8) dist=4.7m → turn_left_45  [progress 0/6]
+17:35:59.687 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:35:59.687 [ARIA] → ACTION: turn_left_45 | → frontier (4.3,-1.8) dist=4.7m → turn_left_45  [progress 0/6]
+17:36:00.418 [ARIA] MOVED dist=0.004m turned=-45.5° reached=True steps=21
+17:36:00.418 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=0.73s total=0.87s
+17:36:00.418 
+17:36:00.418 ============================================================
+17:36:00.418 [ARIA] Step 69/100  |  goal: find plant and approach it
+17:36:00.418 ============================================================
+17:36:00.526 [ARIA] Pos=(-0.48,-1.48) hdg=-57°  front=0 left=0 right=775  blocked=False
+17:36:00.545 [ARIA] YOLO:
+17:36:00.545   (none)
+17:36:00.556 [ARIA] Explore: → frontier (4.3,-1.8) dist=4.7m → turn_left_45  [progress 1/6]
+17:36:00.556 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:00.556 [ARIA] → ACTION: turn_left_45 | → frontier (4.3,-1.8) dist=4.7m → turn_left_45  [progress 1/6]
+17:36:01.251 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:36:01.251 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=0.69s total=0.83s
+17:36:01.251 
+17:36:01.251 ============================================================
+17:36:01.252 [ARIA] Step 70/100  |  goal: find plant and approach it
+17:36:01.252 ============================================================
+17:36:01.354 [ARIA] Pos=(-0.48,-1.48) hdg=-11°  front=0 left=765 right=774  blocked=False
+17:36:01.377 [ARIA] YOLO:
+17:36:01.377   traffic light conf=0.35
+17:36:01.377 [SpatialMemory] NEW discovery: 'traffic light' @ (-0.48,-1.48) conf=0.35
+17:36:01.393 [ARIA] Explore: → frontier (4.3,-1.8) dist=4.8m → move_forward  [progress 2/6]
+17:36:01.394 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:01.394 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=4.8m → move_forward  [progress 2/6]
+17:36:03.068 [ARIA] MOVED dist=0.601m turned=0.0° reached=True steps=49
+17:36:03.068 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.67s total=1.82s
+17:36:03.068 
+17:36:03.068 ============================================================
+17:36:03.068 [ARIA] Step 71/100  |  goal: find plant and approach it
+17:36:03.068 ============================================================
+17:36:03.179 [ARIA] Pos=(0.12,-1.60) hdg=-11°  front=0 left=786 right=803  blocked=False
+17:36:03.197 [ARIA] YOLO:
+17:36:03.197   (none)
+17:36:03.206 [ARIA] Explore: → frontier (4.3,-1.8) dist=4.2m → move_forward  [progress 0/6]
+17:36:03.207 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:03.207 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=4.2m → move_forward  [progress 0/6]
+17:36:04.850 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:36:04.850 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.64s total=1.78s
+17:36:04.850 
+17:36:04.850 ============================================================
+17:36:04.850 [ARIA] Step 72/100  |  goal: find plant and approach it
+17:36:04.850 ============================================================
+17:36:04.958 [ARIA] Pos=(0.72,-1.73) hdg=-12°  front=0 left=789 right=826  blocked=False
+17:36:04.976 [ARIA] YOLO:
+17:36:04.976   traffic light conf=0.48
+17:36:04.976 [SpatialMemory] NEW discovery: 'traffic light' @ (0.72,-1.73) conf=0.48
+17:36:04.987 [ARIA] Explore: → frontier (4.3,-1.8) dist=3.5m → move_forward  [progress 0/6]
+17:36:04.988 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:04.988 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=3.5m → move_forward  [progress 0/6]
+17:36:06.654 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:36:06.654 [ARIA] dt sense+yolo=0.13s plan=0.01s llm=0.00s move=1.67s total=1.80s
+17:36:06.654 
+17:36:06.654 ============================================================
+17:36:06.654 [ARIA] Step 73/100  |  goal: find plant and approach it
+17:36:06.654 ============================================================
+17:36:06.761 [ARIA] Pos=(1.32,-1.86) hdg=-12°  front=0 left=832 right=848  blocked=False
+17:36:06.797 [ARIA] YOLO:
+17:36:06.797   traffic light conf=0.51
+17:36:06.797 [SpatialMemory] NEW discovery: 'traffic light' @ (1.32,-1.86) conf=0.51
+17:36:06.807 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.9m → move_forward  [progress 0/6]
+17:36:06.808 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:06.809 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=2.9m → move_forward  [progress 0/6]
+17:36:08.481 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:36:08.482 [ARIA] dt sense+yolo=0.15s plan=0.01s llm=0.00s move=1.67s total=1.83s
+17:36:08.482 
+17:36:08.482 ============================================================
+17:36:08.482 [ARIA] Step 74/100  |  goal: find plant and approach it
+17:36:08.482 ============================================================
+17:36:08.603 [ARIA] Pos=(1.92,-2.00) hdg=-13°  front=265 left=862 right=995  blocked=False
+17:36:08.623 [ARIA] YOLO:
+17:36:08.623   traffic light conf=0.42
+17:36:08.623 [SpatialMemory] NEW discovery: 'traffic light' @ (1.92,-2.00) conf=0.42
+17:36:08.631 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.4m → move_forward  [progress 0/6]
+17:36:08.632 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:08.632 [ARIA] Critical safety override → back_up_turn_left
+17:36:08.632 [ARIA] → ACTION: back_up_turn_left | [SAFETY] critical proximity 995, backing out
+17:36:10.790 [ARIA] MOVED dist=0.404m turned=0.0° reached=True steps=42
+17:36:10.790 [ARIA] dt sense+yolo=0.15s plan=0.00s llm=0.00s move=2.16s total=2.31s
+17:36:10.790 
+17:36:10.790 ============================================================
+17:36:10.790 [ARIA] Step 75/100  |  goal: find plant and approach it
+17:36:10.790 ============================================================
+17:36:10.888 [ARIA] Pos=(1.53,-1.91) hdg=32°  front=0 left=870 right=898  blocked=False
+17:36:10.909 [ARIA] YOLO:
+17:36:10.909   traffic light conf=0.51
+17:36:10.913 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.7m → move_forward  [progress 1/6]
+17:36:10.913 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:10.914 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=2.7m → move_forward  [progress 1/6]
+17:36:12.515 [ARIA] MOVED dist=0.607m turned=0.0° reached=True steps=49
+17:36:12.515 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=1.60s total=1.73s
+17:36:12.516 
+17:36:12.516 ============================================================
+17:36:12.516 [ARIA] Step 76/100  |  goal: find plant and approach it
+17:36:12.516 ============================================================
+17:36:12.615 [ARIA] Pos=(2.04,-1.58) hdg=32°  front=0 left=801 right=0  blocked=False
+17:36:12.642 [ARIA] YOLO:
+17:36:12.642   (none)
+17:36:12.645 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.2m → turn_right_45  [progress 2/6]
+17:36:12.646 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:12.646 [ARIA] → ACTION: turn_right_45 | → frontier (4.3,-1.8) dist=2.2m → turn_right_45  [progress 2/6]
+17:36:13.410 [ARIA] MOVED dist=0.012m turned=46.0° reached=True steps=22
+17:36:13.410 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=0.76s total=0.89s
+17:36:13.411 
+17:36:13.411 ============================================================
+17:36:13.411 [ARIA] Step 77/100  |  goal: find plant and approach it
+17:36:13.411 ============================================================
+17:36:13.504 [ARIA] Pos=(2.03,-1.58) hdg=-14°  front=71 left=772 right=958  blocked=False
+17:36:13.523 [ARIA] YOLO:
+17:36:13.523   (none)
+17:36:13.526 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.2m → move_forward  [progress 3/6]
+17:36:13.527 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:13.527 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=2.2m → move_forward  [progress 3/6]
+17:36:15.108 [ARIA] MOVED dist=0.602m turned=0.0° reached=True steps=49
+17:36:15.108 [ARIA] dt sense+yolo=0.11s plan=0.00s llm=0.00s move=1.58s total=1.70s
+17:36:15.108 
+17:36:15.108 ============================================================
+17:36:15.109 [ARIA] Step 78/100  |  goal: find plant and approach it
+17:36:15.109 ============================================================
+17:36:15.217 [ARIA] Pos=(2.62,-1.72) hdg=-14°  front=416 left=998 right=819  blocked=False
+17:36:15.245 [ARIA] YOLO:
+17:36:15.245   traffic light conf=0.65
+17:36:15.245 [SpatialMemory] NEW discovery: 'traffic light' @ (2.62,-1.72) conf=0.65
+17:36:15.253 [ARIA] Explore: → frontier (4.3,-1.8) dist=1.6m → move_forward  [progress 0/6]
+17:36:15.254 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:15.254 [ARIA] Critical safety override → back_up_turn_right
+17:36:15.255 [ARIA] → ACTION: back_up_turn_right | [SAFETY] critical proximity 998, backing out
+17:36:17.430 [ARIA] MOVED dist=0.404m turned=0.0° reached=True steps=42
+17:36:17.431 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=2.18s total=2.32s
+17:36:17.431 
+17:36:17.431 ============================================================
+17:36:17.431 [ARIA] Step 79/100  |  goal: find plant and approach it
+17:36:17.431 ============================================================
+17:36:17.524 [ARIA] Pos=(2.23,-1.63) hdg=-61°  front=134 left=0 right=997  blocked=False
+17:36:17.553 [ARIA] YOLO:
+17:36:17.553   (none)
+17:36:17.556 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.0m → turn_left_45  [progress 1/6]
+17:36:17.557 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:17.557 [ARIA] Critical safety override → back_up_turn_left
+17:36:17.557 [ARIA] → ACTION: back_up_turn_left | [SAFETY] critical proximity 997, backing out
+17:36:19.747 [ARIA] MOVED dist=0.403m turned=0.0° reached=True steps=43
+17:36:19.747 [ARIA] dt sense+yolo=0.12s plan=0.00s llm=0.00s move=2.19s total=2.32s
+17:36:19.747 
+17:36:19.747 ============================================================
+17:36:19.747 [ARIA] Step 80/100  |  goal: find plant and approach it
+17:36:19.747 ============================================================
+17:36:19.870 [ARIA] Pos=(2.03,-1.28) hdg=-14°  front=73 left=701 right=721  blocked=False
+17:36:19.896 [ARIA] YOLO:
+17:36:19.896   traffic light conf=0.39
+17:36:19.896 [SpatialMemory] NEW discovery: 'traffic light' @ (2.03,-1.28) conf=0.39
+17:36:19.903 [ARIA] Explore: → frontier (4.3,-1.8) dist=2.3m → move_forward  [progress 2/6]
+17:36:19.904 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:19.905 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=2.3m → move_forward  [progress 2/6]
+17:36:21.495 [ARIA] MOVED dist=0.601m turned=0.0° reached=True steps=49
+17:36:21.496 [ARIA] dt sense+yolo=0.15s plan=0.00s llm=0.00s move=1.59s total=1.75s
+17:36:21.496 
+17:36:21.496 ============================================================
+17:36:21.496 [ARIA] Step 81/100  |  goal: find plant and approach it
+17:36:21.496 ============================================================
+17:36:21.615 [ARIA] Pos=(2.62,-1.43) hdg=-14°  front=203 left=308 right=203  blocked=False
+17:36:21.637 [ARIA] YOLO:
+17:36:21.637   traffic light conf=0.56
+17:36:21.639 [ARIA] Explore: → frontier (4.3,-1.8) dist=1.7m → move_forward  [progress 3/6]
+17:36:21.639 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:21.640 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=1.7m → move_forward  [progress 3/6]
+17:36:23.278 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:36:23.278 [ARIA] dt sense+yolo=0.14s plan=0.00s llm=0.00s move=1.64s total=1.78s
+17:36:23.278 
+17:36:23.278 ============================================================
+17:36:23.278 [ARIA] Step 82/100  |  goal: find plant and approach it
+17:36:23.278 ============================================================
+17:36:23.381 [ARIA] Pos=(3.21,-1.59) hdg=-15°  front=327 left=897 right=792  blocked=False
+17:36:23.400 [ARIA] YOLO:
+17:36:23.401   traffic light conf=0.55
+17:36:23.401 [SpatialMemory] NEW discovery: 'traffic light' @ (3.21,-1.59) conf=0.55
+17:36:23.406 [ARIA] Explore: → frontier (4.3,-1.8) dist=1.1m → move_forward  [progress 0/6]
+17:36:23.408 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:23.408 [ARIA] → ACTION: move_forward | → frontier (4.3,-1.8) dist=1.1m → move_forward  [progress 0/6]
+17:36:25.070 [ARIA] MOVED dist=0.609m turned=0.0° reached=True steps=50
+17:36:25.071 [ARIA] dt sense+yolo=0.13s plan=0.00s llm=0.00s move=1.66s total=1.79s
+17:36:25.071 
+17:36:25.071 ============================================================
+17:36:25.071 [ARIA] Step 83/100  |  goal: find plant and approach it
+17:36:25.071 ============================================================
+17:36:25.165 [ARIA] Logging this run to /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/logs/run_20260604_173625.log
+17:36:25.213 [ARIA] Pos=(3.81,-1.75) hdg=-15°  front=452 left=816 right=830  blocked=False
+17:36:25.216 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+17:36:25.223 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+17:36:25.234 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+17:36:25.234 [GridExplorer] 32 waypoints across the room
+17:36:25.234   wp00 (-5.3,-2.0)
+17:36:25.234   wp01 (-5.3,-0.5)
+17:36:25.234   wp02 (-5.3,1.0)
+17:36:25.234   wp03 (-5.3,2.5)
+17:36:25.234   wp04 (-3.8,2.5)
+17:36:25.234   wp05 (-3.8,1.0)
+17:36:25.234   wp06 (-3.8,-0.5)
+17:36:25.235   wp07 (-3.8,-2.0)
+17:36:25.235   wp08 (-2.3,-2.0)
+17:36:25.235   wp09 (-2.3,-0.5)
+17:36:25.235   wp10 (-2.3,1.0)
+17:36:25.235   wp11 (-2.3,2.5)
+17:36:25.235   wp12 (-0.8,2.5)
+17:36:25.235   wp13 (-0.8,1.0)
+17:36:25.236   wp14 (-0.8,-0.5)
+17:36:25.236   wp15 (-0.8,-2.0)
+17:36:25.236   wp16 (0.7,-2.0)
+17:36:25.236   wp17 (0.7,-0.5)
+17:36:25.236   wp18 (0.7,1.0)
+17:36:25.236   wp19 (0.7,2.5)
+17:36:25.236   wp20 (2.2,2.5)
+17:36:25.236   wp21 (2.2,1.0)
+17:36:25.237   wp22 (2.2,-0.5)
+17:36:25.237   wp23 (2.2,-2.0)
+17:36:25.237   wp24 (3.7,-2.0)
+17:36:25.237   wp25 (3.7,-0.5)
+17:36:25.237   wp26 (3.7,1.0)
+17:36:25.237   wp27 (3.7,2.5)
+17:36:25.237   wp28 (5.2,2.5)
+17:36:25.237   wp29 (5.2,1.0)
+17:36:25.237   wp30 (5.2,-0.5)
+17:36:25.237   wp31 (5.2,-2.0)
+17:36:25.248 [ARIA] YOLO:
+17:36:25.248   (none)
+17:36:25.248 [ARIA] Reached frontier (4.3,-1.8) — will re-scan
+17:36:25.249 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:25.249 [ARIA] → ACTION: move_forward | reached frontier
+17:36:25.257 [SpatialMemory] Loaded 55 discoveries for 'empt_room'
+17:36:25.257   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8], [-3.4, -0.7], [-0.5, -1.5], [0.7, -1.7], [1.3, -1.9], [1.9, -2.0], [2.6, -1.7], [2.0, -1.3], [3.2, -1.6]]
+17:36:25.257   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8]]
+17:36:25.257   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2], [-1.1, -1.3]]
+17:36:25.257   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3]]
+17:36:25.257   baseball bat: [[-1.6, -1.1]]
+17:36:25.257   person: [[5.2, 3.2], [1.1, 2.9], [-3.4, -0.7]]
+17:36:25.257   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+17:36:25.257   bed: [[-4.6, -0.6]]
+17:36:25.257   book: [[1.0, 2.9]]
+17:36:25.257   bench: [[1.1, 2.9]]
+17:36:25.257   fridge: [[-5.3, -1.8]]
+17:36:25.257   clock: [[-5.3, -1.8]]
+17:36:25.257 
+17:36:25.258 [ARIA] Goal: find chair and approach it
+17:36:25.258 [ARIA] Target: chair  aliases: ['chair']  mode: APPROACH (drive to it)
+17:36:25.258 [ARIA] Model: llava-phi3:latest
+17:36:25.258 [ARIA] Spatial memory: {'traffic light': 20, 'airplane': 9, 'plant': 10, 'umbrella': 5, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 1, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 1}
+17:36:25.258 
+17:36:25.258 ============================================================
+17:36:25.258 [ARIA] Step 1/100  |  goal: find chair and approach it
+17:36:25.259 ============================================================
+17:36:26.915 [ARIA] MOVED dist=0.608m turned=0.0° reached=True steps=50
+17:36:26.916 [ARIA] dt sense+yolo=0.18s plan=0.00s llm=0.00s move=1.67s total=1.84s
+17:36:26.916 
+17:36:26.916 ============================================================
+17:36:26.916 [ARIA] Step 84/100  |  goal: find plant and approach it
+17:36:26.916 ============================================================
+17:36:27.032 [ARIA] Pos=(4.40,-1.92) hdg=-16°  front=583 left=830 right=862  blocked=False
+17:36:27.060 [ARIA] Pos=(4.40,-1.92) hdg=-16°  front=584 left=841 right=845  blocked=False
+17:36:27.075 [ARIA] YOLO:
+17:36:27.075   (none)
+17:36:27.075 [ARIA] Starting 360° look-around
+17:36:27.076 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:27.077 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:36:27.109 [ARIA] YOLO:
+17:36:27.109   (none)
+17:36:27.109 [ARIA] Starting 360° look-around
+17:36:27.110 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:27.110 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:36:27.840 [ARIA] MOVED dist=0.009m turned=46.0° reached=True steps=22
+17:36:27.840 [ARIA] dt sense+yolo=1.82s plan=0.00s llm=0.00s move=0.76s total=2.58s
+17:36:27.840 
+17:36:27.840 ============================================================
+17:36:27.840 [ARIA] Step 2/100  |  goal: find chair and approach it
+17:36:27.840 ============================================================
+17:36:28.571 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:36:28.571 [ARIA] dt sense+yolo=0.19s plan=0.00s llm=0.00s move=1.46s total=1.66s
+17:36:28.571 
+17:36:28.571 ============================================================
+17:36:28.571 [ARIA] Step 85/100  |  goal: find plant and approach it
+17:36:28.572 ============================================================
+17:36:28.664 [ARIA] Pos=(4.39,-1.92) hdg=-108°  front=875 left=597 right=875  blocked=True
+17:36:28.699 [ARIA] Pos=(4.39,-1.92) hdg=-108°  front=865 left=600 right=870  blocked=True
+17:36:28.705 [ARIA] YOLO:
+17:36:28.705   (none)
+17:36:28.709 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:28.709 [ARIA] → ACTION: turn_right_45 | 360° scan (5465 cells unknown)
+17:36:28.734 [ARIA] YOLO:
+17:36:28.734   (none)
+17:36:28.740 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:28.741 [ARIA] → ACTION: turn_right_45 | 360° scan (2084 cells unknown)
+17:36:29.432 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:29.432 [ARIA] dt sense+yolo=0.87s plan=0.00s llm=0.00s move=0.72s total=1.59s
+17:36:29.433 
+17:36:29.433 ============================================================
+17:36:29.433 [ARIA] Step 3/100  |  goal: find chair and approach it
+17:36:29.433 ============================================================
+17:36:30.196 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:30.196 [ARIA] dt sense+yolo=0.16s plan=0.00s llm=0.00s move=1.46s total=1.62s
+17:36:30.196 
+17:36:30.196 ============================================================
+17:36:30.196 [ARIA] Step 86/100  |  goal: find plant and approach it
+17:36:30.196 ============================================================
+17:36:30.264 [ARIA] Pos=(4.39,-1.92) hdg=162°  front=845 left=845 right=831  blocked=True
+17:36:30.287 [ARIA] YOLO:
+17:36:30.287   (none)
+17:36:30.296 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:30.297 [ARIA] → ACTION: turn_right_45 | 360° scan (5383 cells unknown)
+17:36:30.350 [ARIA] Pos=(4.39,-1.92) hdg=162°  front=850 left=850 right=840  blocked=True
+17:36:30.381 [ARIA] YOLO:
+17:36:30.381   (none)
+17:36:30.390 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:30.390 [ARIA] → ACTION: turn_right_45 | 360° scan (2082 cells unknown)
+17:36:31.050 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:31.050 [ARIA] dt sense+yolo=0.85s plan=0.00s llm=0.01s move=0.75s total=1.62s
+17:36:31.050 
+17:36:31.051 ============================================================
+17:36:31.051 [ARIA] Step 4/100  |  goal: find chair and approach it
+17:36:31.051 ============================================================
+17:36:31.805 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:36:31.805 [ARIA] dt sense+yolo=0.18s plan=0.01s llm=0.00s move=1.42s total=1.61s
+17:36:31.805 
+17:36:31.806 ============================================================
+17:36:31.806 [ARIA] Step 87/100  |  goal: find plant and approach it
+17:36:31.806 ============================================================
+17:36:31.907 [ARIA] Pos=(4.39,-1.92) hdg=71°  front=0 left=873 right=567  blocked=False
+17:36:31.935 [ARIA] Pos=(4.39,-1.92) hdg=71°  front=0 left=896 right=571  blocked=False
+17:36:31.956 [ARIA] YOLO:
+17:36:31.956   (none)
+17:36:31.960 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:31.960 [ARIA] → ACTION: turn_right_45 | 360° scan (5325 cells unknown)
+17:36:31.992 [ARIA] YOLO:
+17:36:31.992   clock conf=0.47
+17:36:31.992 [SpatialMemory] NEW discovery: 'clock' @ (4.39,-1.92) conf=0.47
+17:36:32.002 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:32.002 [ARIA] → ACTION: turn_right_45 | 360° scan (2065 cells unknown)
+17:36:32.670 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:32.670 [ARIA] dt sense+yolo=0.91s plan=0.00s llm=0.00s move=0.71s total=1.62s
+17:36:32.670 
+17:36:32.670 ============================================================
+17:36:32.670 [ARIA] Step 5/100  |  goal: find chair and approach it
+17:36:32.670 ============================================================
+17:36:33.392 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:33.392 [ARIA] dt sense+yolo=0.19s plan=0.00s llm=0.00s move=1.39s total=1.59s
+17:36:33.392 
+17:36:33.392 ============================================================
+17:36:33.392 [ARIA] Step 88/100  |  goal: find plant and approach it
+17:36:33.392 ============================================================
+17:36:33.497 [ARIA] Pos=(4.39,-1.92) hdg=-20°  front=591 left=831 right=855  blocked=False
+17:36:33.524 [ARIA] Pos=(4.39,-1.92) hdg=-20°  front=590 left=821 right=842  blocked=False
+17:36:33.538 [ARIA] YOLO:
+17:36:33.538   (none)
+17:36:33.542 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:33.542 [ARIA] → ACTION: turn_right_45 | 360° scan (5298 cells unknown)
+17:36:33.576 [ARIA] YOLO:
+17:36:33.576   (none)
+17:36:33.582 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:33.582 [ARIA] → ACTION: turn_right_45 | 360° scan (2063 cells unknown)
+17:36:34.262 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:34.262 [ARIA] dt sense+yolo=0.87s plan=0.00s llm=0.00s move=0.72s total=1.59s
+17:36:34.262 
+17:36:34.262 ============================================================
+17:36:34.262 [ARIA] Step 6/100  |  goal: find chair and approach it
+17:36:34.262 ============================================================
+17:36:35.011 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:36:35.011 [ARIA] dt sense+yolo=0.18s plan=0.00s llm=0.00s move=1.43s total=1.62s
+17:36:35.011 
+17:36:35.011 ============================================================
+17:36:35.012 [ARIA] Step 89/100  |  goal: find plant and approach it
+17:36:35.012 ============================================================
+17:36:35.112 [ARIA] Pos=(4.39,-1.92) hdg=-111°  front=856 left=856 right=867  blocked=True
+17:36:35.141 [ARIA] Pos=(4.39,-1.92) hdg=-111°  front=874 left=849 right=874  blocked=True
+17:36:35.152 [ARIA] YOLO:
+17:36:35.152   (none)
+17:36:35.156 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:35.156 [ARIA] → ACTION: turn_right_45 | 360° scan (5285 cells unknown)
+17:36:35.193 [ARIA] YOLO:
+17:36:35.193   (none)
+17:36:35.199 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:35.199 [ARIA] → ACTION: turn_right_45 | 360° scan (2063 cells unknown)
+17:36:35.874 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:35.875 [ARIA] dt sense+yolo=0.89s plan=0.00s llm=0.00s move=0.72s total=1.61s
+17:36:35.875 
+17:36:35.875 ============================================================
+17:36:35.875 [ARIA] Step 7/100  |  goal: find chair and approach it
+17:36:35.875 ============================================================
+17:36:36.604 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:36.604 [ARIA] dt sense+yolo=0.18s plan=0.01s llm=0.00s move=1.40s total=1.59s
+17:36:36.604 
+17:36:36.604 ============================================================
+17:36:36.604 [ARIA] Step 90/100  |  goal: find plant and approach it
+17:36:36.604 ============================================================
+17:36:36.707 [ARIA] Pos=(4.39,-1.92) hdg=158°  front=860 left=860 right=832  blocked=True
+17:36:36.748 [ARIA] Pos=(4.39,-1.92) hdg=158°  front=864 left=864 right=835  blocked=True
+17:36:36.752 [ARIA] YOLO:
+17:36:36.752   traffic light conf=0.50
+17:36:36.752 [SpatialMemory] NEW discovery: 'traffic light' @ (4.39,-1.92) conf=0.50
+17:36:36.783 [ARIA] Scan done → frontier (6.2,-1.1)  map: {'free': 6554, 'occupied': 289, 'unknown': 5250}
+17:36:36.784 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:36.784 [ARIA] → ACTION: turn_right_45 | 360° scan (5250 cells unknown)
+17:36:36.804 [ARIA] YOLO:
+17:36:36.804   traffic light conf=0.53
+17:36:36.804 [SpatialMemory] NEW discovery: 'traffic light' @ (4.39,-1.92) conf=0.53
+17:36:36.857 [ARIA] Scan done → no reachable frontier  map: {'free': 9336, 'occupied': 694, 'unknown': 2063}
+17:36:36.857 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:36.857 [ARIA] → ACTION: turn_right_45 | 360° scan (2063 cells unknown)
+17:36:37.473 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:37.473 [ARIA] dt sense+yolo=0.89s plan=0.02s llm=0.00s move=0.69s total=1.60s
+17:36:37.473 
+17:36:37.473 ============================================================
+17:36:37.473 [ARIA] Step 8/100  |  goal: find chair and approach it
+17:36:37.473 ============================================================
+17:36:38.209 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:36:38.209 [ARIA] dt sense+yolo=0.20s plan=0.05s llm=0.00s move=1.35s total=1.60s
+17:36:38.209 
+17:36:38.209 ============================================================
+17:36:38.209 [ARIA] Step 91/100  |  goal: find plant and approach it
+17:36:38.209 ============================================================
+17:36:38.298 [ARIA] Pos=(4.39,-1.92) hdg=67°  front=0 left=896 right=573  blocked=False
+17:36:38.334 [ARIA] Pos=(4.39,-1.92) hdg=67°  front=0 left=872 right=571  blocked=False
+17:36:38.351 [ARIA] YOLO:
+17:36:38.352   (none)
+17:36:38.355 [ARIA] Explore: → frontier (6.2,-1.1) dist=2.0m → turn_right_45  [progress 0/6]
+17:36:38.360 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:38.362 [ARIA] → ACTION: turn_right_45 | → frontier (6.2,-1.1) dist=2.0m → turn_right_45  [progress 0/6]
+17:36:38.386 [ARIA] YOLO:
+17:36:38.387   (none)
+17:36:38.391 [ARIA] EXPLORATION COMPLETE — 'plant' not found  {'free': 9343, 'occupied': 699, 'unknown': 2051}
+17:36:38.392 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:36:38.392 [ARIA] → ACTION: stop | explored all reachable space, target not found
+17:36:39.101 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:36:39.102 [ARIA] dt sense+yolo=0.88s plan=0.00s llm=0.00s move=0.74s total=1.63s
+17:36:39.102 
+17:36:39.102 ============================================================
+17:36:39.102 [ARIA] Step 9/100  |  goal: find chair and approach it
+17:36:39.102 ============================================================
+17:36:39.133 
+17:36:39.133 [ARIA] DONE — explored all reachable space, 'plant' not found at step 91
+17:36:39.133 
+17:36:39.133 ============================================================
+17:36:39.133 [ARIA] STOPPED: 'plant' not found after 91 steps
+17:36:39.138 [ARIA] Map: {'free': 9343, 'occupied': 699, 'unknown': 2051}
+17:36:39.138 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 9, 'plant': 10, 'umbrella': 5, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 1, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 2}
+17:36:39.138 ============================================================
+17:36:39.138 

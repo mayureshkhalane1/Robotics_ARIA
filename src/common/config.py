@@ -87,6 +87,10 @@ STAGNATION_THRESHOLD = int(os.getenv("STAGNATION_THRESHOLD", 5))
 STEP_TIMEOUT = int(os.getenv("STEP_TIMEOUT", 30))  # seconds per LLM call
 
 # LLM Configuration
+# The LLM is an OPTIONAL refinement layer — YOLO does target detection and the
+# Lidar does navigation, so the robot runs fully without it.  Set ARIA_USE_LLM=0
+# to skip all Ollama calls (fastest, no dependency on Ollama being reachable).
+USE_LLM = os.getenv("ARIA_USE_LLM", "1").strip().lower() not in ("0", "false", "no", "off")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")  # 'anthropic' or 'ollama'
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
@@ -101,6 +105,13 @@ OLLAMA_VISION_TIMEOUT = int(os.getenv("OLLAMA_VISION_TIMEOUT", 35))
 OLLAMA_VISION_NUM_PREDICT = int(os.getenv("OLLAMA_VISION_NUM_PREDICT", 160))
 OLLAMA_VISION_IMAGE_MAX_DIM = int(os.getenv("OLLAMA_VISION_IMAGE_MAX_DIM", 640))
 OLLAMA_VISION_SAMPLE_INTERVAL = float(os.getenv("OLLAMA_VISION_SAMPLE_INTERVAL", 10.0))
+
+# Perception (YOLO object detection — runs every step, this IS the target finder)
+# yolov8n (nano) is weak on small/distant objects; yolov8s is a better default.
+# Set YOLO_MODEL=yolov8n to avoid the ~22MB auto-download if offline.
+YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8s")
+YOLO_CONF = float(os.getenv("YOLO_CONF", 0.35))
+YOLO_IOU = float(os.getenv("YOLO_IOU", 0.45))
 
 # Project Paths
 WEBOTS_WORLDS_PATH = PROJECT_ROOT / "src" / "webots" / "worlds"
@@ -124,6 +135,6 @@ if LLM_PROVIDER not in ("anthropic", "ollama"):
 
 print(f"[Config] Loaded configuration:")
 print(f"  Webots: {WEBOTS_HOST}:{WEBOTS_PORT} (sim_speed={WEBOTS_SIM_SPEED}x)")
-print(f"  Ollama: {OLLAMA_BASE_URL}  vision={OLLAMA_VISION_MODEL}  reasoning={OLLAMA_REASONING_MODEL}")
+print(f"  Ollama: {OLLAMA_BASE_URL}  vision={OLLAMA_VISION_MODEL}  reasoning={OLLAMA_REASONING_MODEL}  use_llm={USE_LLM}")
 print(f"  Agent: MAX_STEPS={MAX_STEPS}, STATE_CACHE={STATE_CACHE_SIZE}")
 print(f"  LLM: {LLM_PROVIDER} ({ANTHROPIC_MODEL if LLM_PROVIDER == 'anthropic' else OLLAMA_MODEL})")

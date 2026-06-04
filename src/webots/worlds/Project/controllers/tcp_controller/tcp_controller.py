@@ -9,6 +9,7 @@ can read sensors and send motor commands.
 import socket
 import json
 import base64
+import os
 import sys
 from typing import Dict, Any, Optional
 
@@ -28,6 +29,18 @@ class WebotsRobotServer:
         self.robot = Robot()
         self.timestep = int(self.robot.getBasicTimeStep())
         print(f"[INIT] Robot ready. Timestep={self.timestep}ms")
+
+        # Detect which world is actually loaded so the agent never has to guess
+        # (and never chases a stale coordinate from a different world).
+        self.world_name, self._world_sources = self._detect_world_name()
+        print(f"[INIT] World detected: {self.world_name!r}")
+        if self._world_sources:
+            print(f"[INIT] World name sources seen: {self._world_sources}")
+        else:
+            print("[INIT] No world-name source found — dumping WEBOTS_* env for diagnosis:")
+            for k, v in sorted(os.environ.items()):
+                if k.startswith("WEBOTS") or "WORLD" in k.upper():
+                    print(f"        {k}={v}")
         sys.stdout.flush()
 
         self.left_motor: Optional[Motor] = None
@@ -45,6 +58,56 @@ class WebotsRobotServer:
     # ------------------------------------------------------------------
     # Setup helpers
     # ------------------------------------------------------------------
+
+    def _detect_world_name(self):
+        """Best-effort detection of the loaded world's file stem (e.g.
+        "break_room").  The plain Robot API has no "get world path" call, so we
+        try several sources and report which ones we found.
+
+        Order of preference:
+          1. self.robot.getWorldPath()  — exists on some Webots builds/Supervisor
+          2. environment variables Webots sets for the controller process
+          3. any WEBOTS_* env value that ends in .wbt
+
+        Returns (stem_or_None, sources_dict).  sources_dict is surfaced to the
+        agent so the run log shows exactly what was available on this machine.
+        """
+        sources: Dict[str, str] = {}
+
+        # 1. API method, if this build exposes it (harmless if absent).
+        try:
+            getter = getattr(self.robot, "getWorldPath", None)
+            if callable(getter):
+                wp = getter()
+                if wp:
+                    sources["getWorldPath"] = str(wp)
+        except Exception:
+            pass
+
+        # 2. Known candidate environment variables (vary by version/platform).
+        for var in ("WEBOTS_WORLD", "WEBOTS_WORLD_PATH", "WEBOTS_CURRENT_WORLD",
+                    "WEBOTS_WORLD_FILE", "WORLD_NAME"):
+            v = os.environ.get(var)
+            if v:
+                sources[var] = v
+
+        # 3. Catch-all: any WEBOTS_* env value pointing at a .wbt file.
+        for k, v in os.environ.items():
+            if k.startswith("WEBOTS") and v and v.lower().endswith(".wbt"):
+                sources.setdefault(k, v)
+
+        # Pick the first usable value → file stem (drop dir + .wbt extension).
+        priority = ["getWorldPath", "WEBOTS_WORLD", "WEBOTS_WORLD_PATH",
+                    "WEBOTS_CURRENT_WORLD", "WEBOTS_WORLD_FILE", "WORLD_NAME"]
+        for key in priority:
+            if key in sources:
+                stem = os.path.splitext(os.path.basename(sources[key]))[0]
+                if stem:
+                    return stem, sources
+        for v in sources.values():
+            if str(v).lower().endswith(".wbt"):
+                return os.path.splitext(os.path.basename(v))[0], sources
+        return None, sources
 
     def _setup_motors(self) -> None:
         try:
@@ -178,6 +241,8 @@ class WebotsRobotServer:
     def get_state(self, include_camera: bool = True) -> Dict[str, Any]:
         state: Dict[str, Any] = {
             "timestamp": self.robot.getTime(),
+            "world": self.world_name,            # loaded world's file stem, or None
+            "world_sources": self._world_sources,  # what the controller could see
             "position": None,
             "orientation": None,
             "proximity": {},

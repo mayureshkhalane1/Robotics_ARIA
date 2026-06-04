@@ -96,6 +96,10 @@ class OnlineOccupancyGrid:
         self.score = [[0] * self.ny for _ in range(self.nx)]
         self.visited = [[False] * self.ny for _ in range(self.nx)]
         self.blocked: set = set()        # frontier cells we gave up reaching
+        # Traversable mask (FREE and clear of obstacles by robot radius). Rebuilt
+        # once per scan so BFS can read it in O(1) instead of scanning a
+        # neighbourhood per cell — this is what keeps each planning step fast.
+        self._trav = [[False] * self.ny for _ in range(self.nx)]
 
     # --- transforms ---
     def _to_cell(self, x: float, y: float) -> Tuple[int, int]:
@@ -218,16 +222,35 @@ class OnlineOccupancyGrid:
             if hit:
                 self._obs_occ(*self._to_cell(x + ca * d, y + sa * d))
 
+        self._rebuild_traversable()
+
     # --- traversability (free + clearance from obstacles) ---
+    def _rebuild_traversable(self) -> None:
+        """Recompute the traversable mask once: a cell is traversable iff it is
+        FREE and no OCCUPIED cell lies within the robot-radius inflation.  We
+        inflate *outward from the (few) occupied cells* — far cheaper than
+        scanning every cell's neighbourhood."""
+        nx, ny, r = self.nx, self.ny, self._infl_cells
+        near = bytearray(nx * ny)            # 1 byte/cell: 1 = within infl of OCC
+        known, score = self.known, self.score
+        for i in range(nx):
+            ki, si = known[i], score[i]
+            for j in range(ny):
+                if ki[j] and si[j] > 0:                  # OCC cell → inflate
+                    i0, i1 = max(0, i - r), min(nx - 1, i + r)
+                    j0, j1 = max(0, j - r), min(ny - 1, j + r)
+                    for ii in range(i0, i1 + 1):
+                        base = ii * ny
+                        for jj in range(j0, j1 + 1):
+                            near[base + jj] = 1
+        trav = self._trav
+        for i in range(nx):
+            ki, si, row, base = known[i], score[i], trav[i], i * ny
+            for j in range(ny):
+                row[j] = ki[j] and si[j] <= 0 and not near[base + j]
+
     def _traversable(self, i: int, j: int) -> bool:
-        if self._cls(i, j) != FREE:
-            return False
-        r = self._infl_cells
-        for di in range(-r, r + 1):
-            for dj in range(-r, r + 1):
-                if self._cls(i + di, j + dj) == OCC:
-                    return False
-        return True
+        return 0 <= i < self.nx and 0 <= j < self.ny and self._trav[i][j]
 
     def _nearest_traversable(self, i: int, j: int, max_r: int = 6) -> Optional[Tuple[int, int]]:
         if self._traversable(i, j):

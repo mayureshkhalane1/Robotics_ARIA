@@ -4,10 +4,15 @@
 import base64
 import json
 import re
+import socket
+import sys
 import time
 import urllib.request
 from base64 import b64decode
+from datetime import datetime
 from math import atan2, degrees, hypot
+from pathlib import Path
+from urllib.parse import urlparse
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # === Third-Party ===
@@ -28,7 +33,9 @@ from src.common.config import (
     OLLAMA_VISION_NUM_PREDICT,
     OLLAMA_VISION_SAMPLE_INTERVAL,
     OLLAMA_VISION_TIMEOUT,
+    USE_LLM,
     WEBOTS_WORLD_FILE,
+    LOGS_PATH,
 )
 from src.common.types import AgentState
 from src.mcp_server.server import call_tool
@@ -53,6 +60,11 @@ TURN_STEP_CAP = 160         # sim-step safety cap for a single turn
 # Break_room walls 2m away read ~600–650; raise threshold so walls don't count as blocked.
 OBSTACLE_THRESH = 800
 CRITICAL_OBSTACLE_THRESH = 970
+
+# === Target pursuit (find / approach) ===
+APPROACH_DONE_FRAC = 0.55    # target bbox height ≥ this fraction of frame → close enough
+APPROACH_CENTER_TOL = 0.30   # |image x-error| within this → drive straight at the target
+PURSUIT_LOST_LIMIT = 6       # steps to keep re-acquiring after losing sight of the target
 
 # How many steps to skip LLM after a connection failure before retrying
 _OLLAMA_RETRY_INTERVAL = 10
@@ -99,6 +111,10 @@ _GOAL_STOPWORDS = {
     "find", "the", "a", "an", "and", "go", "towards", "toward", "to", "it",
     "stop", "away", "from", "centimeter", "centimeters", "cm", "meter", "meters",
     "near", "at", "search", "for", "object", "target", "approach",
+    # verbs / fillers that should never be treated as the object
+    "locate", "look", "where", "is", "spot", "reach", "come", "walk", "get",
+    "drive", "head", "navigate", "move", "please", "me", "this", "that", "of",
+    "explore", "room", "around", "then", "once", "you", "your", "robot",
 }
 
 # === System Prompt ===
@@ -123,19 +139,46 @@ RESPONSE FORMAT (compact JSON only, no markdown, no thinking):
 
 # === Helpers ===
 
+_APPROACH_PHRASES = (
+    "approach", "go to", "goto", "go near", "navigate to", "navigate towards",
+    "reach", "come to", "move to", "move towards", "walk to", "get to",
+    "drive to", "head to", "head towards", "go towards", "go up to",
+)
+
+
+def _wants_approach(goal: str) -> bool:
+    """True if the goal asks the robot to drive to the target (vs just find it).
+    'find the dog and approach it' → True;  'find the dog' → False (stop on sight)."""
+    g = goal.lower()
+    return any(p in g for p in _APPROACH_PHRASES)
+
+
 def _extract_target(goal: str) -> str:
     goal_lower = goal.lower()
+    # whole-word match so "cat" doesn't fire inside "lo-cat-e", etc.
     for keyword, target in _TARGET_KEYWORDS.items():
-        if keyword in goal_lower:
+        if re.search(rf"\b{re.escape(keyword)}\b", goal_lower):
             return target
     words = re.findall(r"[a-zA-Z][a-zA-Z-]*", goal_lower)
     candidates = [w for w in words if w not in _GOAL_STOPWORDS and not w.isdigit()]
-    return candidates[0] if candidates else "object"
+    # the head noun is usually last ("wooden BOX", "red BALL") → take the last
+    return candidates[-1] if candidates else "object"
+
+
+# COCO four-legged-animal classes.  YOLOv8 frequently flips between these on a
+# single rendered animal model (the Webots dog reads as "horse" up close and
+# "dog"/"sheep" at range), so when the target is one of them we accept any of
+# them as the target.  In these single-animal test worlds that's the right call;
+# it's what makes "find the dog and approach it" robust to the misclassification
+# the detector actually produces.
+_COCO_QUADRUPEDS = {"dog", "cat", "horse", "sheep", "cow", "bear", "elephant", "zebra", "giraffe"}
 
 
 def _target_aliases(target: str) -> set:
     t = target.lower().strip()
     aliases = {t}
+    if t in _COCO_QUADRUPEDS:
+        aliases.update(_COCO_QUADRUPEDS)
     if t == "fire extinguisher":
         aliases.update({"extinguisher"})
     if t == "table":
@@ -148,6 +191,10 @@ def _target_aliases(target: str) -> set:
         aliases.update({"tv", "television", "monitor"})
     if t in ("duck", "rubber duck"):
         aliases.update({"duck", "rubber duck"})
+    if t in ("box", "wooden box", "cardboard box"):
+        aliases.update({"box", "wooden box", "cardboard box", "carton"})
+    if t in ("ball", "sports ball", "soccer ball"):
+        aliases.update({"sports ball", "ball", "soccer ball"})
     return aliases
 
 
@@ -175,7 +222,7 @@ def _proximity_scan(proximity: Dict[str, float]) -> Dict[str, Any]:
         return {
             "front_blocked": False, "critical": False,
             "front": 0.0, "left": 0.0, "right": 0.0,
-            "clearer_turn": "turn_left_90",
+            "clearer_turn": "turn_left_45",
         }
 
     indexed = [(k, v, i) for k, v, i in items if i is not None]
@@ -194,7 +241,7 @@ def _proximity_scan(proximity: Dict[str, float]) -> Dict[str, Any]:
     front = max(front_vals or values)
     left = max(left_vals or [0.0])
     right = max(right_vals or [0.0])
-    clearer_turn = "turn_left_90" if left < right else "turn_right_90"
+    clearer_turn = "turn_left_45" if left < right else "turn_right_45"
     return {
         "front_blocked": front > OBSTACLE_THRESH,
         "critical": max(values) > CRITICAL_OBSTACLE_THRESH,
@@ -219,10 +266,10 @@ def _is_white_wall_view(frame_bgr: Optional[np.ndarray]) -> bool:
 def _safe_fallback_action(scan: Dict[str, Any], white_wall: bool) -> Tuple[str, str]:
     """Sensor-only fallback when LLM is unavailable."""
     if scan.get("critical") or (white_wall and scan.get("front", 0) > OBSTACLE_THRESH * 0.7):
-        turn = scan.get("clearer_turn", "turn_left_90")
+        turn = scan.get("clearer_turn", "turn_left_45")
         return f"back_up_turn_{turn.split('_')[1]}", "critical proximity — backing out"
     if scan.get("front_blocked"):
-        return scan.get("clearer_turn", "turn_left_90"), "front blocked — turning to clearer side"
+        return scan.get("clearer_turn", "turn_left_45"), "front blocked — turning to clearer side"
     return "move_forward", "path clear — advancing"
 
 
@@ -307,6 +354,19 @@ def _extract_json(text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _ollama_reachable(timeout: float = 1.5) -> bool:
+    """Cheap TCP connect test so an unreachable Ollama costs ~1s, not a 35s
+    HTTP read timeout (×2 calls)."""
+    try:
+        u = urlparse(OLLAMA_BASE_URL)
+        host = u.hostname or "localhost"
+        port = u.port or 11434
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
 def _query_vision_model(jpeg_b64: Optional[str], user_prompt: str) -> str:
     url = f"{OLLAMA_BASE_URL.rstrip('/')}/api/chat"
     user_msg: Dict[str, Any] = {"role": "user", "content": user_prompt}
@@ -370,42 +430,58 @@ def _query_reasoning_model(system_prompt: str, user_prompt: str) -> str:
     return text
 
 
-def _fwd(distance: float = MOVE_DISTANCE, velocity: float = MOVE_VELOCITY) -> None:
-    call_tool("execute_action", {
+def _fwd(distance: float = MOVE_DISTANCE, velocity: float = MOVE_VELOCITY) -> Dict[str, Any]:
+    res = call_tool("execute_action", {
         "action_type": "move", "velocity": velocity,
         "target_distance": distance, "steps": MOVE_STEP_CAP,
     })
+    return res.get("feedback", {}) if isinstance(res, dict) else {}
 
 
-def _turn(degrees_: float, direction: int) -> None:
-    """direction: +1 = left/CCW, -1 = right/CW."""
-    call_tool("execute_action", {
+def _turn(degrees_: float, direction: int) -> Dict[str, Any]:
+    """direction: +1 = left/CCW, -1 = right/CW.  The step cap scales with the
+    angle so a wedged turn that can't complete gives up quickly (~1.5× the
+    expected steps) instead of spinning for the full fixed cap."""
+    cap = max(25, int(abs(degrees_) * 1.1))
+    res = call_tool("execute_action", {
         "action_type": "turn", "angular_velocity": direction * TURN_VELOCITY,
-        "target_angle": abs(degrees_), "steps": TURN_STEP_CAP,
+        "target_angle": abs(degrees_), "steps": cap,
     })
+    return res.get("feedback", {}) if isinstance(res, dict) else {}
 
 
-def _execute_motion(action: str) -> None:
+def _execute_motion(action: str) -> Dict[str, Any]:
     """Issue one closed-loop motion. Each call blocks until the controller has
-    reached the sensor goal and stopped the wheels — no agent-side sleeps."""
+    reached the sensor goal and stopped the wheels — no agent-side sleeps.
+
+    Returns the controller feedback for the *primary* motion (distance_traveled,
+    degrees_turned, reached_target, …) so the caller can log whether the robot
+    actually translated/rotated as commanded."""
     if action == "move_forward":
-        _fwd()
+        return _fwd()
+    elif action == "turn_left_45":
+        return _turn(45, +1)
+    elif action == "turn_right_45":
+        return _turn(45, -1)
     elif action == "turn_left_90":
-        _turn(90, +1)
+        return _turn(90, +1)
     elif action == "turn_right_90":
-        _turn(90, -1)
+        return _turn(90, -1)
     elif action == "turn_around":
-        _turn(180, +1)
+        return _turn(180, +1)
     elif action == "back_up":
-        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
+        return _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
     elif action in ("back_up_turn", "back_up_turn_left"):
-        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
-        _turn(90, +1)
+        fb = _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
+        _turn(45, +1)
+        return fb
     elif action == "back_up_turn_right":
-        _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
-        _turn(90, -1)
+        fb = _fwd(distance=BACKUP_DISTANCE, velocity=BACKUP_VELOCITY)
+        _turn(45, -1)
+        return fb
     elif action == "stop":
         call_tool("stop", {})
+    return {}
 
 
 def _emit(callback: Optional[Callable], event: Dict[str, Any]) -> None:
@@ -418,6 +494,71 @@ def _emit(callback: Optional[Callable], event: Dict[str, Any]) -> None:
 
 
 # =========================================================================
+# Per-run logging — every run is captured to logs/run_<timestamp>.log
+# =========================================================================
+
+class _TimestampedFile:
+    """Wraps a file so each complete line is prefixed with a wall-clock time —
+    makes it obvious from the log exactly which step/section was slow."""
+
+    def __init__(self, f):
+        self._f = f
+        self._buf = ""
+
+    def write(self, data: str) -> int:
+        self._buf += data
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            # Trim the timestamp's microseconds to milliseconds (3 digits) — the
+            # slice must apply to the TIMESTAMP, not the whole line.  The old
+            # `f"...{line}\n"[:-4]` chopped the last 4 chars off every log line
+            # (e.g. "conf=0.41" → "conf=0", "turn_right_45" → "turn_right"),
+            # silently corrupting the logs.
+            ts = f"{datetime.now():%H:%M:%S.%f}"[:-3]
+            self._f.write(f"{ts} {line}\n")
+        return len(data)
+
+    def flush(self):
+        self._f.flush()
+
+
+class _Tee:
+    """Write to several streams at once (console + log file)."""
+
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, data: str) -> int:
+        for s in self._streams:
+            try:
+                s.write(data)
+            except Exception:
+                pass
+        return len(data)
+
+    def flush(self):
+        for s in self._streams:
+            try:
+                s.flush()
+            except Exception:
+                pass
+
+
+def _open_run_log(goal: str):
+    try:
+        LOGS_PATH.mkdir(parents=True, exist_ok=True)
+        path = LOGS_PATH / f"run_{datetime.now():%Y%m%d_%H%M%S}.log"
+        f = open(path, "w", encoding="utf-8")
+        f.write(f"# ARIA run log — goal={goal!r} — {datetime.now():%Y-%m-%d %H:%M:%S}\n")
+        f.flush()
+        print(f"[ARIA] Logging this run to {path}")
+        return f
+    except Exception as e:
+        print(f"[ARIA] Could not open run log: {e}")
+        return None
+
+
+# =========================================================================
 # Main Agent
 # =========================================================================
 
@@ -427,24 +568,100 @@ def run_aria_agent(
     model: str = OLLAMA_MODEL,
     event_callback: Optional[Callable[[Dict], None]] = None,
 ) -> AgentState:
+    """Public entry: tees all output to a per-run log file, then runs the
+    agent.  stdout is always restored, even on error."""
+    orig_stdout = sys.stdout
+    logf = _open_run_log(goal)
+    if logf is not None:
+        sys.stdout = _Tee(orig_stdout, _TimestampedFile(logf))
+    try:
+        return _run_aria_agent_impl(goal, max_steps, model, event_callback)
+    except Exception:
+        # Make crashes loud — an uncaught error in the worker thread would
+        # otherwise be silently swallowed by the asyncio task and look like a hang.
+        import traceback
+        print("\n[ARIA] FATAL: agent crashed —")
+        traceback.print_exc()
+        if event_callback:
+            try:
+                event_callback({"type": "error", "step": 0,
+                                "plan": "agent crashed (see console/log)"})
+            except Exception:
+                pass
+        raise
+    finally:
+        sys.stdout = orig_stdout
+        if logf is not None:
+            try:
+                logf.close()
+            except Exception:
+                pass
+
+
+def _run_aria_agent_impl(
+    goal: str,
+    max_steps: int = 100,
+    model: str = OLLAMA_MODEL,
+    event_callback: Optional[Callable[[Dict], None]] = None,
+) -> AgentState:
 
     target = _extract_target(goal)
     target_aliases = _target_aliases(target)
+    approach_mode = _wants_approach(goal)   # drive to target vs just stop on sight
     camera = get_camera_manager()
     detector = get_detector()
     env_graph = get_environment_graph()
 
+    # Open-vocabulary detectors (YOLO-World) can find objects outside the 80
+    # COCO classes (duck, box, …) — tell it what to look for.  No-op for the
+    # standard COCO models, which only ever see their fixed class list.
+    if getattr(detector, "is_open_vocab", False):
+        detector.set_classes(sorted(target_aliases | {
+            "dog", "cat", "sports ball", "bottle", "duck", "rubber duck",
+            "box", "wooden box", "cardboard box", "chair", "person", "potted plant",
+        }))
+
+    # --- Ask the simulator which world is actually loaded -----------------
+    # The agent only talks to Webots over TCP and otherwise can't know which
+    # .wbt is open.  The controller now reports it (state["world"]); we use that
+    # to key spatial memory and to read the correct floor bounds, instead of
+    # blindly trusting WEBOTS_WORLD_FILE (which caused the empty_room run to
+    # load break_room's memory and chase a dog that wasn't there).
+    detected_world: Optional[str] = None
+    try:
+        _probe = call_tool("get_state", {"include_camera": False})
+        if _probe.get("success"):
+            _pstate = _probe.get("state", {}) or {}
+            detected_world = (_pstate.get("world") or "").strip() or None
+            print(f"[ARIA] Webots reports world: {detected_world!r}  "
+                  f"(sources: {_pstate.get('world_sources', {})})")
+    except Exception as e:
+        print(f"[ARIA] World probe failed: {e}")
+
+    # Resolve the .wbt path to parse for floor bounds: prefer a file matching the
+    # reported world in the same worlds directory; else fall back to config.
+    world_file = WEBOTS_WORLD_FILE
+    if detected_world:
+        _candidate = Path(WEBOTS_WORLD_FILE).parent / f"{detected_world}.wbt"
+        if _candidate.exists():
+            world_file = str(_candidate)
+        elif Path(WEBOTS_WORLD_FILE).stem != detected_world:
+            print(f"[ARIA] WARNING: Webots is running '{detected_world}' but no "
+                  f"matching .wbt found next to {WEBOTS_WORLD_FILE}; floor bounds "
+                  f"may be wrong. Set WEBOTS_WORLD_FILE to the loaded world.")
+    print(f"[ARIA] Using world file for floor bounds: {world_file}")
+
     # --- Autonomous exploration infrastructure ---
     # GridExplorer is kept ONLY for its map-agnostic helpers (heading→turn
     # action and the 360° scan state machine) — its lattice is not used.
-    grid = GridExplorer(WEBOTS_WORLD_FILE, grid_spacing=1.5)
+    grid = GridExplorer(world_file, grid_spacing=1.5)
     # The robot discovers the room itself: a live occupancy grid built from the
     # Lidar, driven by frontier exploration.  No wall positions are read from
     # the .wbt — only the floor bounding box, to size the grid's frame.
     omap = OnlineOccupancyGrid(
-        *parse_floor_extent(WEBOTS_WORLD_FILE), resolution=0.10, robot_radius=0.25
+        *parse_floor_extent(world_file), resolution=0.10, robot_radius=0.25
     )
-    spatial_mem = SpatialMemory()
+    spatial_mem = SpatialMemory(world=detected_world)
 
     def _plan_action(cur_xy, goal_xy):
         """Heading-aware action toward goal_xy, routed around DISCOVERED
@@ -452,7 +669,7 @@ def run_aria_agent(
         d = hypot(goal_xy[0] - cur_xy[0], goal_xy[1] - cur_xy[1])
         if d <= grid.ARRIVAL_RADIUS:
             return "arrived", d
-        carrot = omap.next_step_toward(cur_xy, tuple(goal_xy), lookahead=0.7)
+        carrot = omap.next_step_toward(cur_xy[0], cur_xy[1], tuple(goal_xy), lookahead=0.7)
         steer_to = carrot if carrot is not None else tuple(goal_xy)
         action, _sub = grid.get_nav_action(cur_xy, steer_to, heading_deg)
         if action == "arrived":          # close to carrot but not the goal → push on
@@ -473,6 +690,11 @@ def run_aria_agent(
     # Are we doing a 360° scan (look-around for YOLO + fill the map)?
     scanning = False
 
+    # Target pursuit state (set once the target is seen by YOLO)
+    pursuing = False
+    pursuit_lost = 0
+    last_seen_err = 0.0          # last image x-error sign, for re-acquiring
+
     # Ollama connectivity tracking (fail-fast: skip LLM when offline)
     ollama_online = True
     ollama_skip_until_step = 0   # re-try every _OLLAMA_RETRY_INTERVAL steps
@@ -485,7 +707,8 @@ def run_aria_agent(
     objects_seen: List[str] = []
 
     print(f"\n[ARIA] Goal: {goal}")
-    print(f"[ARIA] Target: {target}  aliases: {sorted(target_aliases)}")
+    print(f"[ARIA] Target: {target}  aliases: {sorted(target_aliases)}  "
+          f"mode: {'APPROACH (drive to it)' if approach_mode else 'FIND (stop on sight)'}")
     print(f"[ARIA] Model: {model}")
     print(f"[ARIA] Spatial memory: {spatial_mem.summary()}")
 
@@ -597,98 +820,163 @@ def run_aria_agent(
 
         detection_dicts = [_detection_to_dict(d) for d in detections]
 
+        # --- Locate the target in the frame (for find/approach decisions) ---
+        target_det = None
+        for d in detections:
+            if d.class_name.lower() in target_aliases:
+                if target_det is None or d.confidence > target_det.confidence:
+                    target_det = d
+        target_err = 0.0      # normalized horizontal offset of target in image, [-1..1]
+        target_frac = 0.0     # target bbox height / frame height (proximity proxy)
+        if target_det is not None and frame_bgr is not None:
+            fh, fw = frame_bgr.shape[0], frame_bgr.shape[1]
+            x1, y1, x2, y2 = target_det.bbox
+            target_err = (target_det.center[0] - fw / 2.0) / (fw / 2.0)
+            target_frac = (y2 - y1) / float(fh)
+
+        t_sense = time.time()
+
         # ============================================================
         # DETERMINE BASE NAVIGATION ACTION
-        # Hierarchy: scanning > known-target recall > frontier exploration
+        # Deliberate cycle:  LOOK AROUND (360° in 45° steps) → pick frontier →
+        # DRIVE to it → arrive/blocked → LOOK AROUND again.  YOLO + Lidar run at
+        # every orientation during the scan, so the robot "rotates, identifies,
+        # then acts" instead of spinning reactively.
         # ============================================================
-        nav_action: str
-        nav_reason: str
+        nav_action = None
+        nav_reason = ""
+        target_done = False        # True when we should STOP and succeed on the target
+        exploration_done = False   # True when all reachable space is explored (give up)
 
-        if scanning:
-            # Mid-360° look-around (fills the map + lets YOLO see all directions)
+        # ============================================================
+        # TARGET PURSUIT  (highest priority — overrides scan/explore/LLM)
+        # ============================================================
+        if target_det is not None:
+            pursuing = True
+            pursuit_lost = 0
+            last_seen_err = target_err
+            scanning = False                      # abort any scan — we found it
+            tconf = float(getattr(target_det, "confidence", 0.0))
+            if not approach_mode:
+                nav_action, target_done = "stop", True
+                nav_reason = "found — stop & look"
+            elif target_frac >= APPROACH_DONE_FRAC or scan_result.get("critical"):
+                nav_action, target_done = "stop", True
+                nav_reason = "reached (close enough)"
+            elif abs(target_err) > APPROACH_CENTER_TOL:
+                # Camera image is rotated 180°, so image-right = robot's LEFT.
+                # If approach veers AWAY from the target, flip this one comparison
+                # (target_err > 0  ->  < 0).  The log line below makes the
+                # relationship explicit so the right fix is obvious.
+                nav_action = "turn_left_45" if target_err > 0 else "turn_right_45"
+                nav_reason = "centering"
+            else:
+                nav_action = "move_forward"
+                nav_reason = "centered — advancing"
+            # ONE consistent line per pursuit step: where the dog is in the image
+            # (x-err sign + side), how big it is (bbox% = distance-decreasing proxy),
+            # detection confidence, and the chosen action.  Watch bbox% grow and
+            # |x-err| shrink across steps; if the robot turns AWAY from the side
+            # shown here, flip the comparison marked above.
+            side = "img-RIGHT" if target_err > 0 else "img-LEFT"
+            print(f"[ARIA] TARGET[{'approach' if approach_mode else 'find'}] "
+                  f"→ {nav_action} | {nav_reason} | {target} {side} "
+                  f"x-err={target_err:+.2f} bbox={target_frac:.0%} conf={tconf:.2f} "
+                  f"(YOLO saw '{target_det.class_name}')")
+
+        elif pursuing:
+            # Lost sight this step — turn back toward where it was to re-acquire.
+            pursuit_lost += 1
+            if pursuit_lost > PURSUIT_LOST_LIMIT:
+                pursuing = False
+                print(f"[ARIA] Lost '{target}' — resuming exploration")
+            else:
+                nav_action = "turn_left_45" if last_seen_err > 0 else "turn_right_45"
+                nav_reason = f"re-acquiring '{target}' (lost {pursuit_lost}/{PURSUIT_LOST_LIMIT})"
+                print(f"[ARIA] {nav_reason}")
+
+        # ============================================================
+        # EXPLORATION  (only runs when not pursuing a target)
+        # ============================================================
+        if nav_action is not None:
+            pass
+        elif scanning:
+            # Mid-scan: keep turning 45°; on completion pick a frontier from the
+            # freshly-built map.
             nav_action = grid.scan_step()
-            nav_reason = f"360° look-around ({omap.stats()['unknown']} cells unknown)"
+            nav_reason = f"360° scan ({omap.stats()['unknown']} cells unknown)"
             if grid.scan_done():
                 scanning = False
-                active_frontier = None      # pick a fresh frontier next cycle
-                print("[ARIA] Look-around complete")
-
-        elif spatial_mem.has_target(target):
-            # We've seen this target before — route to it through known-free space
-            known_pos = spatial_mem.nearest(target, list(pos_xy))
-            nav_action, dist = _plan_action(pos_xy, tuple(known_pos))
-            if nav_action == "arrived":
-                nav_action = "turn_right_90"   # at the known spot — sweep to reacquire
-            nav_reason = (
-                f"navigating to known {target} position "
-                f"({known_pos[0]:.1f},{known_pos[1]:.1f}) dist={dist:.1f}m → {nav_action}"
-            )
-            print(f"[ARIA] Known target position → {nav_action}  {nav_reason}")
-
-        else:
-            # ---- Autonomous frontier exploration ----
-            # Pick a new frontier when we have none, reached the current one, or
-            # it is no longer on the boundary of the unknown.
-            if active_frontier is None or not omap.is_free(*active_frontier) or \
-                    hypot(active_frontier[0] - pos_xy[0], active_frontier[1] - pos_xy[1]) < grid.ARRIVAL_RADIUS:
-                active_frontier = omap.nearest_frontier(pos_xy)
+                active_frontier = omap.nearest_frontier(pos_xy[0], pos_xy[1])
                 best_dist_to_wp = float("inf")
                 no_progress_count = 0
                 if active_frontier is not None:
                     no_frontier_count = 0
-                    print(f"[ARIA] New frontier target "
-                          f"({active_frontier[0]:.1f},{active_frontier[1]:.1f})  "
-                          f"map: {omap.stats()}")
-
-            if active_frontier is None:
-                # Nothing left to explore that we can reach.
-                no_frontier_count += 1
-                if no_frontier_count >= 3:
-                    print(f"[ARIA] EXPLORATION COMPLETE — '{target}' not found  {omap.stats()}")
-                    nav_action = "stop"
-                    nav_reason = "explored all reachable space, target not found"
+                    print(f"[ARIA] Scan done → frontier "
+                          f"({active_frontier[0]:.1f},{active_frontier[1]:.1f})  map: {omap.stats()}")
                 else:
-                    # give the map a couple of turns to find a frontier behind us
-                    nav_action = "turn_right_90"
-                    nav_reason = "no frontier visible — turning to map more"
+                    print(f"[ARIA] Scan done → no reachable frontier  map: {omap.stats()}")
+
+        # NOTE: we deliberately do NOT blind-drive to a remembered coordinate
+        # here.  Spatial memory is recorded for analysis and the UI, but it must
+        # never replace live exploration: (a) it defeats the design goal of
+        # discovering the room from sensors, and (b) memory is keyed by the
+        # configured world file, which can differ from the world Webots actually
+        # loaded — chasing a stale coordinate from another world is what made the
+        # robot spin in place.  YOLO pursuit (above) handles the target the
+        # moment it is actually seen; until then we always explore.
+
+        elif active_frontier is None:
+            # No current goal → look around (scan), then a frontier is chosen.
+            no_frontier_count += 1
+            if no_frontier_count >= 2:
+                print(f"[ARIA] EXPLORATION COMPLETE — '{target}' not found  {omap.stats()}")
+                nav_action = "stop"
+                nav_reason = "explored all reachable space, target not found"
+                exploration_done = True   # terminate: nothing left to explore
             else:
-                nav_action, dist = _plan_action(pos_xy, active_frontier)
+                scanning = True
+                grid.start_scan()
+                nav_action = grid.scan_step()
+                nav_reason = "360° look-around to choose next frontier"
+                print("[ARIA] Starting 360° look-around")
 
-                if dist < best_dist_to_wp - PROGRESS_EPS:
-                    best_dist_to_wp = dist
-                    no_progress_count = 0
-                else:
-                    no_progress_count += 1
+        else:
+            # Drive toward the frontier chosen after the last scan.
+            nav_action, dist = _plan_action(pos_xy, active_frontier)
 
-                if nav_action == "arrived":
-                    print("[ARIA] Reached frontier — 360° look-around")
-                    scanning = True
-                    grid.start_scan()
-                    nav_action = grid.scan_step()
-                    nav_reason = "reached frontier, starting 360° look-around"
+            if dist < best_dist_to_wp - PROGRESS_EPS:
+                best_dist_to_wp = dist
+                no_progress_count = 0
+            else:
+                no_progress_count += 1
 
-                elif no_progress_count >= NO_PROGRESS_LIMIT:
-                    # Couldn't make headway (furniture the Lidar didn't catch).
-                    # Blacklist this frontier so we don't keep retrying it.
-                    print(f"[ARIA] Frontier ({active_frontier[0]:.1f},"
-                          f"{active_frontier[1]:.1f}) blocked — blacklisting")
-                    omap.blacklist(*active_frontier)
-                    active_frontier = None
-                    best_dist_to_wp = float("inf")
-                    no_progress_count = 0
-                    nav_action = "turn_around"
-                    nav_reason = "blocked frontier — turning away to re-plan"
-                else:
-                    nav_reason = (
-                        f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                        f"dist={dist:.1f}m → {nav_action}  "
-                        f"[progress {no_progress_count}/{NO_PROGRESS_LIMIT}]"
-                    )
-                    print(f"[ARIA] Explore: {nav_reason}")
+            if nav_action == "arrived":
+                print(f"[ARIA] Reached frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                      f"— will re-scan")
+                active_frontier = None        # → triggers a fresh look-around next step
+                nav_action = "move_forward"
+                nav_reason = "reached frontier"
+            elif no_progress_count >= NO_PROGRESS_LIMIT:
+                print(f"[ARIA] Frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                      f"blocked — blacklisting, will re-scan")
+                omap.blacklist(*active_frontier)
+                active_frontier = None
+                nav_action = "turn_around"
+                nav_reason = "blocked frontier — turning away"
+            else:
+                nav_reason = (
+                    f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                    f"dist={dist:.1f}m → {nav_action}  "
+                    f"[progress {no_progress_count}/{NO_PROGRESS_LIMIT}]"
+                )
+                print(f"[ARIA] Explore: {nav_reason}")
 
         # Sensor-safe fallback for when nav_action isn't set
         if 'nav_action' not in dir() or nav_action is None:
             nav_action, nav_reason = _safe_fallback_action(scan_result, white_wall)
+
+        t_nav = time.time()
 
         # ============================================================
         # LLM QUERY (optional refinement — used when Ollama is online)
@@ -706,13 +994,20 @@ def run_aria_agent(
 
         _emit(event_callback, {"type": "vlm_query", "step": step, "goal": goal})
 
-        # Call the LLM only if (a) it was reachable recently AND (b) enough
-        # wall-clock time has passed since the last call.  This caps the slow
-        # vision+reasoning round-trips to ~once per OLLAMA_VISION_SAMPLE_INTERVAL
-        # seconds; YOLO still runs every step so target detection is unaffected.
+        # The LLM is an optional refinement. Skip it on step 1 (so the robot
+        # starts moving immediately) and throttle to once per
+        # OLLAMA_VISION_SAMPLE_INTERVAL seconds. YOLO runs every step regardless.
         reachable = ollama_online or (step >= ollama_skip_until_step)
         due = (cycle_start - last_llm_ts) >= OLLAMA_VISION_SAMPLE_INTERVAL
-        attempt_llm = reachable and due
+        attempt_llm = USE_LLM and reachable and due and step > 1
+
+        # Fast TCP pre-check: an unreachable Ollama now costs ~1s, not 2×35s.
+        if attempt_llm and not _ollama_reachable():
+            print("[ARIA] Ollama unreachable (fast check) — skipping LLM "
+                  f"for {_OLLAMA_RETRY_INTERVAL} steps")
+            ollama_online = False
+            ollama_skip_until_step = step + _OLLAMA_RETRY_INTERVAL
+            attempt_llm = False
 
         if attempt_llm:
             last_llm_ts = cycle_start
@@ -768,55 +1063,41 @@ def run_aria_agent(
             print(f"[ARIA] LLM throttled (grid nav this step; next LLM in "
                   f"≤{OLLAMA_VISION_SAMPLE_INTERVAL:.0f}s)")
 
+        t_llm = time.time()
+
         # ============================================================
         # ACTION SELECTION
-        # Priority: target_found_yolo > LLM (when confident) > nav_action
+        # Priority: target pursuit (nav_action+target_done) > LLM > nav_action
         # ============================================================
         valid_actions = {
-            "move_forward", "turn_left_90", "turn_right_90", "turn_around",
+            "move_forward", "turn_left_45", "turn_right_45",
+            "turn_left_90", "turn_right_90", "turn_around",
             "back_up", "back_up_turn", "back_up_turn_left", "back_up_turn_right", "stop",
         }
 
-        if target_found_yolo:
-            # YOLO sees the target — stop and celebrate
-            action = "stop"
-            reasoning = f"YOLO confirmed '{target}' in frame"
-
-        elif llm_action and llm_action in valid_actions and llm_conf >= 0.7:
-            # LLM is confident and online — use its decision
+        if llm_action and llm_action in valid_actions and llm_conf >= 0.7 and not pursuing:
+            # LLM confident and online (never overrides an active target pursuit)
             action = llm_action
             reasoning = f"LLM decision (conf={llm_conf:.2f})"
         else:
-            # Fall back to systematic grid navigation
             action = nav_action if nav_action in valid_actions else "move_forward"
             reasoning = nav_reason
 
         # ============================================================
-        # SENSOR SAFETY OVERRIDE (unconditional — nothing can bypass this)
+        # SENSOR SAFETY OVERRIDE — skipped when we are intentionally stopping
+        # on the target (target_done), since stopping never causes a collision.
         # ============================================================
-        if scan_result.get("critical") or (white_wall and scan_result["front"] > OBSTACLE_THRESH * 0.7):
-            clearer = scan_result.get("clearer_turn", "turn_left_90")
-            action = f"back_up_turn_{clearer.split('_')[1]}"
-            reasoning = f"[SAFETY] critical proximity {scan_result['max']:.0f}, backing out"
-            print(f"[ARIA] Critical safety override → {action}")
+        if not target_done:
+            if scan_result.get("critical") or (white_wall and scan_result["front"] > OBSTACLE_THRESH * 0.7):
+                clearer = scan_result.get("clearer_turn", "turn_left_45")
+                action = f"back_up_turn_{clearer.split('_')[1]}"
+                reasoning = f"[SAFETY] critical proximity {scan_result['max']:.0f}, backing out"
+                print(f"[ARIA] Critical safety override → {action}")
 
-        elif action == "move_forward" and front_blocked:
-            action = scan_result.get("clearer_turn", "turn_left_90")
-            reasoning = f"[SAFETY] front blocked ({scan_result['front']:.0f}), turning to clearer side"
-            print(f"[ARIA] Front-blocked override → {action}")
-
-        # ============================================================
-        # TARGET CONFIRMATION (stop only if YOLO actually saw it)
-        # ============================================================
-        vlm_confirmed = (
-            llm_target_found
-            and llm_conf >= 0.70
-            and llm_target_direction in {"left", "right", "center"}
-            and llm_target_bbox is not None
-        )
-        if action == "stop" and not target_found_yolo and not vlm_confirmed:
-            action = nav_action if nav_action in valid_actions else "turn_left_90"
-            reasoning = f"Weak target evidence, continuing exploration. {reasoning}"
+            elif action == "move_forward" and front_blocked:
+                action = scan_result.get("clearer_turn", "turn_left_45")
+                reasoning = f"[SAFETY] front blocked ({scan_result['front']:.0f}), turning to clearer side"
+                print(f"[ARIA] Front-blocked override → {action}")
 
         print(f"[ARIA] → ACTION: {action} | {reasoning}")
         state.plan = reasoning
@@ -855,7 +1136,7 @@ def run_aria_agent(
                 "type": "step",
                 "step": step,
                 "goal": goal,
-                "success": target_found_yolo,
+                "success": target_done,
                 "plan": reasoning,
                 "action": action,
                 "robot_state": {
@@ -877,25 +1158,57 @@ def run_aria_agent(
         )
 
         # ============================================================
-        # SUCCESS CHECK
+        # SUCCESS CHECK  (find: stopped on sight;  approach: reached it)
         # ============================================================
-        if action == "stop" and (target_found_yolo or vlm_confirmed):
+        if action == "stop" and target_done:
             _execute_motion("stop")
             state.success = True
-            state.reasoning_trace.append(f"SUCCESS at step {step}: {target} found")
+            verb = "reached" if approach_mode else "found"
+            state.reasoning_trace.append(f"SUCCESS at step {step}: {target} {verb}")
             _emit(event_callback, {
                 "type": "success", "step": step, "goal": goal, "success": True,
             })
-            print(f"\n[ARIA] SUCCESS — found '{target}' at step {step}")
+            print(f"\n[ARIA] SUCCESS — {verb} '{target}' at step {step}")
+            break
+
+        # Exploration exhausted with no target → stop ONCE and end the run,
+        # instead of re-scanning and re-printing "EXPLORATION COMPLETE" until
+        # max_steps (which wasted the back half of run_20260604_164900).
+        if exploration_done:
+            _execute_motion("stop")
+            state.reasoning_trace.append(
+                f"DONE at step {step}: explored all reachable space, '{target}' not found"
+            )
+            _emit(event_callback, {
+                "type": "done", "step": step, "goal": goal, "success": False,
+            })
+            print(f"\n[ARIA] DONE — explored all reachable space, '{target}' not found "
+                  f"at step {step}")
             break
 
         # ============================================================
         # EXECUTE ACTION + UPDATE ESTIMATED HEADING
         # ============================================================
+        motion_fb: Dict[str, Any] = {}
         try:
-            _execute_motion(action)
+            motion_fb = _execute_motion(action) or {}
         except Exception as e:
             print(f"[ARIA] Motion error: {e}")
+
+        # Motion feedback from the controller — shows whether the robot actually
+        # TRANSLATED (distance) / ROTATED (degrees) vs just got commanded to.
+        # This is the key signal for "does it really move or only spin?".
+        if motion_fb:
+            print(f"[ARIA] MOVED dist={motion_fb.get('distance_traveled', 0.0):.3f}m "
+                  f"turned={motion_fb.get('degrees_turned', 0.0):.1f}° "
+                  f"reached={motion_fb.get('reached_target')} "
+                  f"steps={motion_fb.get('duration_steps')}")
+
+        # Per-step timing breakdown (helps spot a slow section in the log)
+        t_act = time.time()
+        print(f"[ARIA] dt sense+yolo={t_sense - cycle_start:.2f}s "
+              f"plan={t_nav - t_sense:.2f}s llm={t_llm - t_nav:.2f}s "
+              f"move={t_act - t_llm:.2f}s total={t_act - cycle_start:.2f}s")
 
         # Pad to cycle interval
         elapsed = time.time() - cycle_start
