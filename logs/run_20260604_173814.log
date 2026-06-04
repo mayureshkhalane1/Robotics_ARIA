@@ -1,0 +1,512 @@
+# ARIA run log — goal='find a plant firstg and then a dog and approach it' — 2026-06-04 17:38:14
+17:38:14.576 [ARIA] Pos=(5.99,-1.88) hdg=58°  front=846 left=893 right=917  blocked=True
+17:38:14.607 [ARIA] Pos=(5.99,-1.88) hdg=58°  front=844 left=861 right=910  blocked=True
+17:38:14.623 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+17:38:14.624 [ARIA] YOLO:
+17:38:14.624   (none)
+17:38:14.629 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:14.629 [ARIA] → ACTION: turn_right_45 | 360° scan (6172 cells unknown)
+17:38:14.634 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+17:38:14.645 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+17:38:14.645 [GridExplorer] 32 waypoints across the room
+17:38:14.645   wp00 (-5.3,-2.0)
+17:38:14.645   wp01 (-5.3,-0.5)
+17:38:14.645   wp02 (-5.3,1.0)
+17:38:14.645   wp03 (-5.3,2.5)
+17:38:14.645   wp04 (-3.8,2.5)
+17:38:14.645   wp05 (-3.8,1.0)
+17:38:14.645   wp06 (-3.8,-0.5)
+17:38:14.645   wp07 (-3.8,-2.0)
+17:38:14.645   wp08 (-2.3,-2.0)
+17:38:14.646   wp09 (-2.3,-0.5)
+17:38:14.646   wp10 (-2.3,1.0)
+17:38:14.646   wp11 (-2.3,2.5)
+17:38:14.646   wp12 (-0.8,2.5)
+17:38:14.646   wp13 (-0.8,1.0)
+17:38:14.646   wp14 (-0.8,-0.5)
+17:38:14.646   wp15 (-0.8,-2.0)
+17:38:14.646   wp16 (0.7,-2.0)
+17:38:14.646   wp17 (0.7,-0.5)
+17:38:14.646   wp18 (0.7,1.0)
+17:38:14.646   wp19 (0.7,2.5)
+17:38:14.646   wp20 (2.2,2.5)
+17:38:14.647   wp21 (2.2,1.0)
+17:38:14.647   wp22 (2.2,-0.5)
+17:38:14.647   wp23 (2.2,-2.0)
+17:38:14.647   wp24 (3.7,-2.0)
+17:38:14.647   wp25 (3.7,-0.5)
+17:38:14.648   wp26 (3.7,1.0)
+17:38:14.648   wp27 (3.7,2.5)
+17:38:14.648   wp28 (5.2,2.5)
+17:38:14.648   wp29 (5.2,1.0)
+17:38:14.648   wp30 (5.2,-0.5)
+17:38:14.648   wp31 (5.2,-2.0)
+17:38:14.663 [SpatialMemory] Loaded 61 discoveries for 'empt_room'
+17:38:14.663   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8], [-3.4, -0.7], [-0.5, -1.5], [0.7, -1.7], [1.3, -1.9], [1.9, -2.0], [2.6, -1.7], [2.0, -1.3], [3.2, -1.6], [4.4, -1.9]]
+17:38:14.663   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8], [4.9, -2.2], [6.0, -1.9]]
+17:38:14.664   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2], [-1.1, -1.3], [6.1, -1.7]]
+17:38:14.664   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3]]
+17:38:14.664   baseball bat: [[-1.6, -1.1]]
+17:38:14.664   person: [[5.2, 3.2], [1.1, 2.9], [-3.4, -0.7]]
+17:38:14.664   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+17:38:14.665   bed: [[-4.6, -0.6], [6.0, -1.9]]
+17:38:14.665   book: [[1.0, 2.9]]
+17:38:14.665   bench: [[1.1, 2.9]]
+17:38:14.665   fridge: [[-5.3, -1.8]]
+17:38:14.665   clock: [[-5.3, -1.8]]
+17:38:14.665   mouse: [[6.0, -1.9]]
+17:38:14.665 
+17:38:14.665 [ARIA] Goal: find a plant firstg and then a dog and approach it
+17:38:14.666 [ARIA] Target: dog  aliases: ['bear', 'cat', 'cow', 'dog', 'elephant', 'giraffe', 'horse', 'sheep', 'zebra']  mode: APPROACH (drive to it)
+17:38:14.666 [ARIA] Model: llava-phi3:latest
+17:38:14.666 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 11, 'plant': 11, 'umbrella': 5, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 1, 'mouse': 1}
+17:38:14.666 
+17:38:14.666 ============================================================
+17:38:14.666 [ARIA] Step 1/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:14.667 ============================================================
+17:38:14.669 [ARIA] YOLO:
+17:38:14.669   (none)
+17:38:14.673 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:14.673 [ARIA] → ACTION: turn_right_45 | 360° scan (5007 cells unknown)
+17:38:15.399 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:15.399 [ARIA] dt sense+yolo=0.91s plan=0.00s llm=0.00s move=0.77s total=1.68s
+17:38:15.399 
+17:38:15.399 ============================================================
+17:38:15.399 [ARIA] Step 46/100  |  goal: find dog and approach it
+17:38:15.399 ============================================================
+17:38:15.453 [ARIA] Pos=(5.99,-1.88) hdg=12°  front=925 left=925 right=933  blocked=True
+17:38:15.477 [ARIA] YOLO:
+17:38:15.477   (none)
+17:38:15.477 [ARIA] Starting 360° look-around
+17:38:15.477 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:15.478 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+17:38:16.179 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:16.179 [ARIA] dt sense+yolo=0.22s plan=0.00s llm=0.00s move=1.51s total=1.73s
+17:38:16.179 
+17:38:16.179 ============================================================
+17:38:16.179 [ARIA] Step 61/100  |  goal: find chair and approach it
+17:38:16.179 ============================================================
+17:38:16.273 [ARIA] Pos=(5.99,-1.88) hdg=-33°  front=924 left=0 right=924  blocked=True
+17:38:16.298 [ARIA] YOLO:
+17:38:16.298   (none)
+17:38:16.302 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:16.302 [ARIA] → ACTION: turn_right_45 | 360° scan (6170 cells unknown)
+17:38:16.963 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:16.964 [ARIA] dt sense+yolo=0.81s plan=0.00s llm=0.00s move=1.49s total=2.30s
+17:38:16.964 
+17:38:16.964 ============================================================
+17:38:16.964 [ARIA] Step 2/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:16.964 ============================================================
+17:38:17.015 [ARIA] Pos=(5.98,-1.88) hdg=-79°  front=920 left=910 right=920  blocked=True
+17:38:17.035 [ARIA] YOLO:
+17:38:17.035   (none)
+17:38:17.040 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:17.040 [ARIA] → ACTION: turn_right_45 | 360° scan (5004 cells unknown)
+17:38:17.723 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:38:17.723 [ARIA] dt sense+yolo=0.90s plan=0.00s llm=0.00s move=1.42s total=2.32s
+17:38:17.723 
+17:38:17.723 ============================================================
+17:38:17.723 [ARIA] Step 47/100  |  goal: find dog and approach it
+17:38:17.723 ============================================================
+17:38:17.824 [ARIA] Pos=(5.98,-1.87) hdg=-124°  front=926 left=926 right=861  blocked=True
+17:38:17.850 [ARIA] YOLO:
+17:38:17.850   (none)
+17:38:17.855 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:17.855 [ARIA] → ACTION: turn_right_45 | 360° scan (6799 cells unknown)
+17:38:18.562 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:18.562 [ARIA] dt sense+yolo=0.86s plan=0.00s llm=0.00s move=1.52s total=2.38s
+17:38:18.562 
+17:38:18.562 ============================================================
+17:38:18.562 [ARIA] Step 62/100  |  goal: find chair and approach it
+17:38:18.562 ============================================================
+17:38:18.619 [ARIA] Pos=(5.99,-1.87) hdg=-170°  front=851 left=946 right=851  blocked=True
+17:38:18.648 [ARIA] YOLO:
+17:38:18.648   (none)
+17:38:18.652 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:18.652 [ARIA] → ACTION: turn_right_45 | 360° scan (6167 cells unknown)
+17:38:19.344 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:19.344 [ARIA] dt sense+yolo=0.89s plan=0.00s llm=0.00s move=1.49s total=2.38s
+17:38:19.344 
+17:38:19.344 ============================================================
+17:38:19.344 [ARIA] Step 3/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:19.344 ============================================================
+17:38:19.436 [ARIA] Pos=(5.99,-1.87) hdg=145°  front=857 left=937 right=0  blocked=True
+17:38:19.473 [ARIA] YOLO:
+17:38:19.473   mouse conf=0.51
+17:38:19.473   airplane conf=0.42
+17:38:19.477 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:19.479 [ARIA] → ACTION: turn_right_45 | 360° scan (5004 cells unknown)
+17:38:20.145 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:20.145 [ARIA] dt sense+yolo=0.93s plan=0.00s llm=0.00s move=1.49s total=2.42s
+17:38:20.145 
+17:38:20.145 ============================================================
+17:38:20.145 [ARIA] Step 48/100  |  goal: find dog and approach it
+17:38:20.145 ============================================================
+17:38:20.200 [ARIA] Pos=(5.99,-1.87) hdg=100°  front=923 left=921 right=923  blocked=True
+17:38:20.224 [ARIA] YOLO:
+17:38:20.224   sports ball conf=0.47
+17:38:20.224 [SpatialMemory] NEW discovery: 'sports ball' @ (5.99,-1.87) conf=0.47
+17:38:20.232 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:20.232 [ARIA] → ACTION: turn_right_45 | 360° scan (6620 cells unknown)
+17:38:20.928 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:38:20.929 [ARIA] dt sense+yolo=0.91s plan=0.00s llm=0.00s move=1.45s total=2.37s
+17:38:20.929 
+17:38:20.929 ============================================================
+17:38:20.929 [ARIA] Step 63/100  |  goal: find chair and approach it
+17:38:20.929 ============================================================
+17:38:21.021 [ARIA] Pos=(5.99,-1.88) hdg=54°  front=0 left=894 right=926  blocked=False
+17:38:21.046 [ARIA] YOLO:
+17:38:21.046   (none)
+17:38:21.052 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:21.052 [ARIA] → ACTION: turn_right_45 | 360° scan (6164 cells unknown)
+17:38:21.710 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:21.710 [ARIA] dt sense+yolo=0.88s plan=0.00s llm=0.00s move=1.48s total=2.37s
+17:38:21.710 
+17:38:21.710 ============================================================
+17:38:21.710 [ARIA] Step 4/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:21.710 ============================================================
+17:38:21.763 [ARIA] Pos=(5.99,-1.88) hdg=9°  front=845 left=850 right=932  blocked=True
+17:38:21.789 [ARIA] YOLO:
+17:38:21.789   (none)
+17:38:21.793 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:21.793 [ARIA] → ACTION: turn_right_45 | 360° scan (5002 cells unknown)
+17:38:22.478 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:22.478 [ARIA] dt sense+yolo=0.90s plan=0.00s llm=0.00s move=1.43s total=2.33s
+17:38:22.478 
+17:38:22.479 ============================================================
+17:38:22.479 [ARIA] Step 49/100  |  goal: find dog and approach it
+17:38:22.479 ============================================================
+17:38:22.566 [ARIA] Pos=(5.99,-1.88) hdg=-37°  front=929 left=679 right=929  blocked=True
+17:38:22.588 [ARIA] YOLO:
+17:38:22.589   (none)
+17:38:22.595 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:22.595 [ARIA] → ACTION: turn_right_45 | 360° scan (6590 cells unknown)
+17:38:23.295 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:23.295 [ARIA] dt sense+yolo=0.86s plan=0.00s llm=0.00s move=1.50s total=2.37s
+17:38:23.295 
+17:38:23.295 ============================================================
+17:38:23.296 [ARIA] Step 64/100  |  goal: find chair and approach it
+17:38:23.296 ============================================================
+17:38:23.348 [ARIA] Pos=(5.98,-1.88) hdg=-82°  front=921 left=907 right=921  blocked=True
+17:38:23.370 [ARIA] YOLO:
+17:38:23.371   (none)
+17:38:23.395 [ARIA] Scan done → frontier (1.8,0.7)  map: {'free': 5637, 'occupied': 293, 'unknown': 6163}
+17:38:23.395 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:23.396 [ARIA] → ACTION: turn_right_45 | 360° scan (6163 cells unknown)
+17:38:24.017 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:38:24.017 [ARIA] dt sense+yolo=0.88s plan=0.01s llm=0.00s move=1.42s total=2.31s
+17:38:24.017 
+17:38:24.017 ============================================================
+17:38:24.017 [ARIA] Step 5/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:24.017 ============================================================
+17:38:24.117 [ARIA] Pos=(5.98,-1.87) hdg=-128°  front=921 left=923 right=909  blocked=True
+17:38:24.134 [ARIA] YOLO:
+17:38:24.134   (none)
+17:38:24.139 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:24.139 [ARIA] → ACTION: turn_right_45 | 360° scan (5002 cells unknown)
+17:38:24.822 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:24.822 [ARIA] dt sense+yolo=0.89s plan=0.02s llm=0.00s move=1.43s total=2.34s
+17:38:24.822 
+17:38:24.822 ============================================================
+17:38:24.822 [ARIA] Step 50/100  |  goal: find dog and approach it
+17:38:24.822 ============================================================
+17:38:24.874 [ARIA] Pos=(5.99,-1.87) hdg=-173°  front=854 left=948 right=854  blocked=True
+17:38:24.898 [ARIA] YOLO:
+17:38:24.898   (none)
+17:38:24.903 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:24.903 [ARIA] → ACTION: turn_right_45 | 360° scan (6531 cells unknown)
+17:38:25.585 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:25.585 [ARIA] dt sense+yolo=0.84s plan=0.00s llm=0.00s move=1.45s total=2.29s
+17:38:25.585 
+17:38:25.585 ============================================================
+17:38:25.585 [ARIA] Step 65/100  |  goal: find chair and approach it
+17:38:25.585 ============================================================
+17:38:25.671 [ARIA] Pos=(5.99,-1.87) hdg=141°  front=857 left=941 right=0  blocked=True
+17:38:25.698 [ARIA] YOLO:
+17:38:25.698   sports ball conf=0.44
+17:38:25.698 [SpatialMemory] NEW discovery: 'sports ball' @ (5.99,-1.87) conf=0.44
+17:38:25.711 [ARIA] Explore: → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 0/6]
+17:38:25.712 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:25.713 [ARIA] → ACTION: turn_left_45 | → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 0/6]
+17:38:26.382 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+17:38:26.382 [ARIA] dt sense+yolo=0.88s plan=0.00s llm=0.00s move=1.48s total=2.37s
+17:38:26.382 
+17:38:26.382 ============================================================
+17:38:26.382 [ARIA] Step 6/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:26.382 ============================================================
+17:38:26.431 [ARIA] Pos=(5.99,-1.87) hdg=96°  front=342 left=912 right=894  blocked=False
+17:38:26.461 [ARIA] YOLO:
+17:38:26.461   sports ball conf=0.65
+17:38:26.462 [SpatialMemory] NEW discovery: 'sports ball' @ (5.99,-1.87) conf=0.65
+17:38:26.504 [ARIA] Scan done → frontier (-1.7,2.9)  map: {'free': 6747, 'occupied': 344, 'unknown': 5002}
+17:38:26.505 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:26.505 [ARIA] → ACTION: turn_right_45 | 360° scan (5002 cells unknown)
+17:38:27.186 [ARIA] MOVED dist=0.001m turned=-45.3° reached=True steps=21
+17:38:27.186 [ARIA] dt sense+yolo=0.88s plan=0.01s llm=0.00s move=1.47s total=2.36s
+17:38:27.186 
+17:38:27.186 ============================================================
+17:38:27.186 [ARIA] Step 51/100  |  goal: find dog and approach it
+17:38:27.186 ============================================================
+17:38:27.283 [ARIA] Pos=(5.99,-1.87) hdg=141°  front=851 left=930 right=0  blocked=True
+17:38:27.311 [ARIA] YOLO:
+17:38:27.311   (none)
+17:38:27.315 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:27.315 [ARIA] → ACTION: turn_right_45 | 360° scan (6501 cells unknown)
+17:38:27.970 [ARIA] MOVED dist=0.002m turned=45.2° reached=True steps=21
+17:38:27.970 [ARIA] dt sense+yolo=0.88s plan=0.04s llm=0.00s move=1.47s total=2.39s
+17:38:27.970 
+17:38:27.970 ============================================================
+17:38:27.970 [ARIA] Step 66/100  |  goal: find chair and approach it
+17:38:27.970 ============================================================
+17:38:28.027 [ARIA] Pos=(5.99,-1.88) hdg=96°  front=342 left=942 right=906  blocked=False
+17:38:28.065 [ARIA] YOLO:
+17:38:28.065   sports ball conf=0.51
+17:38:28.070 [ARIA] Explore: → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 1/6]
+17:38:28.071 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:28.071 [ARIA] → ACTION: turn_left_45 | → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 1/6]
+17:38:28.725 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+17:38:28.726 [ARIA] dt sense+yolo=0.93s plan=0.00s llm=0.00s move=1.41s total=2.34s
+17:38:28.726 
+17:38:28.726 ============================================================
+17:38:28.726 [ARIA] Step 7/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:28.726 ============================================================
+17:38:28.836 [ARIA] Pos=(5.99,-1.88) hdg=51°  front=0 left=867 right=934  blocked=False
+17:38:28.866 [ARIA] YOLO:
+17:38:28.866   (none)
+17:38:28.883 [ARIA] Explore: → frontier (-1.7,2.9) dist=9.1m → turn_left_45  [progress 0/6]
+17:38:28.884 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:28.885 [ARIA] → ACTION: turn_left_45 | → frontier (-1.7,2.9) dist=9.1m → turn_left_45  [progress 0/6]
+17:38:29.530 [ARIA] MOVED dist=0.000m turned=-45.2° reached=True steps=21
+17:38:29.531 [ARIA] dt sense+yolo=0.88s plan=0.01s llm=0.00s move=1.46s total=2.34s
+17:38:29.531 
+17:38:29.531 ============================================================
+17:38:29.531 [ARIA] Step 52/100  |  goal: find dog and approach it
+17:38:29.531 ============================================================
+17:38:29.587 [ARIA] Pos=(5.99,-1.88) hdg=96°  front=343 left=914 right=914  blocked=False
+17:38:29.619 [ARIA] YOLO:
+17:38:29.619   sports ball conf=0.65
+17:38:29.639 [ARIA] Scan done → frontier (4.7,-1.2)  map: {'free': 5390, 'occupied': 227, 'unknown': 6476}
+17:38:29.640 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:29.640 [ARIA] → ACTION: turn_right_45 | 360° scan (6476 cells unknown)
+17:38:30.371 [ARIA] MOVED dist=0.002m turned=-45.4° reached=True steps=21
+17:38:30.372 [ARIA] dt sense+yolo=0.90s plan=0.02s llm=0.00s move=1.49s total=2.40s
+17:38:30.372 
+17:38:30.372 ============================================================
+17:38:30.372 [ARIA] Step 67/100  |  goal: find chair and approach it
+17:38:30.372 ============================================================
+17:38:30.422 [ARIA] Pos=(5.99,-1.88) hdg=141°  front=865 left=957 right=0  blocked=True
+17:38:30.456 [ARIA] YOLO:
+17:38:30.456   sports ball conf=0.50
+17:38:30.461 [ARIA] Explore: → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 2/6]
+17:38:30.461 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:30.462 [ARIA] → ACTION: turn_left_45 | → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 2/6]
+17:38:31.082 [ARIA] MOVED dist=0.001m turned=45.3° reached=True steps=21
+17:38:31.082 [ARIA] dt sense+yolo=0.89s plan=0.02s llm=0.00s move=1.44s total=2.36s
+17:38:31.082 
+17:38:31.082 ============================================================
+17:38:31.082 [ARIA] Step 8/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:31.082 ============================================================
+17:38:31.196 [ARIA] Pos=(5.99,-1.88) hdg=96°  front=348 left=922 right=908  blocked=False
+17:38:31.225 [ARIA] YOLO:
+17:38:31.225   sports ball conf=0.47
+17:38:31.237 [ARIA] Explore: → frontier (-1.7,2.9) dist=9.1m → turn_left_45  [progress 1/6]
+17:38:31.238 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:31.238 [ARIA] → ACTION: turn_left_45 | → frontier (-1.7,2.9) dist=9.1m → turn_left_45  [progress 1/6]
+17:38:31.887 [ARIA] MOVED dist=0.001m turned=-45.2° reached=True steps=21
+17:38:31.887 [ARIA] dt sense+yolo=0.93s plan=0.00s llm=0.00s move=1.43s total=2.36s
+17:38:31.887 
+17:38:31.887 ============================================================
+17:38:31.887 [ARIA] Step 53/100  |  goal: find dog and approach it
+17:38:31.887 ============================================================
+17:38:31.941 [ARIA] Pos=(5.99,-1.88) hdg=141°  front=869 left=946 right=0  blocked=True
+17:38:31.969 [ARIA] YOLO:
+17:38:31.969   sports ball conf=0.51
+17:38:31.970 [ARIA] Explore: → frontier (4.7,-1.2) dist=1.5m → turn_left_45  [progress 0/6]
+17:38:31.971 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:31.971 [ARIA] → ACTION: turn_left_45 | → frontier (4.7,-1.2) dist=1.5m → turn_left_45  [progress 0/6]
+17:38:32.714 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:38:32.714 [ARIA] dt sense+yolo=0.85s plan=0.01s llm=0.00s move=1.48s total=2.34s
+17:38:32.714 
+17:38:32.714 ============================================================
+17:38:32.714 [ARIA] Step 68/100  |  goal: find chair and approach it
+17:38:32.714 ============================================================
+17:38:32.767 [ARIA] Pos=(6.00,-1.88) hdg=-173°  front=849 left=949 right=846  blocked=True
+17:38:32.792 [ARIA] YOLO:
+17:38:32.792   microwave conf=0.54
+17:38:32.792   airplane conf=0.41
+17:38:32.792 [SpatialMemory] NEW discovery: 'microwave' @ (6.00,-1.88) conf=0.54
+17:38:32.803 [ARIA] Explore: → frontier (1.8,0.7) dist=5.0m → move_forward  [progress 3/6]
+17:38:32.803 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:32.804 [ARIA] Front-blocked override → turn_right_45
+17:38:32.804 [ARIA] → ACTION: turn_right_45 | [SAFETY] front blocked (849), turning to clearer side
+17:38:33.502 [ARIA] MOVED dist=0.004m turned=-45.4° reached=True steps=21
+17:38:33.502 [ARIA] dt sense+yolo=0.89s plan=0.00s llm=0.00s move=1.53s total=2.42s
+17:38:33.503 
+17:38:33.503 ============================================================
+17:38:33.503 [ARIA] Step 9/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:33.503 ============================================================
+17:38:33.598 [ARIA] Pos=(6.00,-1.88) hdg=-128°  front=931 left=931 right=860  blocked=True
+17:38:33.622 [ARIA] YOLO:
+17:38:33.622   (none)
+17:38:33.633 [ARIA] Explore: → frontier (-1.7,2.9) dist=9.1m → turn_right_45  [progress 2/6]
+17:38:33.634 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:33.634 [ARIA] → ACTION: turn_right_45 | → frontier (-1.7,2.9) dist=9.1m → turn_right_45  [progress 2/6]
+17:38:34.239 [ARIA] MOVED dist=0.001m turned=45.2° reached=True steps=21
+17:38:34.240 [ARIA] dt sense+yolo=0.91s plan=0.01s llm=0.00s move=1.44s total=2.35s
+17:38:34.240 
+17:38:34.240 ============================================================
+17:38:34.240 [ARIA] Step 54/100  |  goal: find dog and approach it
+17:38:34.240 ============================================================
+17:38:34.296 [ARIA] Pos=(6.00,-1.88) hdg=-173°  front=855 left=970 right=855  blocked=True
+17:38:34.320 [ARIA] YOLO:
+17:38:34.320   (none)
+17:38:34.321 [ARIA] Explore: → frontier (4.7,-1.2) dist=1.5m → move_forward  [progress 1/6]
+17:38:34.322 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:34.322 [ARIA] Critical safety override → back_up_turn_right
+17:38:34.322 [ARIA] → ACTION: back_up_turn_right | [SAFETY] critical proximity 970, backing out
+17:38:34.996 [ARIA] MOVED dist=0.002m turned=45.2° reached=True steps=21
+17:38:34.996 [ARIA] dt sense+yolo=0.91s plan=0.01s llm=0.00s move=1.36s total=2.28s
+17:38:34.996 
+17:38:34.996 ============================================================
+17:38:34.996 [ARIA] Step 69/100  |  goal: find chair and approach it
+17:38:34.996 ============================================================
+17:38:35.104 [ARIA] Pos=(6.00,-1.88) hdg=141°  front=869 left=950 right=0  blocked=True
+17:38:35.132 [ARIA] YOLO:
+17:38:35.132   sports ball conf=0.50
+17:38:35.139 [ARIA] Explore: → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 4/6]
+17:38:35.141 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:35.141 [ARIA] → ACTION: turn_left_45 | → frontier (1.8,0.7) dist=5.0m → turn_left_45  [progress 4/6]
+17:38:37.250 [ARIA] MOVED dist=0.403m turned=0.0° reached=True steps=43
+17:38:37.251 [ARIA] dt sense+yolo=0.82s plan=0.00s llm=0.00s move=2.93s total=3.75s
+17:38:37.251 
+17:38:37.251 ============================================================
+17:38:37.251 [ARIA] Step 10/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:37.251 ============================================================
+17:38:38.034 [ARIA] MOVED dist=0.001m turned=-46.9° reached=True steps=22
+17:38:38.035 [ARIA] dt sense+yolo=0.89s plan=0.01s llm=0.00s move=2.89s total=3.79s
+17:38:38.035 
+17:38:38.035 ============================================================
+17:38:38.035 [ARIA] Step 55/100  |  goal: find dog and approach it
+17:38:38.035 ============================================================
+17:38:38.141 [ARIA] Pos=(6.32,-2.13) hdg=142°  front=919 left=1014 right=0  blocked=True
+17:38:38.167 [ARIA] YOLO:
+17:38:38.167   (none)
+17:38:38.181 [ARIA] Explore: → frontier (-1.7,2.9) dist=9.5m → turn_left_45  [progress 3/6]
+17:38:38.194 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:38.199 [ARIA] Critical safety override → back_up_turn_right[ARIA] Pos=(6.32,-2.13) hdg=142°  front=914 left=1016 right=0  blocked=True
+17:38:38.200 [ARIA] → ACTION: back_up_turn_right | [SAFETY] critical proximity 1014, backing out
+17:38:38.207 
+17:38:38.223 [ARIA] Pos=(6.32,-2.13) hdg=142°  front=925 left=1018 right=0  blocked=True
+17:38:38.244 [ARIA] YOLO:
+17:38:38.244   (none)
+17:38:38.246 [ARIA] Explore: → frontier (4.7,-1.2) dist=1.9m → turn_left_45  [progress 2/6]
+17:38:38.247 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:38.251 [ARIA] Critical safety override → back_up_turn_right
+17:38:38.251 [ARIA] → ACTION: back_up_turn_right | [SAFETY] critical proximity 1016, backing out
+17:38:38.285 [ARIA] YOLO:
+17:38:38.285   (none)
+17:38:38.291 [ARIA] Explore: → frontier (1.8,0.7) dist=5.4m → turn_left_45  [progress 5/6]
+17:38:38.292 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:38.292 [ARIA] Critical safety override → back_up_turn_right
+17:38:38.292 [ARIA] → ACTION: back_up_turn_right | [SAFETY] critical proximity 1018, backing out
+17:38:51.571 [ARIA] MOVED dist=0.197m turned=0.0° reached=False steps=120
+17:38:51.571 [ARIA] dt sense+yolo=3.17s plan=0.01s llm=0.01s move=13.38s total=16.58s
+17:38:51.571 
+17:38:51.571 ============================================================
+17:38:51.571 [ARIA] Step 70/100  |  goal: find chair and approach it
+17:38:51.571 ============================================================
+17:38:51.610 [ARIA] Logging this run to /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/logs/run_20260604_173851.log
+17:38:52.374 [ARIA] MOVED dist=0.001m turned=0.0° reached=False steps=120
+17:38:52.374 [ARIA] dt sense+yolo=0.99s plan=0.00s llm=0.00s move=14.13s total=15.12s
+17:38:52.374 
+17:38:52.375 ============================================================
+17:38:52.375 [ARIA] Step 11/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:52.375 ============================================================
+17:38:53.191 [ARIA] MOVED dist=0.001m turned=0.0° reached=False steps=120
+17:38:53.191 [ARIA] dt sense+yolo=0.25s plan=0.01s llm=0.00s move=14.90s total=15.16s
+17:38:53.191 
+17:38:53.191 ============================================================
+17:38:53.191 [ARIA] Step 56/100  |  goal: find dog and approach it
+17:38:53.191 ============================================================
+17:38:53.246 [ARIA] Pos=(6.43,-2.29) hdg=22°  front=735 left=961 right=1017  blocked=False
+17:38:53.261 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+17:38:53.269 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+17:38:53.278 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+17:38:53.278 [GridExplorer] 32 waypoints across the room
+17:38:53.278   wp00 (-5.3,-2.0)
+17:38:53.278   wp01 (-5.3,-0.5)
+17:38:53.278   wp02 (-5.3,1.0)
+17:38:53.278   wp03 (-5.3,2.5)
+17:38:53.278   wp04 (-3.8,2.5)
+17:38:53.278   wp05 (-3.8,1.0)
+17:38:53.278   wp06 (-3.8,-0.5)
+17:38:53.279   wp07 (-3.8,-2.0)
+17:38:53.279   wp08 (-2.3,-2.0)
+17:38:53.279   wp09 (-2.3,-0.5)
+17:38:53.279   wp10 (-2.3,1.0)
+17:38:53.279   wp11 (-2.3,2.5)
+17:38:53.279   wp12 (-0.8,2.5)
+17:38:53.279   wp13 (-0.8,1.0)
+17:38:53.279   wp14 (-0.8,-0.5)
+17:38:53.279   wp15 (-0.8,-2.0)
+17:38:53.279   wp16 (0.7,-2.0)
+17:38:53.279   wp17 (0.7,-0.5)
+17:38:53.279   wp18 (0.7,1.0)
+17:38:53.279   wp19 (0.7,2.5)
+17:38:53.279   wp20 (2.2,2.5)
+17:38:53.279   wp21 (2.2,1.0)
+17:38:53.279   wp22 (2.2,-0.5)
+17:38:53.279   wp23 (2.2,-2.0)
+17:38:53.279   wp24 (3.7,-2.0)
+17:38:53.279   wp25 (3.7,-0.5)
+17:38:53.279   wp26 (3.7,1.0)
+17:38:53.279   wp27 (3.7,2.5)
+17:38:53.280   wp28 (5.2,2.5)
+17:38:53.280   wp29 (5.2,1.0)
+17:38:53.280   wp30 (5.2,-0.5)
+17:38:53.280   wp31 (5.2,-2.0)
+17:38:53.295 [ARIA] YOLO:
+17:38:53.295   (none)
+17:38:53.312 [ARIA] Explore: → frontier (-1.7,2.9) dist=9.7m → turn_left_45  [progress 4/6]
+17:38:53.313 [ARIA] Logging this run to /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/logs/run_20260604_173853.log
+17:38:53.314 [ARIA] LLM throttled (grid nav this step; next LLM in ≤10s)
+17:38:53.314 [ARIA] Critical safety override → back_up_turn_left
+17:38:53.314 [ARIA] → ACTION: back_up_turn_left | [SAFETY] critical proximity 1017, backing out
+17:38:53.321 [SpatialMemory] Loaded 63 discoveries for 'empt_room'
+17:38:53.321   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8], [-3.4, -0.7], [-0.5, -1.5], [0.7, -1.7], [1.3, -1.9], [1.9, -2.0], [2.6, -1.7], [2.0, -1.3], [3.2, -1.6], [4.4, -1.9]]
+17:38:53.321   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8], [4.9, -2.2], [6.0, -1.9]]
+17:38:53.321   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2], [-1.1, -1.3], [6.1, -1.7]]
+17:38:53.321   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3]]
+17:38:53.321   baseball bat: [[-1.6, -1.1]]
+17:38:53.321   person: [[5.2, 3.2], [1.1, 2.9], [-3.4, -0.7]]
+17:38:53.321   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+17:38:53.322   bed: [[-4.6, -0.6], [6.0, -1.9]]
+17:38:53.322   book: [[1.0, 2.9]]
+17:38:53.322   bench: [[1.1, 2.9]]
+17:38:53.322   fridge: [[-5.3, -1.8]]
+17:38:53.322   clock: [[-5.3, -1.8]]
+17:38:53.322   mouse: [[6.0, -1.9]]
+17:38:53.322   sports ball: [[6.0, -1.9]]
+17:38:53.322   microwave: [[6.0, -1.9]]
+17:38:53.322 
+17:38:53.322 [ARIA] Goal: find a plant firstg and then a dog and approach it
+17:38:53.322 [ARIA] Target: dog  aliases: ['bear', 'cat', 'cow', 'dog', 'elephant', 'giraffe', 'horse', 'sheep', 'zebra']  mode: APPROACH (drive to it)
+17:38:53.322 [ARIA] Model: llava-phi3:latest
+17:38:53.322 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 11, 'plant': 11, 'umbrella': 5, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 1, 'mouse': 1, 'sports ball': 1, 'microwave': 1}
+17:38:53.323 
+17:38:53.323 ============================================================
+17:38:53.323 [ARIA] Step 1/100  |  goal: find a plant firstg and then a dog and approach it
+17:38:53.323 ============================================================
+17:38:53.348 [ARIA] Pos=(6.43,-2.29) hdg=22°  front=0 left=939 right=1018  blocked=False
+17:38:53.373 [ARIA] Pos=(6.43,-2.29) hdg=22°  front=0 left=960 right=1016  blocked=False
+17:38:53.383 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+17:38:53.392 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+17:38:53.400 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+17:38:53.400 [GridExplorer] 32 waypoints across the room
+17:38:53.400   wp00 (-5.3,-2.0)
+17:38:53.400   wp01 (-5.3,-0.5)
+17:38:53.401   wp02 (-5.3,1.0)
+17:38:53.401   wp03 (-5.3,2.5)
+17:38:53.401   wp04 (-3.8,2.5)
+17:38:53.401   wp05 (-3.8,1.0)
+17:38:53.401   wp06 (-3.8,-0.5)

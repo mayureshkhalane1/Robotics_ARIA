@@ -20,9 +20,13 @@ _DEDUP_RADIUS = 0.5   # metres — closer detections are merged
 class SpatialMemory:
     """Persistent map of where objects were seen in each world."""
 
-    def __init__(self, path: Optional[str] = None):
+    def __init__(self, path: Optional[str] = None, world: Optional[str] = None):
         self._path = Path(path) if path else LOGS_PATH / "spatial_memory.json"
-        self._world_key = Path(WEBOTS_WORLD_FILE).stem  # e.g. "break_room"
+        # Prefer the world the simulator actually reported (via the TCP
+        # controller).  Fall back to the configured world file only when the
+        # controller could not detect it, so memory is never keyed to the wrong
+        # world when several worlds share one spatial_memory.json.
+        self._world_key = (world or "").strip() or Path(WEBOTS_WORLD_FILE).stem
         # {world_key: {target: [{"x":…, "y":…, "conf":…, "ts":…}]}}
         self._data: Dict[str, Dict[str, List[dict]]] = {}
         self.load()

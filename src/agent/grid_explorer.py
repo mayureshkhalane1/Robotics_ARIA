@@ -89,7 +89,7 @@ class GridExplorer:
     """
 
     ARRIVAL_RADIUS = 0.6   # metres — how close counts as "arrived"
-    TURN_ANGLE_THRESHOLD = 40   # degrees — threshold to choose turn vs forward
+    TURN_ANGLE_THRESHOLD = 25   # degrees — go-straight deadband (≤ turn step / 2)
 
     def __init__(self, wbt_path: str, grid_spacing: float = 1.5):
         min_x, max_x, min_y, max_y = parse_floor_bounds(wbt_path)
@@ -210,26 +210,30 @@ class GridExplorer:
         while angle_diff < -180:
             angle_diff += 360
 
+        # Fine 45° turns: with a 25° "go straight" deadband these converge
+        # monotonically onto the target bearing instead of oscillating between
+        # two headings 90° apart (which 90° steps + a 40° threshold did).
         if angle_diff > self.TURN_ANGLE_THRESHOLD:
-            return "turn_left_90", dist
+            return "turn_left_45", dist
         elif angle_diff < -self.TURN_ANGLE_THRESHOLD:
-            return "turn_right_90", dist
+            return "turn_right_45", dist
         else:
             return "move_forward", dist
 
     # ------------------------------------------------------------------
-    # 360° scan state machine
+    # 360° scan state machine  (8 × 45° = full sweep)
     # ------------------------------------------------------------------
 
     def start_scan(self) -> None:
-        """Begin a 360° sweep (3 additional 90° turns after first look)."""
-        self._scan_turns_left = 3
+        """Begin a deliberate 360° sweep in 45° steps (7 turns after the first
+        look = 8 orientations total)."""
+        self._scan_turns_left = 7
 
     def scan_step(self) -> str:
-        """Return the action for this scan step (always turn_right_90)."""
+        """Return the action for this scan step (always turn_right_45)."""
         if self._scan_turns_left > 0:
             self._scan_turns_left -= 1
-        return "turn_right_90"
+        return "turn_right_45"
 
     def scan_done(self) -> bool:
         return self._scan_turns_left == 0
