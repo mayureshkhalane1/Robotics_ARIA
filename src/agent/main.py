@@ -12,7 +12,7 @@ from dataclasses import asdict, is_dataclass
 from typing import Any
 
 from src.agent.aria_agent import run_aria_agent
-from src.common.config import OLLAMA_MODEL
+from src.common.config import OLLAMA_MODEL, PERCEPTION_MODE
 from src.mcp_server.server import call_tool, list_tools
 
 
@@ -29,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--goal", default="explore the room", help="Natural language robot goal")
     parser.add_argument("--steps", type=int, default=50, help="Maximum sense-decide-act steps")
     parser.add_argument("--model", default=OLLAMA_MODEL, help="Ollama model for the optional LLM layer")
+    parser.add_argument("--perception-mode", default=PERCEPTION_MODE, help="Perception mode: vlm_first, vlm_only, yolo_vlm, sensor_only")
     parser.add_argument("--list-tools", action="store_true", help="Print available bridge tools and exit")
     parser.add_argument("--validate-only", action="store_true", help="Validate local tool registry without Webots")
     parser.add_argument("--json", action="store_true", help="Print final state as JSON")
@@ -51,6 +52,7 @@ def main() -> int:
         goal=args.goal,
         max_steps=args.steps,
         model=args.model,
+        perception_mode=args.perception_mode,
     )
 
     if args.json:

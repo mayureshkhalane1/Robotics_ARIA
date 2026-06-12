@@ -1,6 +1,6 @@
 # ARIA: Autonomous Robot Intelligence Architecture
 
-A Pioneer 3-DX in Webots R2025a that **explores a room on its own** - it builds a live map from its **Lidar** (it is never given the floor plan), drives toward unexplored space, and looks for a target with YOLO. What it finds is saved to a spatial memory so later runs can go straight to a known object. The Python agent runs in WSL2; Webots (and optionally Ollama) run on Windows.
+A Pioneer 3-DX in Webots R2025a that **explores a room on its own** - it builds a live map from its **Lidar** (it is never given the floor plan), drives toward unexplored space, and uses a **VLM-first** perception loop to decide whether the target is visible. YOLO is now fallback-only in the explicit hybrid mode; the default search path stays VLM-led and conservative. What it finds is saved to a spatial memory so later runs can analyze the search history. The Python agent runs in WSL2; Webots (and optionally Ollama) run on Windows.
 
 ---
 
@@ -8,7 +8,7 @@ A Pioneer 3-DX in Webots R2025a that **explores a room on its own** - it builds 
 
 ```
 ┌─────────────────── Browser UI (http://localhost:8080) ───────────────────┐
-│  live camera · YOLO detections · map stats · spatial memory summary      │
+│  live camera · VLM descriptions · map stats · spatial memory summary     │
 └───────────────────────────────┬──────────────────────────────────────────┘
                                  │ WebSocket
               ┌──────────────────▼─────────────────┐
@@ -21,10 +21,10 @@ A Pioneer 3-DX in Webots R2025a that **explores a room on its own** - it builds 
               │   carrot │                 │         │
               │  ┌───────▼─────────────────▼──────┐  │
               │  │  Sense → Explore → Act          │  │
-              │  │  Lidar · YOLO · Compass · GPS   │  │
+              │  │  Lidar · VLM · YOLO · Compass  │  │
               │  │         · Sonar (safety)        │  │
               │  └─────────────────────────────────┘  │
-              │  (LLM via Ollama - optional layer)    │
+              │  (Ollama - optional perception layer) │
               └──────────────────┬────────────────────┘
                                  │ TCP 19997
               ┌──────────────────▼─────────────────┐
@@ -33,11 +33,13 @@ A Pioneer 3-DX in Webots R2025a that **explores a room on its own** - it builds 
               └─────────────────────────────────────┘
 ```
 
-**Each run** - the robot starts knowing nothing about the walls. Every step it ray-casts its 360° Lidar into an occupancy grid (free / occupied / unknown) and drives toward the nearest **frontier** (the edge of the unknown). Frontiers sit at openings, so it flows through gaps into unexplored areas and around obstacles, discovering the layout. YOLO runs on every frame; every detection + GPS position is saved to `logs/spatial_memory.json`. The target is acted on when YOLO actually sees it (see "find" vs "approach" below).
+**Each run** - the robot starts knowing nothing about the walls. Every step it ray-casts its 360° Lidar into an occupancy grid (free / occupied / unknown) and drives toward the nearest **frontier** (the edge of the unknown). Frontiers sit at openings, so it flows through gaps into unexplored areas and around obstacles, discovering the layout. The VLM is the primary observation and verification layer: it describes the scene, checks whether the target is visible, and can be retried or safely degraded when the response is weak. YOLO is only used in the explicit `yolo_vlm` mode. Every confirmed detection + GPS position is saved to `logs/spatial_memory.json`.
 
 **Memory** - `spatial_memory.json` is loaded for reference/UI only; it does **not** drive navigation. Recall-driving was removed because it overrode exploration and, being keyed to the world file, could chase a stale coordinate from another world.
 
 Nothing in the navigation reads wall positions from the `.wbt` or relies on wall colour - obstacles are discovered with sensors. The live sonar ring is the collision backstop; the Lidar is for mapping.
+
+**Robust loop.** The agent now follows a lightweight `observe -> plan -> act -> verify -> correct` loop inspired by the long-horizon planning papers: map the room with sensors, ask the VLM for grounded scene evidence, choose a frontier or target action, verify motion with the controller feedback, and correct when the VLM is blank, slow, or contradictory.
 
 ---
 
@@ -78,7 +80,7 @@ Open `http://localhost:8080`, type a goal (e.g. `find the dog`), click **Run**.
 
 ### 4. Ollama - optional, make it reachable from WSL2 (Windows PowerShell)
 
-The LLM is an optional "describe the scene" layer; navigation works fully without it. By default Ollama binds only to `127.0.0.1` and WSL2 cannot reach it. Run this **before** `ollama serve`:
+The VLM is an optional "describe the scene" layer; navigation works fully without it. By default Ollama binds only to `127.0.0.1` and WSL2 cannot reach it. Run this **before** `ollama serve`:
 
 ```powershell
 $env:OLLAMA_HOST = "0.0.0.0"
@@ -102,7 +104,7 @@ setx OLLAMA_KEEP_ALIVE "30m"
 
 (then just `ollama serve`; restart the terminal once for `setx` to take effect). You may also need to allow **port 11434 through Windows Defender Firewall** for WSL.
 
-**Don't want the LLM?** It's optional - set `ARIA_USE_LLM=0` in `.env` and the agent never calls Ollama (navigation + YOLO detection are unaffected and startup is fastest).
+**Don't want the VLM?** It's optional - set `ARIA_USE_LLM=0` in `.env` and the agent never calls Ollama (navigation + YOLO fallback are unaffected and startup is fastest).
 
 ---
 
@@ -118,18 +120,20 @@ cp .env.example .env
 | ---------------------------- | -------------------- | --------------------------------------- |
 | `WEBOTS_HOST`                | auto-detected        | WSL2 gateway or `localhost`             |
 | `OLLAMA_BASE_URL`            | auto-detected        | WSL2 gateway or `localhost`             |
-| `OLLAMA_VISION_MODEL`        | `llava-phi3:latest`  | image description                       |
+| `OLLAMA_VISION_MODEL`        | `qwen3-vl:4b-instruct-q4_K_M` | local VLM for target visibility; lightweight default |
 | `OLLAMA_REASONING_MODEL`     | `qwen3:8b`           | action suggestions (optional)           |
 | `OLLAMA_VISION_TIMEOUT`      | 35                   | per-LLM-call timeout (s); lower if no LLM |
-| `OLLAMA_VISION_SAMPLE_INTERVAL` | 10                | min seconds between LLM calls           |
+| `OLLAMA_VISION_SAMPLE_INTERVAL` | 10                | min seconds between VLM calls           |
+| `PERCEPTION_MODE`            | `vlm_first`          | `vlm_first`, `vlm_only`, `yolo_vlm`, `sensor_only` |
+| `AGENT_CYCLE_INTERVAL`       | `1.2`                | minimum spacing between decision cycles |
 | `ARIA_USE_LLM`               | `1`                  | set `0` to skip Ollama entirely         |
-| `YOLO_MODEL`                 | `yolov8s`            | COCO detector; `yolov8s-world.pt` for open-vocab |
-| `YOLO_CONF`                  | `0.35`               | detection confidence floor; lower (e.g. `0.25`) to catch faint/flickering targets |
+| `YOLO_MODEL`                 | `yolo11m`            | COCO detector; fallback-only in `yolo_vlm` |
+| `YOLO_CONF`                  | `0.25`               | detection confidence floor for fallback YOLO |
 | `WEBOTS_WORLD_FILE`          | `break_room.wbt`     | fallback only - the loaded world is auto-detected from Webots (see below) |
 | `ARIA_LOG_KEEP`              | `5`                  | how many newest run logs stay git-tracked |
 | `MAX_STEPS`                  | 50                   | UI run limit                            |
 
-**Run logs.** Every run is captured to `logs/run_<timestamp>.log` with a wall-clock timestamp per line, a per-step timing line (`dt sense+yolo=… plan=… llm=… move=…`), and a motion-feedback line (`MOVED dist=… turned=… reached=…`) showing how far the robot actually translated/rotated. The `logs/` folder is git-ignored **except** the latest `ARIA_LOG_KEEP` run logs: when you stop `python -m src.ui.server`, [`src/common/log_retention.py`](src/common/log_retention.py) rewrites the whitelist in `.gitignore` so only the newest few logs are committable (run it manually with `python -m src.common.log_retention [N]`).
+**Run logs.** Every run is captured to `logs/run_<timestamp>.log` with a wall-clock timestamp per line, a per-step timing line (`dt sense+perception=… plan=… think=… move=…`), a motion-feedback line (`MOVED dist=… turned=… reached=…`) showing how far the robot actually translated/rotated, and a readable per-step `THINK:` line with the current vision summary, reasoning, and chosen action. In `vlm_first` and `vlm_only`, the camera stream stays raw; the old green YOLO boxes only appear if you explicitly switch to `yolo_vlm`. The UI shows the same reasoning in the Thinking and Commands panels so the dashboard, console, and log stay aligned. The `logs/` folder is git-ignored **except** the latest `ARIA_LOG_KEEP` run logs: when you stop `python -m src.ui.server`, [`src/common/log_retention.py`](src/common/log_retention.py) rewrites the whitelist in `.gitignore` so only the newest few logs are committable (run it manually with `python -m src.common.log_retention [N]`).
 
 **World auto-detection.** The TCP controller reports the world Webots actually loaded (`get_state → "world"`); the agent keys spatial memory and floor bounds to it, so you don't have to keep `WEBOTS_WORLD_FILE` in sync when you switch worlds.
 
@@ -153,10 +157,10 @@ src/
 ├── mcp_server/
 │   └── server.py              # bridge → Webots TCP commands
 ├── perception/
-│   ├── object_detector.py     # YOLOv8s (conf=0.35); YOLO-World if model has "world"
+│   ├── object_detector.py     # YOLO11m fallback only in explicit yolo_vlm mode
 │   └── camera.py              # frame manager
 └── ui/
-    └── server.py              # aiohttp dashboard (aria policy)
+    └── server.py              # aiohttp dashboard (policy -> perception mode)
 
 src/webots/worlds/Project/
 ├── worlds/break_room.wbt      # active world (Pioneer + Camera/Compass/GPS/Lidar)
@@ -173,16 +177,18 @@ logs/
 
 ### Finding a target: "find" vs "approach"
 
-The goal text decides what happens when YOLO sees the target:
+The goal text decides what happens when the VLM sees the target:
 
-- **`find the dog`** → the robot **stops and looks at it** the moment it's detected (success).
-- **`find the dog and approach it`** (or "go to / navigate to / reach …") → the robot **drives to it** using visual servoing (centre the target in the camera, move forward) until it fills the frame, then stops (success).
+- **`find the dog`** → the robot **stops and looks at it** the moment the VLM confirms it, or the explicit `yolo_vlm` fallback confirms it (success).
+- **`find the dog and approach it`** (or "go to / navigate to / reach …") → the robot **drives to it** using target direction / bbox cues from the perception stack until it fills the frame, then stops (success).
 
 Target pursuit overrides exploration and the scan, so once the target is seen the robot commits to it instead of wandering off.
 
-**Detectable objects:** standard YOLO only knows the 80 **COCO** classes - `dog`, `cat`, `sports ball`, `bottle`, `chair`, `person`, etc. work. A **`duck`** or **`wooden box`** are *not* COCO classes, so the default model can't find them by name. To find arbitrary objects, set an **open-vocabulary** model in `.env`: `YOLO_MODEL=yolov8s-world.pt` - the agent then tells it the target words (YOLO-World detects them by text).
+**Detectable objects:** the VLM can describe arbitrary scene contents, but if you want detector-style fallback coverage for COCO classes (`dog`, `cat`, `sports ball`, `bottle`, `chair`, `person`, etc.) switch to `yolo_vlm`. A **`duck`** or **`wooden box`** is still easier to catch with a VLM than with a fixed COCO detector.
 
-**Quadruped aliasing:** YOLO frequently flips a single rendered animal between COCO quadrupeds (the Webots dog reads as `horse` up close, `dog`/`sheep` at range). So `find the dog` also accepts `cat/horse/sheep/cow/bear/…` as the target - pragmatic for these single-animal test worlds. If a detection is faint, lowering `YOLO_CONF` (e.g. to `0.25`) lets it through. See [`ARIA_STATUS.md`](ARIA_STATUS.md) for the validation notes behind this.
+**Local VLM choice:** `qwen3-vl:4b-instruct-q4_K_M` is the default because it is lightweight and reliable for the single image-answer step this agent now uses. If you want a stronger multimodal model and still stay under the 8GB budget, `qwen3-vl:8b` is the heavier option at about 6.1GB in Ollama. Keep `OLLAMA_VISION_MODEL` overridden only if you have a specific reason to do so.
+
+**Quadruped aliasing:** if you keep YOLO fallback enabled in `yolo_vlm`, it can still flip a single rendered animal between COCO quadrupeds (the Webots dog reads as `horse` up close, `dog`/`sheep` at range). So `find the dog` also accepts `cat/horse/sheep/cow/bear/…` as the target - pragmatic for these single-animal test worlds. If a detection is faint, lowering `YOLO_CONF` (e.g. to `0.25`) lets it through. See [`ARIA_STATUS.md`](ARIA_STATUS.md) for the validation notes behind this.
 
 ### Autonomous exploration (no prior memory)
 
@@ -190,7 +196,7 @@ Built entirely from the robot's own sensors - the `.wbt` floor plan is never rea
 
 Deliberate **look-around → drive** cycle (the robot rotates, identifies, then acts - it does not spin reactively):
 
-1. **Look around** - a 360° scan in **45° steps** (8 orientations); YOLO + Lidar run at each, building the occupancy grid and checking every direction for the target.
+1. **Look around** - a 360° scan in **45° steps** (8 orientations); the live map is updated every step and the VLM checks each new view for the target.
 2. **Frontier** - from the freshly-scanned map, pick the nearest reachable *frontier* (a free cell touching the unknown). BFS over discovered free space gives a path; the robot steers toward a "carrot" ~0.7 m along it.
 3. **Drive** - head to the frontier with fine **45° aiming turns** (a 25° deadband means it converges on a heading instead of oscillating between two 90°-apart ones).
 4. **Repeat / give up** - on arrival, look around again; if it can't get closer for several steps (furniture the Lidar missed), it blacklists that frontier and re-scans.
@@ -198,11 +204,11 @@ Deliberate **look-around → drive** cycle (the robot rotates, identifies, then 
 
 ### Spatial memory (record-only)
 
-Every YOLO detection is saved to `logs/spatial_memory.json` for analysis and the UI.
+Every confirmed detection is saved to `logs/spatial_memory.json` for analysis and the UI.
 Memory does **not** drive navigation: the robot always explores from its own sensors and
-lets YOLO pursuit handle the target when it is actually seen. (Blind-driving to a stored
-coordinate was removed - it overrode exploration and, because memory is keyed by the
-configured world file rather than the world Webots actually loaded, could chase a stale
+lets the current perception stack handle the target when it is actually seen. (Blind-driving
+to a stored coordinate was removed - it overrode exploration and, because memory is keyed by
+the configured world file rather than the world Webots actually loaded, could chase a stale
 coordinate from another world and spin in place. See `ARIA_STATUS.md`.)
 
 ### Motion & heading
@@ -221,7 +227,7 @@ coordinate from another world and spin in place. See `ARIA_STATUS.md`.)
 
 ### First step takes a long time
 
-On step 1 the agent makes its first (optional) Ollama call before the fail-fast logic engages; if Ollama is unreachable that is up to two 35 s timeouts (~70 s), plus the first YOLO weight load. Fix Ollama (step 4) or set `OLLAMA_VISION_TIMEOUT=5` in `.env`.
+On step 1 the agent starts with motion and map-building immediately, then makes its first optional VLM call once the throttle allows it. If Ollama is unreachable the VLM calls are skipped and the robot falls back to the live-map planner, so the first perceptual refinement can still take a few seconds. Lower `OLLAMA_VISION_TIMEOUT` if you want faster failover.
 
 ### The live map looks mirrored / rotated (robot drives ~90° or 180° off)
 

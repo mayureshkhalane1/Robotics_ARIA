@@ -19,6 +19,13 @@
     .log-item { border-bottom: 1px solid #2a3446; padding: 10px 0; }
     .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #2c3c59; color: #cfe0ff; font-size: 12px; margin-right: 8px; }
     .status { color: #94f0b3; }
+    .health { color: #94f0b3; padding: 2px 8px; border-radius: 999px; background: rgba(148,240,179,0.12); border: 1px solid rgba(148,240,179,0.35); }
+    .health.warn { color: #ffd27d; background: rgba(255,210,125,0.12); border-color: rgba(255,210,125,0.35); }
+    .health.bad { color: #ff9f9f; background: rgba(255,159,159,0.12); border-color: rgba(255,159,159,0.35); }
+    .badge { display: inline-flex; align-items: center; gap: 6px; }
+    .badge.good { color: #94f0b3; }
+    .badge.warn { color: #ffd27d; }
+    .badge.bad { color: #ff9f9f; }
     .camera-container { position: relative; }
     .detection-overlay { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
     .detection-box { position: absolute; border: 2px solid #00ff00; color: #00ff00; font-size: 11px; padding: 2px 4px; background: rgba(0,0,0,0.7); }
@@ -29,19 +36,19 @@
 <body>
   <header>
     <strong>ARIA</strong>
-    <input id="goal" value="find cup and approach it" />
-    <select id="policy"><option value="aria" selected>aria (YOLO+VLM)</option><option value="smart_vision">smart vision (VLM)</option><option value="vision">vision</option><option value="reactive">reactive</option><option value="ollama">ollama</option></select>
-    <input id="model" value="llava-phi3:latest (vision + reasoning)" readonly style="max-width: 200px; opacity: .7; cursor: not-allowed;" title="Both vision and reasoning use llava-phi3" />
+    <input id="instruction" value="find the soccer ball" title="Short instruction for the robot" />
+    <select id="policy"><option value="yolo_vlm" selected>yolo-vlm (YOLO truth + VLM direction)</option><option value="aria">aria (VLM-first)</option><option value="smart_vision">smart vision (VLM only)</option><option value="vision">vision (VLM only)</option><option value="reactive">reactive (sensor only)</option><option value="ollama">ollama (VLM-first)</option></select>
+    <input id="model" value="qwen3-vl:4b-instruct-q4_K_M" style="max-width: 200px;" title="Vision model used for the local VLM call" />
     <button id="run">Run</button>
     <button id="stop" class="stop">Stop</button>
     <span id="status" class="status">connecting</span>
+    <span id="health" class="health">health: good</span>
   </header>
   <main>
     <section>
       <h2>Robot Camera & Detections</h2>
       <div class="camera-container">
-        <img id="cameraImg" src="" style="display:none; width:100%; border-radius:12px;" />
-        <canvas id="camera" width="320" height="240" style="display:none;"></canvas>
+        <canvas id="camera" width="320" height="240"></canvas>
         <p id="cameraStatus" style="text-align:center; color:#666;">Connecting to camera...</p>
       </div>
       <div class="stats" id="cameraStats"></div>
@@ -62,13 +69,23 @@
       <div style="margin-bottom: 20px;">
         <h3 style="margin: 0 0 8px; font-size: 13px; color: #a9b8d6;">Current Step</h3>
         <div class="stat-line"><span>Step:</span><span id="currentStep">0/0</span></div>
-        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Vision Analysis</h3>
+        <div class="stat-line"><span>Corrections:</span><span id="correctionCount">0</span></div>
+        <div class="stat-line"><span>Mode:</span><span id="explorationMode">explore</span></div>
+        <div class="stat-line"><span>Frontiers:</span><span id="frontierCount">0</span></div>
+        <div class="stat-line"><span>Map:</span><span id="mapProgress">unknown</span></div>
+        <div class="stat-line"><span>Recovery:</span><span id="stuckState">clear</span></div>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Verifier</h3>
         <pre id="visionOutput" style="font-size: 11px; background: #0f1419; padding: 8px; border-radius: 8px; margin: 0; color: #7ea8d8;"></pre>
-        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Reasoning</h3>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Recent Memory</h3>
+        <pre id="memoryOutput" style="font-size: 11px; background: #0f1419; padding: 8px; border-radius: 8px; margin: 0; color: #7ea8d8;"></pre>
+        <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Planner</h3>
         <pre id="reasoningOutput" style="font-size: 11px; background: #0f1419; padding: 8px; border-radius: 8px; margin: 0; color: #7ea8d8;"></pre>
         <h3 style="margin: 12px 0 8px; font-size: 13px; color: #a9b8d6;">Next Action</h3>
         <div style="background: #1a2332; padding: 8px; border-radius: 8px; border-left: 3px solid #00ff00;">
           <span id="nextAction" style="font-size: 13px; font-weight: 500; color: #00ff00;">--</span>
+        </div>
+        <div id="hallucinationBadge" style="display:none; margin-top:10px; padding:8px; border-radius:8px; border:1px solid #7a2735; background:#2b1218; color:#ff9f9f; font-size:12px; font-weight:600;">
+          hallucination blocked
         </div>
       </div>
       <h2>All Steps Log</h2>
@@ -79,20 +96,100 @@
     const statusEl = document.getElementById('status');
     const stateEl = document.getElementById('state');
     const logEl = document.getElementById('log');
-    const cameraImg = document.getElementById('cameraImg');
+    const cameraCanvas = document.getElementById('camera');
+    const cameraCtx = cameraCanvas.getContext('2d');
     const cameraStatus = document.getElementById('cameraStatus');
     const cameraStats = document.getElementById('cameraStats');
+    const instructionEl = document.getElementById('instruction');
     const visionOutput = document.getElementById('visionOutput');
     const reasoningOutput = document.getElementById('reasoningOutput');
+    const memoryOutput = document.getElementById('memoryOutput');
     const nextAction = document.getElementById('nextAction');
     const currentStep = document.getElementById('currentStep');
+    const correctionCount = document.getElementById('correctionCount');
+    const explorationMode = document.getElementById('explorationMode');
+    const frontierCount = document.getElementById('frontierCount');
+    const mapProgress = document.getElementById('mapProgress');
+    const stuckState = document.getElementById('stuckState');
+    const health = document.getElementById('health');
+    const hallucinationBadge = document.getElementById('hallucinationBadge');
+
+    function updateHealthBadge(count) {
+      const n = Number(count || 0);
+      health.className = 'health';
+      if (n >= 3) {
+        health.classList.add('bad');
+        health.textContent = `health: needs attention (${n})`;
+      } else if (n >= 1) {
+        health.classList.add('warn');
+        health.textContent = `health: correcting (${n})`;
+      } else {
+        health.textContent = 'health: good';
+      }
+    }
 
     function appendLog(event) {
       const item = document.createElement('div');
       item.className = 'log-item';
-      const action = event.action ? `${event.action.type} ${JSON.stringify(event.action.params)}` : '';
-      item.innerHTML = `<span class="tag">${event.type}</span><span>step ${event.step}</span><pre>${event.plan || action || event.error || ''}</pre>`;
+      const action = typeof event.action === 'string'
+        ? event.action
+        : (event.action ? `${event.action.type || ''} ${JSON.stringify(event.action.params || {})}`.trim() : '');
+      const detail = event.reasoning_tail || event.reasoning || event.plan || event.vision || action || event.error || '';
+      item.innerHTML = `<span class="tag">${event.type}</span><span>step ${event.step}</span><pre>${detail}</pre>`;
       logEl.prepend(item);
+    }
+
+    function setThinkingPanel(data) {
+      if (!data) return;
+      if (data.model) {
+        document.getElementById('model').value = data.model;
+      }
+      if (data.vision !== undefined || data.description !== undefined) {
+        visionOutput.textContent = data.vision || data.description || '';
+      }
+      if (Array.isArray(data.recent_vision)) {
+        memoryOutput.textContent = data.recent_vision.join('\n');
+      }
+      if (data.correction_count !== undefined) {
+        correctionCount.textContent = data.correction_count;
+        updateHealthBadge(data.correction_count);
+      }
+      if (data.exploration_mode !== undefined) {
+        explorationMode.textContent = data.exploration_mode;
+      }
+      if (data.frontier_count !== undefined) {
+        frontierCount.textContent = data.frontier_count;
+      }
+      if (data.map_stats) {
+        const m = data.map_stats;
+        mapProgress.textContent = `free ${m.free || 0} / occ ${m.occupied || 0} / unk ${m.unknown || 0}`;
+      }
+      if (data.stuck !== undefined) {
+        stuckState.textContent = data.stuck ? 'recovering' : 'clear';
+        stuckState.style.color = data.stuck ? '#ffd27d' : '#94f0b3';
+      }
+      if (data.reasoning_tail !== undefined || data.reasoning !== undefined || data.plan !== undefined) {
+        reasoningOutput.textContent = data.reasoning_tail || data.reasoning || data.plan || '';
+      }
+      if (data.action !== undefined || data.next_action !== undefined) {
+        nextAction.textContent = data.action || data.next_action || '--';
+      }
+      if (data.message === 'waiting for VLM' || data.type === 'vision_wait') {
+        visionOutput.textContent = data.vision || 'Waiting for VLM response...';
+        reasoningOutput.textContent = 'Waiting for the local vision model to answer...';
+        nextAction.textContent = 'waiting for VLM';
+      }
+      const halluText = `${data.reasoning_tail || data.reasoning || data.plan || ''} ${data.vision || data.description || ''}`.toLowerCase();
+      const halluBlocked = halluText.includes('rejected by yolo') || halluText.includes('grounded bbox') || halluText.includes('no grounded bbox');
+      hallucinationBadge.style.display = halluBlocked ? 'block' : 'none';
+      if (typeof data.reasoning_tail === 'string' && data.reasoning_tail.toLowerCase().includes('grounded bbox')) {
+        const note = 'hallucination blocked';
+        reasoningOutput.textContent = `${reasoningOutput.textContent || ''}${reasoningOutput.textContent ? ' | ' : ''}${note}`;
+      }
+      if (data.retry_used) {
+        const note = 'VLM retry used';
+        reasoningOutput.textContent = `${reasoningOutput.textContent || ''}${reasoningOutput.textContent ? ' | ' : ''}${note}`;
+      }
     }
 
     function connectMainWS() {
@@ -101,6 +198,9 @@
       ws.onclose = () => { statusEl.textContent = 'disconnected'; setTimeout(connectMainWS, 1000); };
       ws.onmessage = (msg) => {
         const event = JSON.parse(msg.data);
+        if (event.goal || event.instruction) {
+          instructionEl.value = event.instruction || event.goal;
+        }
         if (event.robot_state) {
           const clean = {...event.robot_state};
           if (clean.camera_frame) clean.camera_frame = 'frame received';
@@ -109,13 +209,46 @@
           if (event.robot_state.step) {
             currentStep.textContent = `${event.robot_state.step}/${event.robot_state.max_steps || 100}`;
           }
+          if (event.robot_state.correction_count !== undefined) {
+            correctionCount.textContent = event.robot_state.correction_count;
+            updateHealthBadge(event.robot_state.correction_count);
+          }
+          if (event.robot_state.exploration_mode !== undefined) {
+            explorationMode.textContent = event.robot_state.exploration_mode;
+          }
+          if (event.robot_state.frontier_count !== undefined) {
+            frontierCount.textContent = event.robot_state.frontier_count;
+          }
+          if (event.robot_state.map_stats) {
+            const m = event.robot_state.map_stats;
+            mapProgress.textContent = `free ${m.free || 0} / occ ${m.occupied || 0} / unk ${m.unknown || 0}`;
+          }
+          if (event.robot_state.stuck !== undefined) {
+            stuckState.textContent = event.robot_state.stuck ? 'recovering' : 'clear';
+            stuckState.style.color = event.robot_state.stuck ? '#ffd27d' : '#94f0b3';
+          }
+          if (Array.isArray(event.robot_state.recent_vision)) {
+            memoryOutput.textContent = event.robot_state.recent_vision.join('\n');
+          }
         }
         if (event.type === 'vision') {
           visionOutput.textContent = event.description || event.vision_description || '';
+          if (event.retry_used) {
+            reasoningOutput.textContent = (reasoningOutput.textContent ? `${reasoningOutput.textContent} | ` : '') + 'VLM retry used';
+          }
         }
-        if (event.type === 'reasoning') {
-          reasoningOutput.textContent = event.reasoning || '';
-          nextAction.textContent = event.action || '--';
+        if (event.type === 'vision_wait') {
+          setThinkingPanel(event);
+        }
+        if (event.type === 'reasoning' || event.type === 'step') {
+          setThinkingPanel(event);
+        }
+        if (event.type === 'step' && typeof event.reasoning_tail === 'string' && event.reasoning_tail.toLowerCase().includes('grounded bbox')) {
+          reasoningOutput.textContent = `${reasoningOutput.textContent || ''}${reasoningOutput.textContent ? ' | ' : ''}hallucination blocked`;
+        }
+        if (event.type === 'step') {
+          const tail = `${event.reasoning_tail || ''} ${event.reasoning || ''} ${event.plan || ''}`.toLowerCase();
+          hallucinationBadge.style.display = (tail.includes('rejected by yolo') || tail.includes('grounded bbox') || tail.includes('no grounded bbox')) ? 'block' : 'none';
         }
         appendLog(event);
       };
@@ -137,10 +270,44 @@
         try {
           const data = JSON.parse(msg.data);
           if (data.type === 'camera') {
-            // Display image
-            cameraImg.src = `data:image/jpeg;base64,${data.data}`;
-            cameraImg.style.display = 'block';
             cameraStatus.textContent = `${data.width}x${data.height} @ ${(1/0.067).toFixed(0)}FPS`;
+
+            const img = new Image();
+            img.onload = () => {
+              cameraCanvas.width = data.width || img.width;
+              cameraCanvas.height = data.height || img.height;
+              cameraCtx.clearRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+              cameraCtx.drawImage(img, 0, 0, cameraCanvas.width, cameraCanvas.height);
+
+              if (Array.isArray(data.detections) && data.detections.length > 0) {
+                cameraCtx.lineWidth = Math.max(2, Math.round(cameraCanvas.width / 160));
+                cameraCtx.font = `${Math.max(10, Math.round(cameraCanvas.width / 32))}px sans-serif`;
+                for (const det of data.detections) {
+                  const bbox = Array.isArray(det.bbox) ? det.bbox : [];
+                  const x1 = Number(bbox[0] || 0);
+                  const y1 = Number(bbox[1] || 0);
+                  const x2 = Number(bbox[2] || 0);
+                  const y2 = Number(bbox[3] || 0);
+                  const w = Math.max(1, x2 - x1);
+                  const h = Math.max(1, y2 - y1);
+                  const conf = Number(det.confidence || 0);
+                  const label = `${det.class_name || 'object'} ${(conf * 100).toFixed(0)}%`;
+                  cameraCtx.strokeStyle = conf >= 0.5 ? '#00ff66' : '#ffcc33';
+                  cameraCtx.fillStyle = conf >= 0.5 ? 'rgba(0,255,102,0.16)' : 'rgba(255,204,51,0.16)';
+                  cameraCtx.fillRect(x1, y1, w, h);
+                  cameraCtx.strokeRect(x1, y1, w, h);
+                  const labelWidth = Math.max(
+                    20,
+                    Math.min(cameraCtx.measureText(label).width + 8, cameraCanvas.width - x1 - 4),
+                  );
+                  const labelY = Math.max(14, y1);
+                  cameraCtx.fillRect(x1, labelY - 14, labelWidth, 16);
+                  cameraCtx.fillStyle = '#081018';
+                  cameraCtx.fillText(label, x1 + 4, labelY - 2);
+                }
+              }
+            };
+            img.src = `data:image/jpeg;base64,${data.data}`;
             
             // Update stats
             if (data.memory_stats) {
@@ -173,7 +340,8 @@
 
     document.getElementById('run').onclick = async () => {
       await fetch('/goal', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
-        goal: document.getElementById('goal').value,
+        instruction: instructionEl.value,
+        goal: instructionEl.value,
         policy: document.getElementById('policy').value,
         model: document.getElementById('model').value,
         steps: 100

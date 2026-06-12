@@ -77,11 +77,11 @@ class Detection:
 class ObjectDetector:
     """YOLO-based object detector for robot perception."""
 
-    def __init__(self, model_name: str = "yolov8n", confidence_threshold: float = 0.5, iou_threshold: float = 0.45):
+    def __init__(self, model_name: str = "yolo11m", confidence_threshold: float = 0.5, iou_threshold: float = 0.45):
         """Initialize object detector.
 
         Args:
-            model_name: YOLO model name (yolov8n, yolov8s, etc.)
+            model_name: YOLO model name (yolo11m, yolo11s, etc.)
             confidence_threshold: Minimum confidence to keep detections (0.0-1.0)
             iou_threshold: NMS IoU threshold for duplicate suppression (0.0-1.0)
         """
@@ -113,11 +113,16 @@ class ObjectDetector:
         except Exception as e:
             print(f"[Detector] set_classes failed: {e}")
 
-    def detect(self, frame: np.ndarray) -> list[Detection]:
+    def detect(
+        self,
+        frame: np.ndarray,
+        confidence_threshold: Optional[float] = None,
+    ) -> list[Detection]:
         """Detect objects in frame.
 
         Args:
             frame: BGR numpy array (HxWx3, uint8). YOLO expects BGR input!
+            confidence_threshold: Optional per-call confidence override.
 
         Returns:
             List of Detection objects sorted by confidence (highest first)
@@ -135,11 +140,16 @@ class ObjectDetector:
             return []
 
         try:
+            conf_threshold = (
+                self.confidence_threshold
+                if confidence_threshold is None
+                else float(confidence_threshold)
+            )
             # Run inference with explicit NMS
             results = self.model(
                 frame,
                 verbose=False,
-                conf=self.confidence_threshold,
+                conf=conf_threshold,
                 iou=self.iou_threshold  # Non-maximum suppression threshold
             )
 
@@ -279,13 +289,13 @@ _detector: Optional[ObjectDetector] = None
 
 def get_detector() -> ObjectDetector:
     """Get or create global object detector, configured from env (config.py):
-    YOLO_MODEL (default yolov8s), YOLO_CONF (0.35), YOLO_IOU (0.45)."""
+    YOLO_MODEL (default yolo11m), YOLO_CONF (0.25), YOLO_IOU (0.45)."""
     global _detector
     if _detector is None:
         try:
             from src.common.config import YOLO_MODEL, YOLO_CONF, YOLO_IOU
         except Exception:
-            YOLO_MODEL, YOLO_CONF, YOLO_IOU = "yolov8s", 0.35, 0.45
+            YOLO_MODEL, YOLO_CONF, YOLO_IOU = "yolo11m", 0.25, 0.45
         _detector = ObjectDetector(
             model_name=YOLO_MODEL,
             confidence_threshold=YOLO_CONF,
@@ -295,14 +305,14 @@ def get_detector() -> ObjectDetector:
 
 
 def init_detector(
-    model_name: str = "yolov8n",
+    model_name: str = "yolo11m",
     confidence_threshold: float = 0.5,
     iou_threshold: float = 0.45
 ) -> ObjectDetector:
     """Initialize object detector.
 
     Args:
-        model_name: YOLO model name (yolov8n, yolov8s, yolov8m, etc.)
+        model_name: YOLO model name (yolo11m, yolo11s, etc.)
         confidence_threshold: Minimum confidence (0.0-1.0), default 0.5
         iou_threshold: NMS IoU threshold (0.0-1.0), default 0.45
 

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import re
 from collections import deque
-from math import cos, sin, radians, degrees, hypot, ceil
+from math import atan2, cos, sin, radians, degrees, hypot, ceil
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -330,6 +330,71 @@ class OnlineOccupancyGrid:
             if self._is_frontier(*cell):
                 return self._to_world(*cell)
         return None
+
+    def frontier_candidates(self, x: float, y: float, min_dist: float = 0.45) -> List[Point]:
+        """Reachable frontier cells ordered by BFS discovery."""
+        start = self._nearest_traversable(*self._to_cell(x, y))
+        if start is None:
+            return []
+        came, order = self._bfs(start)
+        pts: List[Point] = []
+        for cell in order:
+            if self._is_frontier(*cell):
+                wx, wy = self._to_world(*cell)
+                if hypot(wx - x, wy - y) >= min_dist:
+                    pts.append((wx, wy))
+        if pts:
+            return pts
+        for cell in order:
+            if self._is_frontier(*cell):
+                pts.append(self._to_world(*cell))
+        return pts
+
+    def frontier_score(self, x: float, y: float, frontier: Point, heading_deg: float = 0.0) -> float:
+        """Higher score = more promising frontier for coverage."""
+        start = self._nearest_traversable(*self._to_cell(x, y))
+        goal = self._nearest_traversable(*self._to_cell(*frontier))
+        if start is None or goal is None:
+            return float("-inf")
+        path = self._bfs(start, goal)
+        if not path:
+            return float("-inf")
+        path_len = max(1, len(path) - 1)
+        fx, fy = frontier
+        # Reward frontiers that border more unknown space.
+        unknown_nbrs = 0
+        for di, dj in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            if self._cls(*self._to_cell(fx + di * self.res, fy + dj * self.res)) == UNKNOWN:
+                unknown_nbrs += 1
+        # Prefer frontiers roughly ahead of the robot to reduce spin loops.
+        dx, dy = fx - x, fy - y
+        target_heading = degrees(atan2(dy, dx))
+        turn = abs((target_heading - heading_deg + 180) % 360 - 180)
+        turn_penalty = turn / 180.0
+        return (2.0 * unknown_nbrs) - (0.7 * path_len) - (0.8 * turn_penalty)
+
+    def best_frontier(self, x: float, y: float, heading_deg: float = 0.0) -> Optional[Point]:
+        """Best frontier under a coverage-first score, not just the nearest one."""
+        candidates = self.frontier_candidates(x, y)
+        if not candidates:
+            return None
+        best = None
+        best_score = float("-inf")
+        for frontier in candidates[:64]:
+            score = self.frontier_score(x, y, frontier, heading_deg)
+            if score > best_score:
+                best_score = score
+                best = frontier
+        return best
+
+    def frontier_count(self) -> int:
+        """Count reachable frontier cells in the current map."""
+        count = 0
+        for i in range(self.nx):
+            for j in range(self.ny):
+                if self._is_frontier(i, j):
+                    count += 1
+        return count
 
     def next_step_toward(self, x: float, y: float, goal: Point, lookahead: float = 0.6) -> Optional[Point]:
         start = self._nearest_traversable(*self._to_cell(x, y))

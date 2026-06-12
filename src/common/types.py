@@ -53,3 +53,5 @@ class AgentState:
     success: bool = False
     error: str = ""
     reasoning_trace: List[str] = field(default_factory=list)  # For debugging
+    recent_vision: List[str] = field(default_factory=list)  # Short-term perception memory
+    correction_count: int = 0  # How often we had to fall back / correct weak perception

@@ -31,11 +31,11 @@ results/
 #     override with ARIA_LOG_KEEP). Do NOT hand-edit between the markers — it is
 #     rewritten. Run manually with: python -m src.common.log_retention [N] ---
 # >>> ARIA log-whitelist >>>
-!logs/run_20260604_173647.log
-!logs/run_20260604_173851.log
-!logs/run_20260604_173814.log
-!logs/run_20260604_173853.log
-!logs/run_20260604_173448.log
+!logs/run_20260612_101415.log
+!logs/run_20260611_225852.log
+!logs/run_20260611_225142.log
+!logs/run_20260611_223941.log
+!logs/run_20260611_223017.log
 # <<< ARIA log-whitelist <<<
 
 # OS / editor

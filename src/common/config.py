@@ -85,32 +85,59 @@ MAX_STEPS = int(os.getenv("MAX_STEPS", 50))
 STATE_CACHE_SIZE = int(os.getenv("STATE_CACHE_SIZE", 10))
 STAGNATION_THRESHOLD = int(os.getenv("STAGNATION_THRESHOLD", 5))
 STEP_TIMEOUT = int(os.getenv("STEP_TIMEOUT", 30))  # seconds per LLM call
+AGENT_CYCLE_INTERVAL = float(os.getenv("AGENT_CYCLE_INTERVAL", 1.2))
 
 # LLM Configuration
-# The LLM is an OPTIONAL refinement layer — YOLO does target detection and the
-# Lidar does navigation, so the robot runs fully without it.  Set ARIA_USE_LLM=0
-# to skip all Ollama calls (fastest, no dependency on Ollama being reachable).
+# The VLM is an OPTIONAL perception layer — the Lidar + frontier planner does
+# navigation, and YOLO is only an opt-in fallback when PERCEPTION_MODE allows it.
+# Set ARIA_USE_LLM=0 to skip all Ollama calls (fastest, no dependency on Ollama).
 USE_LLM = os.getenv("ARIA_USE_LLM", "1").strip().lower() not in ("0", "false", "no", "off")
+PERCEPTION_MODE = os.getenv("PERCEPTION_MODE", "vlm_first").strip().lower()
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "ollama")  # 'anthropic' or 'ollama'
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-# Vision model: used ONLY for image description (every 10s)
-OLLAMA_VISION_MODEL = os.getenv("OLLAMA_VISION_MODEL", "llava-phi3:latest")
+# Vision model: used for target visibility, scene grounding, and the single
+# JSON answer the planner reuses for this cycle.
+_DEFAULT_VISION_MODEL = "qwen3-vl:4b-instruct-q4_K_M"
+
+
+def _normalize_vision_model_name(model: str) -> str:
+    model = (model or "").strip()
+    if not model:
+        return _DEFAULT_VISION_MODEL
+    if model in ("qwen3vl", "qwen3vl:4b", "qwen3-vl:4b"):
+        return _DEFAULT_VISION_MODEL
+    return model
+
+
+_VISION_MODEL_ENV = os.getenv("OLLAMA_VISION_MODEL", "").strip()
+OLLAMA_VISION_MODEL = _normalize_vision_model_name(_VISION_MODEL_ENV)
 # Reasoning model: used by agent for fast decision-making
 OLLAMA_REASONING_MODEL = os.getenv("OLLAMA_REASONING_MODEL", "qwen3:8b")
 # Legacy: OLLAMA_MODEL now maps to reasoning model for backward compatibility
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", OLLAMA_REASONING_MODEL)
 OLLAMA_VISION_TIMEOUT = int(os.getenv("OLLAMA_VISION_TIMEOUT", 35))
-OLLAMA_VISION_NUM_PREDICT = int(os.getenv("OLLAMA_VISION_NUM_PREDICT", 160))
+OLLAMA_VISION_NUM_PREDICT = int(os.getenv("OLLAMA_VISION_NUM_PREDICT", 384))
 OLLAMA_VISION_IMAGE_MAX_DIM = int(os.getenv("OLLAMA_VISION_IMAGE_MAX_DIM", 640))
-OLLAMA_VISION_SAMPLE_INTERVAL = float(os.getenv("OLLAMA_VISION_SAMPLE_INTERVAL", 10.0))
+OLLAMA_VISION_SAMPLE_INTERVAL = float(os.getenv("OLLAMA_VISION_SAMPLE_INTERVAL", 1.0))
 
-# Perception (YOLO object detection — runs every step, this IS the target finder)
-# yolov8n (nano) is weak on small/distant objects; yolov8s is a better default.
-# Set YOLO_MODEL=yolov8n to avoid the ~22MB auto-download if offline.
-YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8s")
-YOLO_CONF = float(os.getenv("YOLO_CONF", 0.35))
+# Perception fallback (YOLO object detection — only used in explicit hybrid mode)
+# YOLO11 gives a better accuracy/speed balance than the older YOLOv8 line.
+# Default to yolo11m for stronger recall; set YOLO_MODEL=yolo11s if you want
+# a little less latency and can tolerate some missed small/far objects.
+_DEFAULT_YOLO_MODEL = "yolo11m"
+
+
+def _normalize_yolo_model_name(model: str) -> str:
+    model = (model or "").strip()
+    if not model:
+        return _DEFAULT_YOLO_MODEL
+    return model
+
+
+YOLO_MODEL = _normalize_yolo_model_name(os.getenv("YOLO_MODEL", ""))
+YOLO_CONF = float(os.getenv("YOLO_CONF", 0.25))
 YOLO_IOU = float(os.getenv("YOLO_IOU", 0.45))
 
 # Project Paths
@@ -133,8 +160,18 @@ if LLM_PROVIDER == "anthropic" and not ANTHROPIC_API_KEY:
 if LLM_PROVIDER not in ("anthropic", "ollama"):
     raise ValueError(f"Invalid LLM_PROVIDER: {LLM_PROVIDER}. Must be 'anthropic' or 'ollama'.")
 
+if PERCEPTION_MODE not in ("vlm_first", "vlm_only", "yolo_vlm", "sensor_only"):
+    raise ValueError(
+        "Invalid PERCEPTION_MODE: "
+        f"{PERCEPTION_MODE}. Must be 'vlm_first', 'vlm_only', 'yolo_vlm', or 'sensor_only'."
+    )
+
 print(f"[Config] Loaded configuration:")
 print(f"  Webots: {WEBOTS_HOST}:{WEBOTS_PORT} (sim_speed={WEBOTS_SIM_SPEED}x)")
-print(f"  Ollama: {OLLAMA_BASE_URL}  vision={OLLAMA_VISION_MODEL}  reasoning={OLLAMA_REASONING_MODEL}  use_llm={USE_LLM}")
-print(f"  Agent: MAX_STEPS={MAX_STEPS}, STATE_CACHE={STATE_CACHE_SIZE}")
+print(
+    f"  Ollama: {OLLAMA_BASE_URL}  vision={OLLAMA_VISION_MODEL}  "
+    f"reasoning={OLLAMA_REASONING_MODEL}  use_llm={USE_LLM}  perception={PERCEPTION_MODE}"
+)
+print(f"  Agent: MAX_STEPS={MAX_STEPS}, STATE_CACHE={STATE_CACHE_SIZE}, cycle={AGENT_CYCLE_INTERVAL}s")
+print(f"  YOLO: model={YOLO_MODEL} conf={YOLO_CONF} iou={YOLO_IOU}")
 print(f"  LLM: {LLM_PROVIDER} ({ANTHROPIC_MODEL if LLM_PROVIDER == 'anthropic' else OLLAMA_MODEL})")
