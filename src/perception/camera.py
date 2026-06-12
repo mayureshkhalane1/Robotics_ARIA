@@ -35,6 +35,31 @@ class Frame:
     pose: Optional[dict] = None  # {x, y, z, rotation}
 
 
+def prepare_vision_frame(frame_bgr: np.ndarray, target_max_dim: int = 640) -> np.ndarray:
+    """Resize a sampled frame for downstream vision models.
+
+    The UI still streams live video, but detector/VLM sampling works better
+    when the sampled frame is normalized to a consistent max dimension.
+    """
+    if frame_bgr is None or getattr(frame_bgr, "size", 0) == 0:
+        return frame_bgr
+    if target_max_dim <= 0:
+        return frame_bgr
+    h, w = frame_bgr.shape[:2]
+    if h <= 0 or w <= 0:
+        return frame_bgr
+    max_dim = max(h, w)
+    if max_dim == target_max_dim:
+        return frame_bgr
+    scale = float(target_max_dim) / float(max_dim)
+    if scale == 1.0:
+        return frame_bgr
+    interp = cv2.INTER_CUBIC if scale > 1.0 else cv2.INTER_AREA
+    new_w = max(1, int(round(w * scale)))
+    new_h = max(1, int(round(h * scale)))
+    return cv2.resize(frame_bgr, (new_w, new_h), interpolation=interp)
+
+
 class CameraManager:
     """Manages Webots camera frames and streaming."""
 
@@ -244,6 +269,7 @@ class CameraManager:
         if frame is None:
             return None
 
+        frame = prepare_vision_frame(frame)
         # Convert BGR to RGB for detection models
         return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
