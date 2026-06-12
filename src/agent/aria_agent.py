@@ -1946,9 +1946,7 @@ def _run_aria_agent_impl(
         target_done = False        # True when we should STOP and succeed on the target
         exploration_done = False   # True when all reachable space is explored (give up)
 
-        # ============================================================
-        # TARGET PURSUIT  (highest priority — overrides scan/explore/LLM)
-        # ============================================================
+        # If the target is in view, switch straight to pursuit.
         if target_det is not None:
             pursuing = True
             pursuit_lost = 0
@@ -2008,7 +2006,7 @@ def _run_aria_agent_impl(
                     else "reached (centered YOLO target + front proximity)"
                 )
             elif abs(target_err) > APPROACH_CENTER_TOL:
-                # Turn toward the side the target occupies in the frame.
+                # Nudge toward the side where the target sits in the frame.
                 nav_action = "turn_left_45" if target_err > 0 else "turn_right_45"
                 nav_reason = "centering"
             else:
@@ -2017,8 +2015,8 @@ def _run_aria_agent_impl(
                 nav_reason = "centered — advancing"
             if not low_conf and tconf >= YOLO_CONFIDENCE_STOP:
                 low_conf_streak = 0
-            # One line per pursuit step keeps the console readable and makes it
-            # easy to spot whether the box is getting larger and more centered.
+            # Keep the pursuit log compact so changes in box size and offset are
+            # easy to read at a glance.
             side = f"img-{target_side.upper()}" if target_side in ("left", "right", "center") else ("img-RIGHT" if target_err > 0 else "img-LEFT")
             source_label = "VLM" if target_source == "vlm" else "YOLO"
             print(f"[ARIA] TARGET[{'approach' if approach_mode else 'find'}] "
