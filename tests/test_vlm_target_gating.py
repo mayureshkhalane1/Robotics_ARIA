@@ -221,8 +221,12 @@ def test_vlm_text_only_hint_is_never_actionable_without_claim():
     assert _vlm_text_only_hint_is_actionable(True, True)
 
 
-def test_vlm_first_mode_samples_every_cycle():
+def test_vlm_first_mode_samples_every_cycle(monkeypatch):
     """VLM-first should not wait 10s before the first grounded answer."""
+    # The function gates on the module-global USE_LLM (False when ARIA_USE_LLM=0,
+    # which is the shipped .env.example default). Force it on so this test
+    # actually exercises the perception-mode branch instead of the LLM-off guard.
+    monkeypatch.setattr("src.agent.aria_agent.USE_LLM", True)
     assert _should_sample_vlm(
         perception_mode="vlm_first",
         frame_present=True,
@@ -257,8 +261,9 @@ def test_hybrid_mode_still_obeys_interval():
     )
 
 
-def test_yolo_vlm_mode_samples_every_cycle():
+def test_yolo_vlm_mode_samples_every_cycle(monkeypatch):
     """YOLO+VLM mode should ask for one grounded answer every cycle."""
+    monkeypatch.setattr("src.agent.aria_agent.USE_LLM", True)
     assert _should_sample_vlm(
         perception_mode="yolo_vlm",
         frame_present=True,

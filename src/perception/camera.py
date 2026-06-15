@@ -1,16 +1,13 @@
 """Real-time camera manager for Webots robot."""
 
 from __future__ import annotations
-
 import base64
 import io
 import time
 from dataclasses import dataclass
 from typing import Optional
-
 import cv2
 import numpy as np
-
 from src.mcp_server.server import call_tool
 
 
@@ -67,7 +64,7 @@ class CameraManager:
         """Initialize camera manager.
 
         Args:
-            include_camera: Whether to request camera data from MCP server
+            include_camera: Whether to request camera data from the Webots bridge
         """
         self.include_camera = include_camera
         self.last_frame: Optional[Frame] = None
@@ -115,7 +112,7 @@ class CameraManager:
         return self.last_frame
 
     def _fetch_frame(self) -> bool:
-        """Fetch frame from MCP server.
+        """Fetch frame from the Webots bridge.
 
         Returns:
             True if successful, False otherwise

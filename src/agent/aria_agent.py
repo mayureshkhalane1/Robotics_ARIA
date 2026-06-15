@@ -16,11 +16,11 @@ from types import SimpleNamespace
 from urllib.parse import urlparse
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-# === Third-Party ===
+# Third-Party
 import cv2
 import numpy as np
 
-# === Project ===
+# Project
 from src.agent.environment_graph import get_environment_graph
 from src.agent.grid_explorer import GridExplorer
 from src.agent.online_map import OnlineOccupancyGrid, parse_floor_extent
@@ -50,35 +50,30 @@ from src.perception.camera import (
 )
 from src.perception.object_detector import get_detector
 
-# === Motion Constants ===
-# Motion is now closed-loop in the Webots controller (it drives until the GPS
-# distance / compass angle goal is met, then stops the wheels itself), so the
-# agent no longer sleeps to time a motion.  CYCLE_INTERVAL is just a floor
-# between decision cycles to keep the UI readable.
+# Motion Constants
 CYCLE_INTERVAL = AGENT_CYCLE_INTERVAL
-MOVE_VELOCITY = 4.0         # wheel velocity (rad/s) for forward motion
-BACKUP_VELOCITY = -3.0      # wheel velocity (rad/s) for reversing
-TURN_VELOCITY = 2.0         # differential wheel velocity (rad/s) for turns
-MOVE_DISTANCE = 0.6         # metres travelled per move_forward (closed-loop)
+MOVE_VELOCITY = 4.0 # wheel velocity (rad/s) for forward motion
+BACKUP_VELOCITY = -3.0 # wheel velocity (rad/s) for reversing
+TURN_VELOCITY = 2.0 # differential wheel velocity (rad/s) for turns
+MOVE_DISTANCE = 0.6 # metres travelled per move_forward (closed-loop)
 APPROACH_MOVE_DISTANCE = 0.25  # shorter step when closing in on a confirmed target
-BACKUP_DISTANCE = 0.4       # metres travelled per back_up (closed-loop)
-MOVE_STEP_CAP = 120         # sim-step safety cap for a single move
-TURN_STEP_CAP = 160         # sim-step safety cap for a single turn
+BACKUP_DISTANCE = 0.4 # metres travelled per back_up (closed-loop)
+MOVE_STEP_CAP = 120 # sim-step safety cap for a single move
+TURN_STEP_CAP = 160 # sim-step safety cap for a single turn
 
 # Proximity threshold: Pioneer 3DX sonar values 0=no reading, ~800=obstacle ~0.5m away.
-# Break_room walls 2m away read ~600–650; raise threshold so walls don't count as blocked.
 OBSTACLE_THRESH = 800
 CRITICAL_OBSTACLE_THRESH = 970
 
-# === Target pursuit (find / approach) ===
-APPROACH_DONE_FRAC = 0.18    # target bbox height ≥ this fraction of frame → roughly 1m away
-APPROACH_CENTER_TOL = 0.30   # |image x-error| within this → drive straight at the target
-YOLO_CONFIDENCE_STOP = 0.50   # treat YOLO as trusted enough to stop
+# Target pursuit (find / approach)
+APPROACH_DONE_FRAC = 0.18 # target bbox height ≥ this fraction of frame → roughly 1m away
+APPROACH_CENTER_TOL = 0.30 # |image x-error| within this → drive straight at the target
+YOLO_CONFIDENCE_STOP = 0.50 # treat YOLO as trusted enough to stop
 YOLO_TARGET_REACHED_FRONT_PROXIMITY = OBSTACLE_THRESH  # centered target + blocked front ≈ close enough
 YOLO_LOW_CONF_STREAK_LIMIT = 6
 YOLO_RECENT_LOW_CONF_HOLD_LIMIT = 2
 YOLO_RETRY_CONFIDENCE = 0.10
-PURSUIT_LOST_LIMIT = 6       # steps to keep re-acquiring after losing sight of the target
+PURSUIT_LOST_LIMIT = 6 # steps to keep re-acquiring after losing sight of the target
 
 # How many steps to skip LLM after a connection failure before retrying
 _OLLAMA_RETRY_INTERVAL = 10
@@ -148,14 +143,14 @@ def _yolo_low_confidence_pursuit_response(
         if low_conf_streak >= YOLO_LOW_CONF_STREAK_LIMIT:
             return (
                 "turn_around",
-                "low confidence near target — re-scan and keep exploring",
+                "low confidence near target -- re-scan and keep exploring",
                 False,
                 True,
                 0,
             )
         return (
             "move_forward",
-            "low confidence near target — keep closing in to raise confidence",
+            "low confidence near target -- keep closing in to raise confidence",
             True,
             False,
             low_conf_streak,
@@ -163,7 +158,7 @@ def _yolo_low_confidence_pursuit_response(
 
     return (
         "move_forward",
-        "low confidence — closing in to raise confidence",
+        "low confidence -- closing in to raise confidence",
         True,
         False,
         0,
@@ -191,7 +186,7 @@ def _high_confidence_target_pursuit_response(
     guide = f" | VLM {guided_action}" if guided_action else ""
     return (
         "move_forward",
-        f"YOLO {float(confidence or 0.0):.2f} {side}{guide} — approaching visible target",
+        f"YOLO {float(confidence or 0.0):.2f} {side}{guide} -- approaching visible target",
         True,
         False,
         False,
@@ -237,7 +232,7 @@ _VLM_RESPONSE_SCHEMA: Dict[str, Any] = {
     ],
 }
 
-# === Global Stop Signal ===
+# Global Stop Signal
 _STOP_SIGNAL = False
 
 
@@ -250,7 +245,7 @@ def get_stop_signal() -> bool:
     return _STOP_SIGNAL
 
 
-# === Target Keyword Map ===
+# Target Keyword Map
 _TARGET_KEYWORDS: Dict[str, str] = {
     "kitchen": "kitchen",
     "bedroom": "bedroom",
@@ -291,7 +286,7 @@ _VLM_NON_PHYSICAL_MARKERS = {
     "display", "icon", "logo", "illustration", "render",
 }
 
-# === System Prompt ===
+# System Prompt
 _SYSTEM_PROMPT = """You are ARIA, an autonomous robot exploring a furnished room.
 
 SENSING:
@@ -312,7 +307,7 @@ RESPONSE FORMAT (compact JSON only, no markdown, no thinking):
 """
 
 
-# === Helpers ===
+# Helpers
 
 _APPROACH_PHRASES = (
     "approach", "go to", "goto", "go near", "navigate to", "navigate towards",
@@ -336,7 +331,7 @@ def _extract_target(goal: str) -> str:
             return target
     words = re.findall(r"[a-zA-Z][a-zA-Z-]*", goal_lower)
     candidates = [w for w in words if w not in _GOAL_STOPWORDS and not w.isdigit()]
-    # the head noun is usually last ("wooden BOX", "red BALL") → take the last
+    # the head noun is usually last ("wooden BOX", "red BALL") -> take the last
     return candidates[-1] if candidates else "object"
 
 
@@ -592,10 +587,10 @@ def _safe_fallback_action(scan: Dict[str, Any], white_wall: bool) -> Tuple[str, 
     """Sensor-only fallback when LLM is unavailable."""
     if scan.get("critical") or (white_wall and scan.get("front", 0) > OBSTACLE_THRESH * 0.7):
         turn = scan.get("clearer_turn", "turn_left_45")
-        return f"back_up_turn_{turn.split('_')[1]}", "critical proximity — backing out"
+        return f"back_up_turn_{turn.split('_')[1]}", "critical proximity -- backing out"
     if scan.get("front_blocked"):
-        return scan.get("clearer_turn", "turn_left_45"), "front blocked — turning to clearer side"
-    return "move_forward", "path clear — advancing"
+        return scan.get("clearer_turn", "turn_left_45"), "front blocked -- turning to clearer side"
+    return "move_forward", "path clear -- advancing"
 
 
 def _vision_prompt(
@@ -751,13 +746,13 @@ def _vlm_hint_action(direction: str, repeat_count: int) -> Tuple[str, str]:
     d = (direction or "not_visible").lower()
     if d == "left":
         if repeat_count > 0:
-            return "move_forward", "VLM hint repeated on left without grounding — probing forward"
-        return "turn_left_45", "VLM hint: target on left — reorienting"
+            return "move_forward", "VLM hint repeated on left without grounding -- probing forward"
+        return "turn_left_45", "VLM hint: target on left -- reorienting"
     if d == "right":
         if repeat_count > 0:
-            return "move_forward", "VLM hint repeated on right without grounding — probing forward"
-        return "turn_right_45", "VLM hint: target on right — reorienting"
-    return "move_forward", "VLM hint: target in view — probing forward"
+            return "move_forward", "VLM hint repeated on right without grounding -- probing forward"
+        return "turn_right_45", "VLM hint: target on right -- reorienting"
+    return "move_forward", "VLM hint: target in view -- probing forward"
 
 
 def _target_close_enough(target_bbox_frac: float) -> bool:
@@ -796,7 +791,7 @@ def _summarize_vision_text(text: str, limit: int = 160) -> str:
     text = " ".join((text or "").split())
     if len(text) <= limit:
         return text
-    return text[: limit - 1].rstrip() + "…"
+    return text[: limit - 1].rstrip() + "..."
 
 
 def _append_recent_vision(recent_vision: List[str], summary: str, limit: int = 4) -> List[str]:
@@ -1196,7 +1191,7 @@ def _open_run_log(goal: str):
         LOGS_PATH.mkdir(parents=True, exist_ok=True)
         path = LOGS_PATH / f"run_{datetime.now():%Y%m%d_%H%M%S}.log"
         f = open(path, "w", encoding="utf-8")
-        f.write(f"# ARIA run log — goal={goal!r} — {datetime.now():%Y-%m-%d %H:%M:%S}\n")
+        f.write(f"# ARIA run log -- goal={goal!r} -- {datetime.now():%Y-%m-%d %H:%M:%S}\n")
         f.flush()
         print(f"[ARIA] Logging this run to {path}")
         return f
@@ -1234,7 +1229,7 @@ def run_aria_agent(
         # Make crashes loud — an uncaught error in the worker thread would
         # otherwise be silently swallowed by the asyncio task and look like a hang.
         import traceback
-        print("\n[ARIA] FATAL: agent crashed —")
+        print("\n[ARIA] FATAL: agent crashed --")
         traceback.print_exc()
         if event_callback:
             try:
@@ -1482,7 +1477,7 @@ def _run_aria_agent_impl(
         )
 
         if should_try_vlm and not _ollama_reachable():
-            print("[ARIA] VLM unreachable (fast check) — waiting this cycle")
+            print("[ARIA] VLM unreachable (fast check) -- waiting this cycle")
             should_try_vlm = False
 
         if vision_frame is not None and perception_mode == "yolo_vlm":
@@ -1576,7 +1571,7 @@ def _run_aria_agent_impl(
             perception_mode,
             detections,
         ):
-            print("[ARIA] Skipping VLM — YOLO produced no classes for this frame")
+            print("[ARIA] Skipping VLM -- YOLO produced no classes for this frame")
             should_try_vlm = False
             if not vision_summary:
                 vision_summary = "YOLO produced no classes for this frame."
@@ -1740,7 +1735,7 @@ def _run_aria_agent_impl(
             if vlm_weak_streak >= 2:
                 vlm_backoff_until_step = step + 2
                 print(
-                    f"[ARIA] VLM correction → back off until step {vlm_backoff_until_step} "
+                    f"[ARIA] VLM correction -> back off until step {vlm_backoff_until_step} "
                     f"(weak_streak={vlm_weak_streak}, corrections={state.correction_count})"
                 )
                 vlm_weak_streak = 0
@@ -1989,7 +1984,7 @@ def _run_aria_agent_impl(
                     )
             elif target_source == "vlm":
                 nav_action = "move_forward"
-                nav_reason = "VLM saw target — driving straight"
+                nav_reason = "VLM saw target -- driving straight"
             elif low_conf:
                 nav_action, nav_reason, pursuing, scanning, low_conf_streak = (
                     _yolo_low_confidence_pursuit_response(
@@ -2012,7 +2007,7 @@ def _run_aria_agent_impl(
             else:
                 low_conf_streak = 0
                 nav_action = "move_forward"
-                nav_reason = "centered — advancing"
+                nav_reason = "centered -- advancing"
             if not low_conf and tconf >= YOLO_CONFIDENCE_STOP:
                 low_conf_streak = 0
             # Keep the pursuit log compact so changes in box size and offset are
@@ -2020,7 +2015,7 @@ def _run_aria_agent_impl(
             side = f"img-{target_side.upper()}" if target_side in ("left", "right", "center") else ("img-RIGHT" if target_err > 0 else "img-LEFT")
             source_label = "VLM" if target_source == "vlm" else "YOLO"
             print(f"[ARIA] TARGET[{'approach' if approach_mode else 'find'}] "
-                  f"→ {nav_action} | {nav_reason} | {target} {side} "
+                  f"-> {nav_action} | {nav_reason} | {target} {side} "
                   f"x-err={target_err:+.2f} bbox={target_frac:.0%} conf={tconf:.2f} "
                   f"({source_label} saw '{target_det.class_name}')")
 
@@ -2034,7 +2029,7 @@ def _run_aria_agent_impl(
                 nav_action = "move_forward"
                 nav_reason = (
                     f"recent low-confidence {target} hit ({last_yolo_target_confidence:.2f}) "
-                    "— keep approaching to see if confidence rises"
+                    "-- keep approaching to see if confidence rises"
                 )
                 pursuit_lost = 0
                 low_conf_streak = 0
@@ -2056,7 +2051,7 @@ def _run_aria_agent_impl(
                     pursuing = False
                     vlm_hint_repeat_count = 0
                     low_conf_streak = 0
-                    print(f"[ARIA] Lost '{target}' — resuming exploration")
+                    print(f"[ARIA] Lost '{target}' -- resuming exploration")
                 else:
                     nav_action = "turn_left_45" if last_seen_err > 0 else "turn_right_45"
                     nav_reason = f"re-acquiring '{target}' (lost {pursuit_lost}/{PURSUIT_LOST_LIMIT})"
@@ -2065,7 +2060,7 @@ def _run_aria_agent_impl(
         elif vlm_target_hint:
             pursuing = True
             nav_action = "move_forward"
-            nav_reason = "VLM saw target — driving straight"
+            nav_reason = "VLM saw target -- driving straight"
             vlm_hint_repeat_count = 0
             low_conf_streak = 0
 
@@ -2089,13 +2084,13 @@ def _run_aria_agent_impl(
                 if active_frontier is not None:
                     no_frontier_count = 0
                     print(
-                        f"[ARIA] Scan done → frontier "
+                        f"[ARIA] Scan done -> frontier "
                         f"({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
                         f"score={omap.frontier_score(pos_xy[0], pos_xy[1], active_frontier, heading_deg):.2f} "
                         f"map: {omap.stats()}"
                     )
                 else:
-                    print(f"[ARIA] Scan done → no reachable frontier  map: {omap.stats()}")
+                    print(f"[ARIA] Scan done -> no reachable frontier  map: {omap.stats()}")
 
         # NOTE: we deliberately do NOT blind-drive to a remembered coordinate
         # here.  Spatial memory is recorded for analysis and the UI, but it must
@@ -2111,7 +2106,7 @@ def _run_aria_agent_impl(
             no_frontier_count += 1
             if no_frontier_count >= 2:
                 if omap.frontier_count() == 0:
-                    print(f"[ARIA] EXPLORATION COMPLETE — '{target}' not found  {omap.stats()}")
+                    print(f"[ARIA] EXPLORATION COMPLETE -- '{target}' not found  {omap.stats()}")
                     nav_action = "stop"
                     nav_reason = "explored all reachable space, target not found"
                     exploration_done = True   # terminate: nothing left to explore
@@ -2121,8 +2116,8 @@ def _run_aria_agent_impl(
                         no_frontier_count = 0
                         nav_action, dist, fallback_note = _prefer_forward_frontier(pos_xy, active_frontier, proximity)
                         nav_reason = (
-                            f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                            f"dist={dist:.1f}m → {nav_action}"
+                            f"-> frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                            f"dist={dist:.1f}m -> {nav_action}"
                         )
                         if fallback_note:
                             nav_reason += f" [{fallback_note}]"
@@ -2139,8 +2134,8 @@ def _run_aria_agent_impl(
                     if active_frontier is not None:
                         nav_action, dist, fallback_note = _prefer_forward_frontier(pos_xy, active_frontier, proximity)
                         nav_reason = (
-                            f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                            f"dist={dist:.1f}m → {nav_action}"
+                            f"-> frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                            f"dist={dist:.1f}m -> {nav_action}"
                         )
                         if fallback_note:
                             nav_reason += f" [{fallback_note}]"
@@ -2186,13 +2181,13 @@ def _run_aria_agent_impl(
 
             if nav_action == "arrived":
                 print(f"[ARIA] Reached frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                      f"— will re-scan")
+                      f"-- will re-scan")
                 active_frontier = None        # → triggers a fresh look-around next step
                 nav_action = "move_forward"
                 nav_reason = "reached frontier"
             elif no_progress_count >= NO_PROGRESS_LIMIT:
                 print(f"[ARIA] Frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                      f"blocked — blacklisting, will re-scan")
+                      f"blocked -- blacklisting, will re-scan")
                 blocked_frontier = active_frontier
                 omap.blacklist(*blocked_frontier)
                 next_frontier = omap.best_frontier(pos_xy[0], pos_xy[1], heading_deg)
@@ -2201,28 +2196,28 @@ def _run_aria_agent_impl(
                 if next_frontier is not None:
                     nav_action, dist, fallback_note = _prefer_forward_frontier(pos_xy, next_frontier, proximity)
                     nav_reason = (
-                        f"blocked frontier → frontier ({next_frontier[0]:.1f},{next_frontier[1]:.1f}) "
-                        f"dist={dist:.1f}m → {nav_action}"
+                        f"blocked frontier -> frontier ({next_frontier[0]:.1f},{next_frontier[1]:.1f}) "
+                        f"dist={dist:.1f}m -> {nav_action}"
                     )
                     if fallback_note:
                         nav_reason += f" [{fallback_note}]"
-                    print(f"[ARIA] Frontier recovery → {nav_reason}")
+                    print(f"[ARIA] Frontier recovery -> {nav_reason}")
                 else:
                     scanning = True
                     grid.start_scan()
                     nav_action = grid.scan_step()
-                    nav_reason = "blocked frontier — re-scan"
+                    nav_reason = "blocked frontier -- re-scan"
                     if blocked_frontier is not None:
                         print(
                             f"[ARIA] Frontier ({blocked_frontier[0]:.1f},{blocked_frontier[1]:.1f}) "
-                            f"blocked — re-scan"
+                            f"blocked -- re-scan"
                         )
                     else:
-                        print("[ARIA] Frontier blocked — re-scan")
+                        print("[ARIA] Frontier blocked -- re-scan")
             else:
                 nav_reason = (
-                    f"→ frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
-                    f"dist={dist:.1f}m → {nav_action}  "
+                    f"-> frontier ({active_frontier[0]:.1f},{active_frontier[1]:.1f}) "
+                    f"dist={dist:.1f}m -> {nav_action}  "
                     f"[progress {no_progress_count}/{NO_PROGRESS_LIMIT}]"
                 )
                 print(f"[ARIA] Explore: {nav_reason}")
@@ -2290,7 +2285,7 @@ def _run_aria_agent_impl(
                 clearer = scan_result.get("clearer_turn", "turn_left_45")
                 action = f"back_up_turn_{clearer.split('_')[1]}"
                 reasoning = f"[SAFETY] critical proximity {scan_result['max']:.0f}, backing out"
-                print(f"[ARIA] Critical safety override → {action}")
+                print(f"[ARIA] Critical safety override -> {action}")
 
             elif action == "move_forward" and front_blocked:
                 action = scan_result.get("clearer_turn", "turn_left_45")
@@ -2299,10 +2294,10 @@ def _run_aria_agent_impl(
                         f"[APPROACH] target visible but front blocked ({scan_result['front']:.0f}), "
                         "turning to clearer side"
                     )
-                    print(f"[ARIA] Front-blocked approach override → {action}")
+                    print(f"[ARIA] Front-blocked approach override -> {action}")
                 else:
                     reasoning = f"[SAFETY] front blocked ({scan_result['front']:.0f}), turning to clearer side"
-                    print(f"[ARIA] Front-blocked override → {action}")
+                    print(f"[ARIA] Front-blocked override -> {action}")
 
         print(
             f"[ARIA] THINK: verifier[{perception_source}]={_summarize_vision_text(vision_summary)} "
@@ -2310,7 +2305,7 @@ def _run_aria_agent_impl(
             f"| mode={exploration_mode} "
             f"| memory={_summarize_vision_text(_vision_memory_summary(state.recent_vision), 90)}"
         )
-        print(f"[ARIA] → ACTION: {action} | {reasoning}")
+        print(f"[ARIA] -> ACTION: {action} | {reasoning}")
         t_llm = time.time()
         state.plan = reasoning
         state.reasoning_trace.append(
@@ -2424,7 +2419,7 @@ def _run_aria_agent_impl(
             _emit(event_callback, {
                 "type": "success", "step": step, "goal": goal, "success": True,
             })
-            print(f"\n[ARIA] SUCCESS — {verb} '{target}' at step {step}")
+            print(f"\n[ARIA] SUCCESS -- {verb} '{target}' at step {step}")
             break
 
         # Exploration exhausted with no target → stop ONCE and end the run,
@@ -2438,7 +2433,7 @@ def _run_aria_agent_impl(
             _emit(event_callback, {
                 "type": "done", "step": step, "goal": goal, "success": False,
             })
-            print(f"\n[ARIA] DONE — explored all reachable space, '{target}' not found "
+            print(f"\n[ARIA] DONE -- explored all reachable space, '{target}' not found "
                   f"at step {step}")
             break
 

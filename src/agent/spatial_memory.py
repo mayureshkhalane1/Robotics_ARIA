@@ -1,12 +1,3 @@
-"""
-Persistent spatial memory — records where objects were seen across sessions.
-
-After each run the agent saves every YOLO-confirmed detection (target class +
-GPS position) to logs/spatial_memory.json.  On the next run it loads that file
-so the robot can navigate directly to a previously-seen object instead of
-re-exploring the whole room.
-"""
-
 import json
 import time
 from pathlib import Path
@@ -14,7 +5,7 @@ from typing import Dict, List, Optional
 
 from src.common.config import LOGS_PATH, WEBOTS_WORLD_FILE
 
-_DEDUP_RADIUS = 0.5   # metres — closer detections are merged
+_DEDUP_RADIUS = 0.5   # metres - closer detections are merged
 
 
 class SpatialMemory:
@@ -31,10 +22,7 @@ class SpatialMemory:
         self._data: Dict[str, Dict[str, List[dict]]] = {}
         self.load()
 
-    # ------------------------------------------------------------------
     # Persistence
-    # ------------------------------------------------------------------
-
     def load(self) -> None:
         try:
             if self._path.exists():
@@ -55,10 +43,7 @@ class SpatialMemory:
         except Exception as e:
             print(f"[SpatialMemory] Save error: {e}")
 
-    # ------------------------------------------------------------------
     # Write
-    # ------------------------------------------------------------------
-
     def record(self, target: str, x: float, y: float, confidence: float) -> bool:
         """
         Record a detection.  Returns True if this is a new entry (not a dedup).
@@ -88,10 +73,7 @@ class SpatialMemory:
         self.save()
         print(f"[SpatialMemory] Cleared memories for '{self._world_key}'")
 
-    # ------------------------------------------------------------------
     # Query
-    # ------------------------------------------------------------------
-
     def get_positions(self, target: str) -> List[List[float]]:
         """Return all known [x, y] positions for target in the current world."""
         entries = self._data.get(self._world_key, {}).get(target, [])

@@ -1,0 +1,443 @@
+# ARIA run log — goal='find the soccer ball and approach it' — 2026-06-15 18:13:54
+18:13:54.992 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+18:13:54.995 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+18:13:54.999 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+18:13:54.999 [GridExplorer] 32 waypoints across the room
+18:13:54.999   wp00 (-5.3,-2.0)
+18:13:54.999   wp01 (-5.3,-0.5)
+18:13:54.999   wp02 (-5.3,1.0)
+18:13:54.999   wp03 (-5.3,2.5)
+18:13:54.999   wp04 (-3.8,2.5)
+18:13:54.999   wp05 (-3.8,1.0)
+18:13:54.999   wp06 (-3.8,-0.5)
+18:13:54.999   wp07 (-3.8,-2.0)
+18:13:54.999   wp08 (-2.3,-2.0)
+18:13:54.999   wp09 (-2.3,-0.5)
+18:13:54.999   wp10 (-2.3,1.0)
+18:13:54.999   wp11 (-2.3,2.5)
+18:13:54.999   wp12 (-0.8,2.5)
+18:13:54.999   wp13 (-0.8,1.0)
+18:13:54.999   wp14 (-0.8,-0.5)
+18:13:54.999   wp15 (-0.8,-2.0)
+18:13:54.999   wp16 (0.7,-2.0)
+18:13:54.999   wp17 (0.7,-0.5)
+18:13:54.999   wp18 (0.7,1.0)
+18:13:54.999   wp19 (0.7,2.5)
+18:13:54.999   wp20 (2.2,2.5)
+18:13:55.000   wp21 (2.2,1.0)
+18:13:55.000   wp22 (2.2,-0.5)
+18:13:55.000   wp23 (2.2,-2.0)
+18:13:55.000   wp24 (3.7,-2.0)
+18:13:55.000   wp25 (3.7,-0.5)
+18:13:55.000   wp26 (3.7,1.0)
+18:13:55.000   wp27 (3.7,2.5)
+18:13:55.000   wp28 (5.2,2.5)
+18:13:55.000   wp29 (5.2,1.0)
+18:13:55.000   wp30 (5.2,-0.5)
+18:13:55.000   wp31 (5.2,-2.0)
+18:13:55.006 [SpatialMemory] Loaded 73 discoveries for 'empt_room'
+18:13:55.006   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8], [-3.4, -0.7], [-0.5, -1.5], [0.7, -1.7], [1.3, -1.9], [1.9, -2.0], [2.6, -1.7], [2.0, -1.3], [3.2, -1.6], [4.4, -1.9]]
+18:13:55.006   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8], [4.9, -2.2], [6.0, -1.9]]
+18:13:55.006   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2], [-1.1, -1.3], [6.1, -1.7]]
+18:13:55.006   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3], [0.2, 1.2], [-0.7, 2.2]]
+18:13:55.006   baseball bat: [[-1.6, -1.1]]
+18:13:55.006   person: [[5.2, 3.2], [1.1, 2.9], [-3.4, -0.7]]
+18:13:55.006   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+18:13:55.006   bed: [[-4.6, -0.6], [6.0, -1.9]]
+18:13:55.006   book: [[1.0, 2.9]]
+18:13:55.006   bench: [[1.1, 2.9]]
+18:13:55.006   fridge: [[-5.3, -1.8], [0.5, 0.8]]
+18:13:55.006   clock: [[-5.3, -1.8]]
+18:13:55.006   mouse: [[6.0, -1.9]]
+18:13:55.006   sports ball: [[6.0, -1.9]]
+18:13:55.006   microwave: [[6.0, -1.9]]
+18:13:55.006   suitcase: [[0.5, 0.8]]
+18:13:55.006   dog: [[0.5, 0.8], [0.0, 1.4], [-0.5, 2.0], [-1.0, 2.6]]
+18:13:55.006   horse: [[0.3, 1.0]]
+18:13:55.006   sheep: [[0.2, 1.2]]
+18:13:55.007 
+18:13:55.007 [ARIA] Goal: find the soccer ball and approach it
+18:13:55.007 [ARIA] Target: sports ball  aliases: ['ball', 'soccer ball', 'sports ball']  mode: APPROACH (drive to it)
+18:13:55.007 [ARIA] Model: qwen3-vl:4b-instruct-q4_K_M
+18:13:55.007 [ARIA] Perception: yolo_vlm
+18:13:55.007 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 11, 'plant': 11, 'umbrella': 7, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 1, 'fridge': 2, 'clock': 1, 'mouse': 1, 'sports ball': 1, 'microwave': 1, 'suitcase': 1, 'dog': 4, 'horse': 1, 'sheep': 1}
+18:13:55.007 
+18:13:55.007 ============================================================
+18:13:55.007 [ARIA] Step 1/100  |  goal: find the soccer ball and approach it
+18:13:55.007 ============================================================
+18:13:55.020 [ARIA] Pos=(-1.41,2.94) hdg=136°  front=81 left=56 right=684  blocked=False
+18:13:55.146 [ARIA] YOLO pre-pass:
+18:13:55.146   dog conf=0.93
+18:13:55.146   monitor conf=0.34
+18:13:55.146   umbrella conf=0.27
+18:13:55.146 [SpatialMemory] NEW discovery: 'monitor' @ (-1.41,2.94) conf=0.34
+18:13:55.149 [SpatialMemory] NEW discovery: 'umbrella' @ (-1.41,2.94) conf=0.27
+18:13:55.370 [ARIA] Explore: → frontier (0.9,1.0) dist=3.0m → turn_right_45
+18:13:55.375 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=3.0m → turn_right_45 | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:13:55.375 [ARIA] → ACTION: turn_right_45 | → frontier (0.9,1.0) dist=3.0m → turn_right_45
+18:13:55.567 [ARIA] MOVED dist=0.002m turned=46.7° reached=True steps=22
+18:13:55.567 [ARIA] dt sense+perception=0.15s plan=0.21s think=0.01s move=0.19s total=0.56s
+18:13:56.207 
+18:13:56.207 ============================================================
+18:13:56.207 [ARIA] Step 2/100  |  goal: find the soccer ball and approach it
+18:13:56.207 ============================================================
+18:13:56.221 [ARIA] Pos=(-1.41,2.94) hdg=90°  front=85 left=84 right=682  blocked=False
+18:13:56.266 [ARIA] YOLO pre-pass:
+18:13:56.266   (none)
+18:13:56.269 [ARIA] Explore: → frontier (0.9,1.0) dist=3.0m → turn_right_45  [progress 0/6]
+18:13:56.275 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=3.0m → turn_right_45 [progress 0/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:13:56.275 [ARIA] → ACTION: turn_right_45 | → frontier (0.9,1.0) dist=3.0m → turn_right_45  [progress 0/6]
+18:13:56.736 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:13:56.736 [ARIA] dt sense+perception=0.06s plan=0.00s think=0.01s move=0.46s total=0.53s
+18:13:57.407 
+18:13:57.407 ============================================================
+18:13:57.407 [ARIA] Step 3/100  |  goal: find the soccer ball and approach it
+18:13:57.407 ============================================================
+18:13:57.421 [ARIA] Pos=(-1.41,2.93) hdg=44°  front=679 left=97 right=679  blocked=False
+18:13:57.568 [ARIA] YOLO pre-pass:
+18:13:57.568   fridge conf=0.75
+18:13:57.568   suitcase conf=0.44
+18:13:57.568 [SpatialMemory] NEW discovery: 'fridge' @ (-1.41,2.93) conf=0.75
+18:13:57.570 [SpatialMemory] NEW discovery: 'suitcase' @ (-1.41,2.93) conf=0.44
+18:13:57.582 [ARIA] Explore: → frontier (0.9,1.0) dist=3.0m → turn_right_45  [progress 1/6]
+18:13:57.587 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=3.0m → turn_right_45 [progress 1/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:13:57.587 [ARIA] → ACTION: turn_right_45 | → frontier (0.9,1.0) dist=3.0m → turn_right_45  [progress 1/6]
+18:13:58.279 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:13:58.279 [ARIA] dt sense+perception=0.17s plan=0.00s think=0.01s move=0.69s total=0.87s
+18:13:58.607 
+18:13:58.607 ============================================================
+18:13:58.607 [ARIA] Step 4/100  |  goal: find the soccer ball and approach it
+18:13:58.607 ============================================================
+18:13:58.622 [ARIA] Pos=(-1.41,2.93) hdg=-1°  front=677 left=677 right=673  blocked=False
+18:13:58.767 [ARIA] YOLO pre-pass:
+18:13:58.767   plant conf=0.67
+18:13:58.767   fridge conf=0.44
+18:13:58.767   bench conf=0.31
+18:13:58.767 [SpatialMemory] NEW discovery: 'plant' @ (-1.41,2.93) conf=0.67
+18:13:58.769 [SpatialMemory] NEW discovery: 'bench' @ (-1.41,2.93) conf=0.31
+18:13:58.782 [ARIA] Explore: → frontier (0.9,1.0) dist=3.0m → move_forward  [progress 2/6]
+18:13:58.787 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=3.0m → move_forward [progress 2/6] | action=move_forward | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:13:58.787 [ARIA] → ACTION: move_forward | → frontier (0.9,1.0) dist=3.0m → move_forward  [progress 2/6]
+18:14:00.383 [ARIA] MOVED dist=0.611m turned=0.0° reached=True steps=50
+18:14:00.383 [ARIA] dt sense+perception=0.17s plan=0.00s think=0.01s move=1.60s total=1.78s
+18:14:00.393 
+18:14:00.393 ============================================================
+18:14:00.393 [ARIA] Step 5/100  |  goal: find the soccer ball and approach it
+18:14:00.393 ============================================================
+18:14:00.428 [ARIA] Pos=(-0.80,2.92) hdg=-1°  front=674 left=674 right=668  blocked=False
+18:14:00.483 [ARIA] YOLO pre-pass:
+18:14:00.483   plant conf=0.81
+18:14:00.483   fridge conf=0.79
+18:14:00.483   monitor conf=0.34
+18:14:00.483 [SpatialMemory] NEW discovery: 'plant' @ (-0.80,2.92) conf=0.81
+18:14:00.485 [SpatialMemory] NEW discovery: 'fridge' @ (-0.80,2.92) conf=0.79
+18:14:00.499 [SpatialMemory] NEW discovery: 'monitor' @ (-0.80,2.92) conf=0.34
+18:14:00.510 [ARIA] Explore: → frontier (0.9,1.0) dist=2.5m → turn_right_45  [progress 0/6]
+18:14:00.517 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=2.5m → turn_right_45 [progress 0/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:14:00.517 [ARIA] → ACTION: turn_right_45 | → frontier (0.9,1.0) dist=2.5m → turn_right_45  [progress 0/6]
+18:14:02.366 [ARIA] MOVED dist=0.009m turned=45.5° reached=True steps=21
+18:14:02.366 [ARIA] dt sense+perception=0.12s plan=0.00s think=0.01s move=1.85s total=1.97s
+18:14:02.367 
+18:14:02.367 ============================================================
+18:14:02.367 [ARIA] Step 6/100  |  goal: find the soccer ball and approach it
+18:14:02.367 ============================================================
+18:14:02.411 [ARIA] Pos=(-0.81,2.93) hdg=-46°  front=695 left=695 right=41  blocked=False
+18:14:02.579 [ARIA] YOLO pre-pass:
+18:14:02.579   plant conf=0.66
+18:14:02.579   vase conf=0.36
+18:14:02.579 [SpatialMemory] NEW discovery: 'vase' @ (-0.81,2.93) conf=0.36
+18:14:02.584 [ARIA] Explore: → frontier (0.9,1.0) dist=2.5m → move_forward  [progress 1/6]
+18:14:02.590 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=2.5m → move_forward [progress 1/6] | action=move_forward | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:14:02.590 [ARIA] → ACTION: move_forward | → frontier (0.9,1.0) dist=2.5m → move_forward  [progress 1/6]
+18:14:04.146 [ARIA] MOVED dist=0.608m turned=0.0° reached=True steps=49
+18:14:04.146 [ARIA] dt sense+perception=0.22s plan=0.00s think=0.01s move=1.56s total=1.78s
+18:14:04.146 
+18:14:04.146 ============================================================
+18:14:04.146 [ARIA] Step 7/100  |  goal: find the soccer ball and approach it
+18:14:04.146 ============================================================
+18:14:04.206 [ARIA] Pos=(-0.38,2.48) hdg=-46°  front=615 left=615 right=0  blocked=False
+18:14:04.241 [ARIA] YOLO pre-pass:
+18:14:04.241   plant conf=0.78
+18:14:04.241   vase conf=0.16
+18:14:04.241   fire hydrant conf=0.11
+18:14:04.241 [SpatialMemory] NEW discovery: 'fire hydrant' @ (-0.38,2.48) conf=0.11
+18:14:04.245 [ARIA] Explore: → frontier (0.9,1.0) dist=1.9m → move_forward  [progress 0/6]
+18:14:04.252 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=1.9m → move_forward [progress 0/6] | action=move_forward | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:14:04.252 [ARIA] → ACTION: move_forward | → frontier (0.9,1.0) dist=1.9m → move_forward  [progress 0/6]
+18:14:05.852 [ARIA] MOVED dist=0.603m turned=0.0° reached=True steps=49
+18:14:05.852 [ARIA] dt sense+perception=0.10s plan=0.00s think=0.01s move=1.60s total=1.71s
+18:14:05.852 
+18:14:05.852 ============================================================
+18:14:05.852 [ARIA] Step 8/100  |  goal: find the soccer ball and approach it
+18:14:05.852 ============================================================
+18:14:05.897 [ARIA] Pos=(0.04,2.04) hdg=-46°  front=526 left=526 right=44  blocked=False
+18:14:06.040 [ARIA] YOLO pre-pass:
+18:14:06.040   plant conf=0.74
+18:14:06.040   vase conf=0.17
+18:14:06.040   traffic light conf=0.13
+18:14:06.040 [SpatialMemory] NEW discovery: 'plant' @ (0.04,2.04) conf=0.74
+18:14:06.042 [SpatialMemory] NEW discovery: 'vase' @ (0.04,2.04) conf=0.17
+18:14:06.051 [SpatialMemory] NEW discovery: 'traffic light' @ (0.04,2.04) conf=0.13
+18:14:06.061 [ARIA] Explore: → frontier (0.9,1.0) dist=1.3m → move_forward  [progress 0/6]
+18:14:06.067 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=1.3m → move_forward [progress 0/6] | action=move_forward | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:14:06.067 [ARIA] → ACTION: move_forward | → frontier (0.9,1.0) dist=1.3m → move_forward  [progress 0/6]
+18:14:07.637 [ARIA] MOVED dist=0.603m turned=0.0° reached=True steps=49
+18:14:07.637 [ARIA] dt sense+perception=0.21s plan=0.00s think=0.01s move=1.57s total=1.78s
+18:14:07.637 
+18:14:07.637 ============================================================
+18:14:07.637 [ARIA] Step 9/100  |  goal: find the soccer ball and approach it
+18:14:07.637 ============================================================
+18:14:07.682 [ARIA] Pos=(0.46,1.60) hdg=-46°  front=609 left=609 right=137  blocked=False
+18:14:07.729 [ARIA] YOLO pre-pass:
+18:14:07.729   plant conf=0.75
+18:14:07.729   traffic light conf=0.32
+18:14:07.729   traffic light conf=0.12
+18:14:07.730 [ARIA] Explore: → frontier (0.9,1.0) dist=0.7m → move_forward  [progress 0/6]
+18:14:07.736 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.9,1.0) dist=0.7m → move_forward [progress 0/6] | action=move_forward | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:14:07.736 [ARIA] → ACTION: move_forward | → frontier (0.9,1.0) dist=0.7m → move_forward  [progress 0/6]
+18:14:09.248 [ARIA] MOVED dist=0.603m turned=0.0° reached=True steps=49
+18:14:09.248 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.01s move=1.51s total=1.61s
+18:14:09.248 
+18:14:09.248 ============================================================
+18:14:09.248 [ARIA] Step 10/100  |  goal: find the soccer ball and approach it
+18:14:09.248 ============================================================
+18:14:09.303 [ARIA] Pos=(0.88,1.16) hdg=-46°  front=331 left=331 right=231  blocked=False
+18:14:09.391 [ARIA] YOLO pre-pass:
+18:14:09.391   plant conf=0.56
+18:14:09.391   sports ball conf=0.52
+18:14:09.391   vase conf=0.28
+18:14:09.391 [SpatialMemory] NEW discovery: 'plant' @ (0.88,1.16) conf=0.56
+18:14:09.393 [SpatialMemory] NEW discovery: 'sports ball' @ (0.88,1.16) conf=0.52
+18:14:09.403 [SpatialMemory] NEW discovery: 'vase' @ (0.88,1.16) conf=0.28
+18:14:09.410 [ARIA] YOLO target match: sports ball conf=0.52 side=left
+18:14:09.411 [ARIA] TARGET[approach] → move_forward | YOLO 0.52 left — approaching visible target | sports ball img-LEFT x-err=-0.92 bbox=6% conf=0.52 (YOLO saw 'sports ball')
+18:14:09.417 [ARIA] THINK: verifier[yolo]=YOLO saw sports ball conf=0.52 on the left | planner=YOLO 0.52 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO found no target match; keep exploring. | YOLO saw sports ball conf=0.52 on the left
+18:14:09.417 [ARIA] → ACTION: move_forward | YOLO 0.52 left — approaching visible target
+18:14:10.036 [ARIA] MOVED dist=0.253m turned=0.0° reached=True steps=21
+18:14:10.036 [ARIA] dt sense+perception=0.16s plan=0.00s think=0.01s move=0.62s total=0.79s
+18:14:10.448 
+18:14:10.448 ============================================================
+18:14:10.448 [ARIA] Step 11/100  |  goal: find the soccer ball and approach it
+18:14:10.448 ============================================================
+18:14:10.464 [ARIA] Pos=(1.06,0.98) hdg=-46°  front=297 left=297 right=267  blocked=False
+18:14:10.542 [ARIA] YOLO pre-pass:
+18:14:10.542   plant conf=0.58
+18:14:10.543   sports ball conf=0.52
+18:14:10.543 [ARIA] YOLO target match: sports ball conf=0.52 side=left
+18:14:10.543 [ARIA] TARGET[approach] → move_forward | YOLO 0.52 left — approaching visible target | sports ball img-LEFT x-err=-0.96 bbox=7% conf=0.52 (YOLO saw 'sports ball')
+18:14:10.550 [ARIA] THINK: verifier[yolo]=YOLO saw sports ball conf=0.52 on the left | planner=YOLO 0.52 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO found no target match; keep exploring. | YOLO saw sports ball conf=0.52 on the left
+18:14:10.550 [ARIA] → ACTION: move_forward | YOLO 0.52 left — approaching visible target
+18:14:11.153 [ARIA] MOVED dist=0.253m turned=0.0° reached=True steps=21
+18:14:11.153 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.01s move=0.60s total=0.70s
+18:14:11.648 
+18:14:11.648 ============================================================
+18:14:11.648 [ARIA] Step 12/100  |  goal: find the soccer ball and approach it
+18:14:11.648 ============================================================
+18:14:11.663 [ARIA] Pos=(1.24,0.79) hdg=-46°  front=247 left=248 right=306  blocked=False
+18:14:11.715 [ARIA] YOLO pre-pass:
+18:14:11.715   plant conf=0.82
+18:14:11.715   traffic light conf=0.45
+18:14:11.715   traffic light conf=0.44
+18:14:11.715   fire hydrant conf=0.32
+18:14:11.715   vase conf=0.19
+18:14:11.715 [SpatialMemory] NEW discovery: 'traffic light' @ (1.24,0.79) conf=0.45
+18:14:11.717 [SpatialMemory] NEW discovery: 'fire hydrant' @ (1.24,0.79) conf=0.32
+18:14:11.727 [ARIA] re-acquiring 'sports ball' (lost 1/6)
+18:14:11.732 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 1/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:11.732 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 1/6)
+18:14:12.384 [ARIA] MOVED dist=0.010m turned=46.3° reached=True steps=22
+18:14:12.384 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.01s move=0.65s total=0.74s
+18:14:12.848 
+18:14:12.849 ============================================================
+18:14:12.849 [ARIA] Step 13/100  |  goal: find the soccer ball and approach it
+18:14:12.849 ============================================================
+18:14:12.863 [ARIA] Pos=(1.23,0.79) hdg=-92°  front=0 left=433 right=299  blocked=False
+18:14:13.000 [ARIA] YOLO pre-pass:
+18:14:13.000   plant conf=0.79
+18:14:13.000   vase conf=0.29
+18:14:13.001 [ARIA] re-acquiring 'sports ball' (lost 2/6)
+18:14:13.007 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 2/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:13.007 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 2/6)
+18:14:13.689 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:13.689 [ARIA] dt sense+perception=0.15s plan=0.00s think=0.01s move=0.68s total=0.84s
+18:14:14.049 
+18:14:14.049 ============================================================
+18:14:14.049 [ARIA] Step 14/100  |  goal: find the soccer ball and approach it
+18:14:14.049 ============================================================
+18:14:14.064 [ARIA] Pos=(1.24,0.80) hdg=-138°  front=302 left=254 right=302  blocked=False
+18:14:14.198 [ARIA] YOLO pre-pass:
+18:14:14.198   plant conf=0.40
+18:14:14.199   bottle conf=0.32
+18:14:14.199   skateboard conf=0.13
+18:14:14.199   traffic light conf=0.12
+18:14:14.199 [SpatialMemory] NEW discovery: 'bottle' @ (1.24,0.80) conf=0.32
+18:14:14.201 [SpatialMemory] NEW discovery: 'skateboard' @ (1.24,0.80) conf=0.13
+18:14:14.211 [ARIA] re-acquiring 'sports ball' (lost 3/6)
+18:14:14.216 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 3/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:14.216 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 3/6)
+18:14:14.804 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:14.804 [ARIA] dt sense+perception=0.16s plan=0.00s think=0.01s move=0.59s total=0.76s
+18:14:15.249 
+18:14:15.249 ============================================================
+18:14:15.249 [ARIA] Step 15/100  |  goal: find the soccer ball and approach it
+18:14:15.249 ============================================================
+18:14:15.262 [ARIA] Pos=(1.24,0.80) hdg=177°  front=304 left=304 right=297  blocked=False
+18:14:15.304 [ARIA] YOLO pre-pass:
+18:14:15.304   dog conf=0.73
+18:14:15.304   plant conf=0.35
+18:14:15.304   fire hydrant conf=0.14
+18:14:15.304 [SpatialMemory] NEW discovery: 'dog' @ (1.24,0.80) conf=0.73
+18:14:15.307 [ARIA] re-acquiring 'sports ball' (lost 4/6)
+18:14:15.313 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 4/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:15.313 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 4/6)
+18:14:15.988 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:15.988 [ARIA] dt sense+perception=0.06s plan=0.00s think=0.01s move=0.67s total=0.74s
+18:14:16.449 
+18:14:16.449 ============================================================
+18:14:16.449 [ARIA] Step 16/100  |  goal: find the soccer ball and approach it
+18:14:16.449 ============================================================
+18:14:16.464 [ARIA] Pos=(1.24,0.80) hdg=131°  front=315 left=315 right=414  blocked=False
+18:14:16.534 [ARIA] YOLO pre-pass:
+18:14:16.534   dog conf=0.47
+18:14:16.535 [ARIA] re-acquiring 'sports ball' (lost 5/6)
+18:14:16.541 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 5/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:16.541 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 5/6)
+18:14:17.191 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+18:14:17.191 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.01s move=0.65s total=0.74s
+18:14:17.649 
+18:14:17.649 ============================================================
+18:14:17.649 [ARIA] Step 17/100  |  goal: find the soccer ball and approach it
+18:14:17.649 ============================================================
+18:14:17.664 [ARIA] Pos=(1.24,0.79) hdg=86°  front=0 left=329 right=421  blocked=False
+18:14:17.822 [ARIA] YOLO pre-pass:
+18:14:17.822   suitcase conf=0.34
+18:14:17.822   suitcase conf=0.26
+18:14:17.822   traffic light conf=0.11
+18:14:17.822 [SpatialMemory] NEW discovery: 'suitcase' @ (1.24,0.79) conf=0.34
+18:14:17.827 [ARIA] re-acquiring 'sports ball' (lost 6/6)
+18:14:17.833 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 6/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:17.833 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 6/6)
+18:14:18.503 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:18.503 [ARIA] dt sense+perception=0.18s plan=0.00s think=0.01s move=0.67s total=0.85s
+18:14:18.849 
+18:14:18.849 ============================================================
+18:14:18.849 [ARIA] Step 18/100  |  goal: find the soccer ball and approach it
+18:14:18.849 ============================================================
+18:14:18.864 [ARIA] Pos=(1.24,0.79) hdg=41°  front=242 left=320 right=242  blocked=False
+18:14:19.001 [ARIA] YOLO pre-pass:
+18:14:19.001   umbrella conf=0.71
+18:14:19.001   plant conf=0.65
+18:14:19.001 [SpatialMemory] NEW discovery: 'umbrella' @ (1.24,0.79) conf=0.71
+18:14:19.005 [ARIA] Lost 'sports ball' — resuming exploration
+18:14:19.005 [ARIA] Reached frontier (0.9,1.0) — will re-scan
+18:14:19.011 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=reached frontier | action=move_forward | mode=recovering | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:19.011 [ARIA] → ACTION: move_forward | reached frontier
+18:14:20.512 [ARIA] MOVED dist=0.608m turned=0.0° reached=True steps=49
+18:14:20.512 [ARIA] dt sense+perception=0.16s plan=0.00s think=0.01s move=1.50s total=1.66s
+18:14:20.512 
+18:14:20.512 ============================================================
+18:14:20.512 [ARIA] Step 19/100  |  goal: find the soccer ball and approach it
+18:14:20.512 ============================================================
+18:14:20.570 [ARIA] Pos=(1.71,1.19) hdg=41°  front=323 left=237 right=323  blocked=False
+18:14:20.616 [ARIA] YOLO pre-pass:
+18:14:20.616   umbrella conf=0.50
+18:14:20.642 [ARIA] Starting 360° look-around
+18:14:20.648 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=360° look-around to choose next frontier | action=turn_right_45 | mode=scan | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:20.648 [ARIA] → ACTION: turn_right_45 | 360° look-around to choose next frontier
+18:14:21.389 [ARIA] MOVED dist=0.010m turned=46.2° reached=True steps=22
+18:14:21.389 [ARIA] dt sense+perception=0.11s plan=0.03s think=0.01s move=0.74s total=0.88s
+18:14:21.712 
+18:14:21.712 ============================================================
+18:14:21.712 [ARIA] Step 20/100  |  goal: find the soccer ball and approach it
+18:14:21.712 ============================================================
+18:14:21.727 [ARIA] Pos=(1.70,1.19) hdg=-6°  front=318 left=318 right=313  blocked=False
+18:14:21.875 [ARIA] YOLO pre-pass:
+18:14:21.875   plant conf=0.76
+18:14:21.875   traffic light conf=0.30
+18:14:21.875   traffic light conf=0.20
+18:14:21.875   car conf=0.17
+18:14:21.875   traffic light conf=0.11
+18:14:21.875 [SpatialMemory] NEW discovery: 'plant' @ (1.70,1.19) conf=0.76
+18:14:21.877 [SpatialMemory] NEW discovery: 'car' @ (1.70,1.19) conf=0.17
+18:14:21.898 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=360° scan (2282 cells unknown) | action=turn_right_45 | mode=scan | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.
+18:14:21.898 [ARIA] → ACTION: turn_right_45 | 360° scan (2282 cells unknown)
+18:14:22.412 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:22.412 [ARIA] dt sense+perception=0.18s plan=0.00s think=0.01s move=0.51s total=0.70s
+18:14:22.912 
+18:14:22.912 ============================================================
+18:14:22.912 [ARIA] Step 21/100  |  goal: find the soccer ball and approach it
+18:14:22.912 ============================================================
+18:14:22.927 [ARIA] Pos=(1.70,1.19) hdg=-51°  front=324 left=329 right=215  blocked=False
+18:14:23.005 [ARIA] YOLO pre-pass:
+18:14:23.005   plant conf=0.79
+18:14:23.005   sports ball conf=0.59
+18:14:23.005   monitor conf=0.29
+18:14:23.005 [SpatialMemory] NEW discovery: 'sports ball' @ (1.70,1.19) conf=0.59
+18:14:23.007 [SpatialMemory] NEW discovery: 'monitor' @ (1.70,1.19) conf=0.29
+18:14:23.018 [ARIA] YOLO target match: sports ball conf=0.59 side=left
+18:14:23.019 [ARIA] TARGET[approach] → move_forward | YOLO 0.59 left — approaching visible target | sports ball img-LEFT x-err=-0.95 bbox=7% conf=0.59 (YOLO saw 'sports ball')
+18:14:23.024 [ARIA] THINK: verifier[yolo]=YOLO saw sports ball conf=0.59 on the left | planner=YOLO 0.59 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw sports ball conf=0.52 on the left | YOLO found no target match; keep exploring.…
+18:14:23.024 [ARIA] → ACTION: move_forward | YOLO 0.59 left — approaching visible target
+18:14:23.684 [ARIA] MOVED dist=0.258m turned=0.0° reached=True steps=21
+18:14:23.684 [ARIA] dt sense+perception=0.11s plan=0.00s think=0.01s move=0.66s total=0.77s
+18:14:24.112 
+18:14:24.112 ============================================================
+18:14:24.112 [ARIA] Step 22/100  |  goal: find the soccer ball and approach it
+18:14:24.112 ============================================================
+18:14:24.126 [ARIA] Pos=(1.86,0.98) hdg=-51°  front=289 left=290 right=438  blocked=False
+18:14:24.178 [ARIA] YOLO pre-pass:
+18:14:24.178   plant conf=0.81
+18:14:24.178   fire hydrant conf=0.56
+18:14:24.178   traffic light conf=0.41
+18:14:24.178   traffic light conf=0.25
+18:14:24.178   traffic light conf=0.20
+18:14:24.178   car conf=0.18
+18:14:24.178 [SpatialMemory] NEW discovery: 'fire hydrant' @ (1.86,0.98) conf=0.56
+18:14:24.180 [SpatialMemory] NEW discovery: 'traffic light' @ (1.86,0.98) conf=0.41
+18:14:24.191 [ARIA] re-acquiring 'sports ball' (lost 1/6)
+18:14:24.198 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 1/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO saw sports ball conf=0.59 on the left |…
+18:14:24.198 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 1/6)
+18:14:24.915 [ARIA] MOVED dist=0.010m turned=46.2° reached=True steps=22
+18:14:24.916 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.01s move=0.72s total=0.80s
+18:14:25.312 
+18:14:25.312 ============================================================
+18:14:25.312 [ARIA] Step 23/100  |  goal: find the soccer ball and approach it
+18:14:25.312 ============================================================
+18:14:25.326 [ARIA] Pos=(1.86,0.99) hdg=-97°  front=68 left=300 right=263  blocked=False
+18:14:25.475 [ARIA] YOLO pre-pass:
+18:14:25.475   plant conf=0.85
+18:14:25.475   monitor conf=0.39
+18:14:25.475   vase conf=0.29
+18:14:25.475   fridge conf=0.11
+18:14:25.475 [SpatialMemory] NEW discovery: 'vase' @ (1.86,0.99) conf=0.29
+18:14:25.478 [SpatialMemory] NEW discovery: 'fridge' @ (1.86,0.99) conf=0.11
+18:14:25.490 [ARIA] re-acquiring 'sports ball' (lost 2/6)
+18:14:25.496 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 2/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO saw sports ball conf=0.59 on the left |…
+18:14:25.496 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 2/6)
+18:14:26.138 [ARIA] MOVED dist=0.004m turned=45.5° reached=True steps=21
+18:14:26.138 [ARIA] dt sense+perception=0.18s plan=0.00s think=0.01s move=0.64s total=0.83s
+18:14:26.512 
+18:14:26.512 ============================================================
+18:14:26.512 [ARIA] Step 24/100  |  goal: find the soccer ball and approach it
+18:14:26.512 ============================================================
+18:14:26.527 [ARIA] Pos=(1.86,0.99) hdg=-142°  front=261 left=296 right=261  blocked=False
+18:14:26.653 [ARIA] YOLO pre-pass:
+18:14:26.653   chair conf=0.76
+18:14:26.653   plant conf=0.56
+18:14:26.653   bottle conf=0.17
+18:14:26.653 [SpatialMemory] NEW discovery: 'chair' @ (1.86,0.99) conf=0.76
+18:14:26.656 [SpatialMemory] NEW discovery: 'bottle' @ (1.86,0.99) conf=0.17
+18:14:26.667 [ARIA] re-acquiring 'sports ball' (lost 3/6)
+18:14:26.673 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=re-acquiring 'sports ball' (lost 3/6) | action=turn_right_45 | mode=target_reacquire | memory=YOLO saw sports ball conf=0.52 on the left | YOLO saw sports ball conf=0.59 on the left |…
+18:14:26.673 [ARIA] → ACTION: turn_right_45 | re-acquiring 'sports ball' (lost 3/6)
+18:14:27.341 [ARIA] MOVED dist=0.004m turned=45.4° reached=True steps=21
+18:14:27.341 [ARIA] dt sense+perception=0.15s plan=0.00s think=0.01s move=0.67s total=0.83s
+18:14:27.712 
+18:14:27.712 [ARIA] STOP SIGNAL RECEIVED at step 25
+18:14:27.733 
+18:14:27.733 ============================================================
+18:14:27.733 [ARIA] STOPPED: 'sports ball' not found after 24 steps
+18:14:27.734 [ARIA] Map: {'free': 9111, 'occupied': 718, 'unknown': 2264}
+18:14:27.734 [ARIA] Spatial memory: {'traffic light': 24, 'airplane': 11, 'plant': 16, 'umbrella': 9, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 2, 'fridge': 5, 'clock': 1, 'mouse': 1, 'sports ball': 3, 'microwave': 1, 'suitcase': 3, 'dog': 5, 'horse': 1, 'sheep': 1, 'monitor': 3, 'vase': 4, 'fire hydrant': 3, 'bottle': 2, 'skateboard': 1, 'car': 1, 'chair': 1}
+18:14:27.735 ============================================================
+18:14:27.735 

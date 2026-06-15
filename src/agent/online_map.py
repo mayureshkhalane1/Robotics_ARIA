@@ -1,34 +1,9 @@
-"""
-Online occupancy grid + frontier exploration — built from the robot's own
-sensors, NOT from the .wbt file.
-
-The robot starts knowing nothing about the room.  Every step it ray-casts its
-sonar ring into a grid of {unknown, free, occupied} cells using only its
-GPS+compass pose.  Exploration is driven by *frontiers* — free cells that touch
-unknown space — so the robot autonomously drives toward whatever it hasn't seen
-yet, flowing through any opening/gap/ramp it discovers without ever being told
-where the walls are.
-
-Nothing here depends on wall colour, object identity, or the world layout.
-
-Sonar model
------------
-Pioneer 3-DX has up to 16 sonars ("so0".."so15") in a ring.  Webots returns a
-lookup-table value where HIGHER ≈ CLOSER.  With the default Pioneer table
-(0 m → ~1024, max_range → 0) the distance is ``d ≈ max_range * (1 - v/1024)``.
-A near-zero reading means "no echo" → free out to max range.  ``VALUE_MAX`` and
-``MAX_RANGE`` are the only calibration constants; tune them if a verification
-run shows obstacles mapped at the wrong distance.
-"""
-
 from __future__ import annotations
-
 import re
 from collections import deque
 from math import atan2, cos, sin, radians, degrees, hypot, ceil
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-
 Point = Tuple[float, float]
 
 
@@ -73,9 +48,9 @@ def _sonar_index(name: str) -> Optional[int]:
 
 
 class OnlineOccupancyGrid:
-    VALUE_MAX = 1024.0      # sonar value at distance 0
-    MAX_RANGE = 5.0         # metres — sonar max range
-    NO_ECHO_VALUE = 40.0    # readings below this → "nothing there", free to max range
+    VALUE_MAX = 1024.0 # sonar value at distance 0
+    MAX_RANGE = 5.0 # metres — sonar max range
+    NO_ECHO_VALUE = 40.0 # readings below this -> "nothing there", free to max range
 
     def __init__(
         self,
@@ -95,13 +70,13 @@ class OnlineOccupancyGrid:
         self.known = [[False] * self.ny for _ in range(self.nx)]
         self.score = [[0] * self.ny for _ in range(self.nx)]
         self.visited = [[False] * self.ny for _ in range(self.nx)]
-        self.blocked: set = set()        # frontier cells we gave up reaching
+        self.blocked: set = set() # frontier cells we gave up reaching
         # Traversable mask (FREE and clear of obstacles by robot radius). Rebuilt
         # once per scan so BFS can read it in O(1) instead of scanning a
         # neighbourhood per cell — this is what keeps each planning step fast.
         self._trav = [[False] * self.ny for _ in range(self.nx)]
 
-    # --- transforms ---
+    # transforms
     def _to_cell(self, x: float, y: float) -> Tuple[int, int]:
         return int((x - self.min_x) / self.res), int((y - self.min_y) / self.res)
 
@@ -111,7 +86,7 @@ class OnlineOccupancyGrid:
     def _in_bounds(self, i: int, j: int) -> bool:
         return 0 <= i < self.nx and 0 <= j < self.ny
 
-    # --- cell classification ---
+    # cell classification
     def _cls(self, i: int, j: int) -> int:
         if not self._in_bounds(i, j) or not self.known[i][j]:
             return UNKNOWN
@@ -120,7 +95,7 @@ class OnlineOccupancyGrid:
     def is_free(self, x: float, y: float) -> bool:
         return self._cls(*self._to_cell(x, y)) == FREE
 
-    # --- sensor update ---
+    # sensor update
     def _obs_free(self, i: int, j: int) -> None:
         if self._in_bounds(i, j):
             self.known[i][j] = True
@@ -177,7 +152,7 @@ class OnlineOccupancyGrid:
             for ds in sub:
                 a = radians(base + ds)
                 ca, sa = cos(a), sin(a)
-                for k in range(n):                       # free across whole cone
+                for k in range(n): # free across whole cone
                     r = k * self.res
                     self._obs_free(*self._to_cell(x + ca * r, y + sa * r))
                 if hit and abs(ds) < self._CONE_STEP_DEG / 2:   # occ on centre ray only
@@ -208,15 +183,15 @@ class OnlineOccupancyGrid:
             self._obs_free(ci, cj)
 
         for i, r in enumerate(ranges):
-            rel = fov * 0.5 - (i + 0.5) * step          # ray bearing rel. to robot
+            rel = fov * 0.5 - (i + 0.5) * step # ray bearing rel. to robot
             a = radians(heading_deg + degrees(rel))
             ca, sa = cos(a), sin(a)
             if r is None or r < 0 or r != r or r >= max_range * 0.98:
-                d, hit = max_range, False               # no return → free to max
+                d, hit = max_range, False # no return -> free to max
             else:
                 d, hit = float(r), True
             m = int(max(0.0, d - self.res) / self.res)
-            for k in range(m):                          # free along the ray
+            for k in range(m): # free along the ray
                 rr = k * self.res
                 self._obs_free(*self._to_cell(x + ca * rr, y + sa * rr))
             if hit:
@@ -224,19 +199,19 @@ class OnlineOccupancyGrid:
 
         self._rebuild_traversable()
 
-    # --- traversability (free + clearance from obstacles) ---
+    # traversability (free + clearance from obstacles)
     def _rebuild_traversable(self) -> None:
         """Recompute the traversable mask once: a cell is traversable iff it is
         FREE and no OCCUPIED cell lies within the robot-radius inflation.  We
         inflate *outward from the (few) occupied cells* — far cheaper than
         scanning every cell's neighbourhood."""
         nx, ny, r = self.nx, self.ny, self._infl_cells
-        near = bytearray(nx * ny)            # 1 byte/cell: 1 = within infl of OCC
+        near = bytearray(nx * ny) # 1 byte/cell: 1 = within infl of OCC
         known, score = self.known, self.score
         for i in range(nx):
             ki, si = known[i], score[i]
             for j in range(ny):
-                if ki[j] and si[j] > 0:                  # OCC cell → inflate
+                if ki[j] and si[j] > 0: # OCC cell -> inflate
                     i0, i1 = max(0, i - r), min(nx - 1, i + r)
                     j0, j1 = max(0, j - r), min(ny - 1, j + r)
                     for ii in range(i0, i1 + 1):
@@ -264,7 +239,7 @@ class OnlineOccupancyGrid:
                         return (i + di, j + dj)
         return None
 
-    # --- BFS over traversable cells ---
+    # BFS over traversable cells
     _NBRS = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
     def _bfs(self, start_cell, goal_cell=None):
@@ -312,7 +287,7 @@ class OnlineOccupancyGrid:
             for dj in range(-r, r + 1):
                 self.blocked.add((ci + di, cj + dj))
 
-    # --- public planning API ---
+    # public planning API
     def nearest_frontier(self, x: float, y: float, min_dist: float = 0.45) -> Optional[Point]:
         """Nearest reachable frontier cell, in world coords (or None if the
         whole reachable area has been explored)."""
@@ -320,7 +295,7 @@ class OnlineOccupancyGrid:
         if start is None:
             return None
         came, order = self._bfs(start)
-        for cell in order:                      # BFS order == nearest first
+        for cell in order: # BFS order == nearest first
             if self._is_frontier(*cell):
                 wx, wy = self._to_world(*cell)
                 if hypot(wx - x, wy - y) >= min_dist:
@@ -420,8 +395,7 @@ class OnlineOccupancyGrid:
             return False
         return self._bfs(start, goal_c) is not None
 
-    def open_direction_target(self, x: float, y: float, heading_deg: float,
-                              proximity: Dict[str, float], reach: float = 1.0) -> Point:
+    def open_direction_target(self, x: float, y: float, heading_deg: float, proximity: Dict[str, float], reach: float = 1.0) -> Point:
         """Reactive fallback when there are no frontiers yet (e.g. first steps):
         head toward the most-open sonar bearing."""
         best_ang, best_d = heading_deg, -1.0
@@ -439,7 +413,7 @@ class OnlineOccupancyGrid:
         a = radians(best_ang)
         return (x + cos(a) * reach, y + sin(a) * reach)
 
-    # --- stats / debug ---
+    # stats / debug
     def stats(self) -> Dict[str, int]:
         free = occ = unk = 0
         for i in range(self.nx):

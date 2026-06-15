@@ -37,7 +37,7 @@ class WebotsRobotServer:
         if self._world_sources:
             print(f"[INIT] World name sources seen: {self._world_sources}")
         else:
-            print("[INIT] No world-name source found — dumping WEBOTS_* env for diagnosis:")
+            print("[INIT] No world-name source found -- dumping WEBOTS_* env for diagnosis:")
             for k, v in sorted(os.environ.items()):
                 if k.startswith("WEBOTS") or "WORLD" in k.upper():
                     print(f"        {k}={v}")

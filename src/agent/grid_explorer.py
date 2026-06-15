@@ -13,10 +13,8 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 
-# -------------------------------------------------------------------------
-# Floor-bounds parser
-# -------------------------------------------------------------------------
 
+# Floor-bounds parser
 def parse_floor_bounds(wbt_path: str) -> Tuple[float, float, float, float]:
     """
     Return (min_x, max_x, min_y, max_y) of the navigable area.
@@ -67,14 +65,12 @@ def parse_floor_bounds(wbt_path: str) -> Tuple[float, float, float, float]:
         return min_x, max_x, min_y, max_y
 
     except Exception as e:
-        print(f"[GridExplorer] Floor parse error: {e}  — using default bounds")
+        print(f"[GridExplorer] Floor parse error: {e}  -- using default bounds")
         return -5.0, 5.0, -2.0, 4.0
 
 
-# -------------------------------------------------------------------------
-# GridExplorer
-# -------------------------------------------------------------------------
 
+# GridExplorer
 class GridExplorer:
     """
     Generates boustrophedon waypoints and tracks which have been visited.
@@ -82,7 +78,7 @@ class GridExplorer:
     Usage in the agent loop
     -----------------------
     1. On each step, call ``next_waypoint(pos)`` to get the current target.
-    2. Call ``get_nav_action(pos, waypoint, heading)`` → action string.
+    2. Call ``get_nav_action(pos, waypoint, heading)`` -> action string.
     3. When the action is "arrived", call ``start_scan()`` then repeatedly
        call ``scan_step()`` until ``scan_done()`` is True.
     4. After scan is done, call ``mark_current_visited()`` and loop.
@@ -103,10 +99,7 @@ class GridExplorer:
         for i, wp in enumerate(self.waypoints):
             print(f"  wp{i:02d} ({wp[0]:.1f},{wp[1]:.1f})")
 
-    # ------------------------------------------------------------------
     # Waypoint generation
-    # ------------------------------------------------------------------
-
     def _boustrophedon(
         self,
         min_x: float, max_x: float,
@@ -130,10 +123,7 @@ class GridExplorer:
                 waypoints.append((col_x, row_y))
         return waypoints
 
-    # ------------------------------------------------------------------
     # Waypoint management
-    # ------------------------------------------------------------------
-
     def nearest_unvisited(
         self, current_pos: Tuple[float, float]
     ) -> Optional[Tuple[int, Tuple[float, float]]]:
@@ -169,10 +159,7 @@ class GridExplorer:
         done = sum(self.visited)
         return f"{done}/{len(self.waypoints)} waypoints visited"
 
-    # ------------------------------------------------------------------
     # Navigation
-    # ------------------------------------------------------------------
-
     def get_nav_action(
         self,
         current_pos: Tuple[float, float],
@@ -184,17 +171,17 @@ class GridExplorer:
 
         Heading convention (empirically derived from Webots Pioneer 3-DX):
           heading = atan2(compass.bx, compass.bz)
-          heading =   0°  →  robot faces world +X (east)
-          heading =  90°  →  robot faces world +Y (north)
-          heading = -90°  →  robot faces world -Y (south)
+          heading =   0°  ->  robot faces world +X (east)
+          heading =  90°  ->  robot faces world +Y (north)
+          heading = -90°  ->  robot faces world -Y (south)
 
         Bearing = standard math angle: atan2(dy, dx)
-          bearing =   0°  →  target is due east  (+X)
-          bearing =  90°  →  target is due north (+Y)
+          bearing =   0°  ->  target is due east  (+X)
+          bearing =  90°  ->  target is due north (+Y)
 
         Turn direction:
-          angle_diff > 0  →  CCW / turn LEFT  (heading increases)
-          angle_diff < 0  →  CW  / turn RIGHT (heading decreases)
+          angle_diff > 0  ->  CCW / turn LEFT  (heading increases)
+          angle_diff < 0  ->  CW  / turn RIGHT (heading decreases)
         """
         dx = target_pos[0] - current_pos[0]
         dy = target_pos[1] - current_pos[1]
@@ -220,10 +207,7 @@ class GridExplorer:
         else:
             return "move_forward", dist
 
-    # ------------------------------------------------------------------
     # 360° scan state machine  (8 × 45° = full sweep)
-    # ------------------------------------------------------------------
-
     def start_scan(self) -> None:
         """Begin a deliberate 360° sweep in 45° steps (7 turns after the first
         look = 8 orientations total)."""

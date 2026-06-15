@@ -1,0 +1,349 @@
+# ARIA run log — goal='find the microwave' — 2026-06-14 23:01:28
+23:01:29.021 [ARIA] Webots reports world: 'break_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/break_room.wbt'})
+23:01:29.024 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/break_room.wbt
+23:01:29.028 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+23:01:29.028 [GridExplorer] 32 waypoints across the room
+23:01:29.028   wp00 (-5.3,-2.0)
+23:01:29.028   wp01 (-5.3,-0.5)
+23:01:29.029   wp02 (-5.3,1.0)
+23:01:29.029   wp03 (-5.3,2.5)
+23:01:29.029   wp04 (-3.8,2.5)
+23:01:29.029   wp05 (-3.8,1.0)
+23:01:29.029   wp06 (-3.8,-0.5)
+23:01:29.029   wp07 (-3.8,-2.0)
+23:01:29.029   wp08 (-2.3,-2.0)
+23:01:29.029   wp09 (-2.3,-0.5)
+23:01:29.029   wp10 (-2.3,1.0)
+23:01:29.029   wp11 (-2.3,2.5)
+23:01:29.029   wp12 (-0.8,2.5)
+23:01:29.029   wp13 (-0.8,1.0)
+23:01:29.029   wp14 (-0.8,-0.5)
+23:01:29.029   wp15 (-0.8,-2.0)
+23:01:29.029   wp16 (0.7,-2.0)
+23:01:29.029   wp17 (0.7,-0.5)
+23:01:29.029   wp18 (0.7,1.0)
+23:01:29.029   wp19 (0.7,2.5)
+23:01:29.029   wp20 (2.2,2.5)
+23:01:29.029   wp21 (2.2,1.0)
+23:01:29.029   wp22 (2.2,-0.5)
+23:01:29.029   wp23 (2.2,-2.0)
+23:01:29.029   wp24 (3.7,-2.0)
+23:01:29.029   wp25 (3.7,-0.5)
+23:01:29.029   wp26 (3.7,1.0)
+23:01:29.029   wp27 (3.7,2.5)
+23:01:29.029   wp28 (5.2,2.5)
+23:01:29.029   wp29 (5.2,1.0)
+23:01:29.029   wp30 (5.2,-0.5)
+23:01:29.029   wp31 (5.2,-2.0)
+23:01:29.036 [SpatialMemory] Loaded 52 discoveries for 'break_room'
+23:01:29.036   umbrella: [[-0.5, 3.5], [-0.3, 2.0], [0.6, 2.8], [-0.3, 4.2]]
+23:01:29.036   stop sign: [[-0.3, 4.2], [-0.1, 3.6]]
+23:01:29.036   person: [[0.2, 4.5]]
+23:01:29.036   train: [[-0.4, 4.1]]
+23:01:29.036   plant: [[-0.4, 4.1], [-0.3, 2.0], [0.6, 2.8], [0.6, 2.2], [-2.8, -1.2], [-2.8, -0.0]]
+23:01:29.036   fridge: [[-0.4, 4.1], [0.3, 3.8]]
+23:01:29.036   microwave: [[-0.6, 4.2], [-0.7, 1.7], [0.2, 2.5]]
+23:01:29.036   dog: [[-0.6, 4.2], [-4.3, 4.3], [0.2, 4.5]]
+23:01:29.036   clock: [[0.3, 3.8], [-0.2, 3.8]]
+23:01:29.036   traffic light: [[-0.3, 2.0], [-0.2, 3.8], [0.6, 2.8], [0.0, 1.2], [-2.8, -1.2], [-2.8, -2.0], [-1.2, 3.0], [-2.2, 2.2], [-5.4, -1.0], [-4.8, -1.0], [-4.2, -1.1], [-3.6, -1.1], [-0.1, 4.5]]
+23:01:29.036   airplane: [[-0.2, 3.8], [-2.9, -2.0], [0.5, 3.2], [-0.8, 3.4], [-1.7, 2.6], [-2.2, 1.6], [-5.4, -1.0], [-3.6, -1.1]]
+23:01:29.036   book: [[0.2, 2.4], [0.5, 3.2]]
+23:01:29.036   parking meter: [[-3.2, -0.4]]
+23:01:29.036   suitcase: [[-0.3, 4.5]]
+23:01:29.036   table: [[0.0, 2.9]]
+23:01:29.036   bench: [[0.7, 2.3]]
+23:01:29.036   couch: [[0.7, 2.3]]
+23:01:29.037 
+23:01:29.037 [ARIA] Goal: find the microwave
+23:01:29.037 [ARIA] Target: microwave  aliases: ['microwave']  mode: FIND (stop on sight)
+23:01:29.037 [ARIA] Model: qwen3-vl:4b-instruct-q4_K_M
+23:01:29.037 [ARIA] Perception: yolo_vlm
+23:01:29.037 [ARIA] Spatial memory: {'umbrella': 4, 'stop sign': 2, 'person': 1, 'train': 1, 'plant': 6, 'fridge': 2, 'microwave': 3, 'dog': 3, 'clock': 2, 'traffic light': 13, 'airplane': 8, 'book': 2, 'parking meter': 1, 'suitcase': 1, 'table': 1, 'bench': 1, 'couch': 1}
+23:01:29.037 
+23:01:29.037 ============================================================
+23:01:29.037 [ARIA] Step 1/100  |  goal: find the microwave
+23:01:29.037 ============================================================
+23:01:29.049 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:29.151 [ARIA] YOLO pre-pass:
+23:01:29.151   (none)
+23:01:29.155 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45
+23:01:29.157 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:29.157 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45
+23:01:30.263 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:30.263 [ARIA] dt sense+perception=0.12s plan=0.00s think=0.00s move=1.11s total=1.23s
+23:01:30.263 
+23:01:30.263 ============================================================
+23:01:30.263 [ARIA] Step 2/100  |  goal: find the microwave
+23:01:30.263 ============================================================
+23:01:30.315 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:30.357 [ARIA] YOLO pre-pass:
+23:01:30.357   (none)
+23:01:30.357 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 0/6]
+23:01:30.360 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 0/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:30.360 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 0/6]
+23:01:31.957 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:31.957 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.00s move=1.60s total=1.69s
+23:01:31.957 
+23:01:31.957 ============================================================
+23:01:31.957 [ARIA] Step 3/100  |  goal: find the microwave
+23:01:31.957 ============================================================
+23:01:31.997 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:32.037 [ARIA] YOLO pre-pass:
+23:01:32.038   (none)
+23:01:32.038 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 1/6]
+23:01:32.041 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 1/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:32.041 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 1/6]
+23:01:33.613 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:33.613 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.57s total=1.66s
+23:01:33.613 
+23:01:33.613 ============================================================
+23:01:33.613 [ARIA] Step 4/100  |  goal: find the microwave
+23:01:33.613 ============================================================
+23:01:33.649 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:33.689 [ARIA] YOLO pre-pass:
+23:01:33.689   (none)
+23:01:33.690 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 2/6]
+23:01:33.692 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 2/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:33.692 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 2/6]
+23:01:35.275 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:35.275 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.58s total=1.66s
+23:01:35.275 
+23:01:35.275 ============================================================
+23:01:35.275 [ARIA] Step 5/100  |  goal: find the microwave
+23:01:35.275 ============================================================
+23:01:35.315 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:35.356 [ARIA] YOLO pre-pass:
+23:01:35.356   (none)
+23:01:35.356 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 3/6]
+23:01:35.359 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 3/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:35.359 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 3/6]
+23:01:37.006 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:37.006 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.65s total=1.73s
+23:01:37.006 
+23:01:37.006 ============================================================
+23:01:37.007 [ARIA] Step 6/100  |  goal: find the microwave
+23:01:37.007 ============================================================
+23:01:37.042 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:37.081 [ARIA] YOLO pre-pass:
+23:01:37.081   (none)
+23:01:37.082 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 4/6]
+23:01:37.085 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 4/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:37.085 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 4/6]
+23:01:38.691 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:38.691 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.61s total=1.69s
+23:01:38.691 
+23:01:38.691 ============================================================
+23:01:38.691 [ARIA] Step 7/100  |  goal: find the microwave
+23:01:38.691 ============================================================
+23:01:38.732 [ARIA] Pos=(0.68,2.29) hdg=-135°  front=0 left=0 right=0  blocked=False
+23:01:38.773 [ARIA] YOLO pre-pass:
+23:01:38.773   (none)
+23:01:38.773 [ARIA] Explore: → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 5/6]
+23:01:38.776 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.4,3.2) dist=1.0m → turn_right_45 [progress 5/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:38.776 [ARIA] → ACTION: turn_right_45 | → frontier (0.4,3.2) dist=1.0m → turn_right_45  [progress 5/6]
+23:01:40.366 [ARIA] MOVED dist=0.002m turned=3.5° reached=False steps=49
+23:01:40.366 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.59s total=1.68s
+23:01:40.366 
+23:01:40.366 ============================================================
+23:01:40.366 [ARIA] Step 8/100  |  goal: find the microwave
+23:01:40.366 ============================================================
+23:01:40.405 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:40.443 [ARIA] YOLO pre-pass:
+23:01:40.443   (none)
+23:01:40.444 [ARIA] Frontier (0.4,3.2) blocked — blacklisting, will re-scan
+23:01:40.446 [ARIA] Frontier recovery → blocked frontier → frontier (0.2,3.9) dist=1.7m → turn_right_45
+23:01:40.449 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=blocked frontier → frontier (0.2,3.9) dist=1.7m → turn_right_45 | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:40.449 [ARIA] → ACTION: turn_right_45 | blocked frontier → frontier (0.2,3.9) dist=1.7m → turn_right_45
+23:01:42.097 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:42.097 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.65s total=1.73s
+23:01:42.097 
+23:01:42.097 ============================================================
+23:01:42.097 [ARIA] Step 9/100  |  goal: find the microwave
+23:01:42.097 ============================================================
+23:01:42.136 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:42.169 [ARIA] YOLO pre-pass:
+23:01:42.169   (none)
+23:01:42.170 [ARIA] Explore: → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 1/6]
+23:01:42.172 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.2,3.9) dist=1.7m → turn_right_45 [progress 1/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:42.172 [ARIA] → ACTION: turn_right_45 | → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 1/6]
+23:01:43.785 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:43.785 [ARIA] dt sense+perception=0.07s plan=0.00s think=0.00s move=1.61s total=1.69s
+23:01:43.785 
+23:01:43.785 ============================================================
+23:01:43.785 [ARIA] Step 10/100  |  goal: find the microwave
+23:01:43.785 ============================================================
+23:01:43.824 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:43.914 [ARIA] YOLO pre-pass:
+23:01:43.914   (none)
+23:01:43.915 [ARIA] Explore: → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 2/6]
+23:01:43.917 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.2,3.9) dist=1.7m → turn_right_45 [progress 2/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:43.917 [ARIA] → ACTION: turn_right_45 | → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 2/6]
+23:01:45.490 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:45.490 [ARIA] dt sense+perception=0.13s plan=0.00s think=0.00s move=1.57s total=1.70s
+23:01:45.490 
+23:01:45.490 ============================================================
+23:01:45.490 [ARIA] Step 11/100  |  goal: find the microwave
+23:01:45.490 ============================================================
+23:01:45.529 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:45.580 [ARIA] YOLO pre-pass:
+23:01:45.580   (none)
+23:01:45.581 [ARIA] Explore: → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 3/6]
+23:01:45.583 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.2,3.9) dist=1.7m → turn_right_45 [progress 3/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:45.583 [ARIA] → ACTION: turn_right_45 | → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 3/6]
+23:01:47.167 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:47.167 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.00s move=1.58s total=1.68s
+23:01:47.167 
+23:01:47.167 ============================================================
+23:01:47.167 [ARIA] Step 12/100  |  goal: find the microwave
+23:01:47.167 ============================================================
+23:01:47.208 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:47.348 [ARIA] YOLO pre-pass:
+23:01:47.348   (none)
+23:01:47.349 [ARIA] Explore: → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 4/6]
+23:01:47.352 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.2,3.9) dist=1.7m → turn_right_45 [progress 4/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:47.352 [ARIA] → ACTION: turn_right_45 | → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 4/6]
+23:01:48.977 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:48.978 [ARIA] dt sense+perception=0.18s plan=0.00s think=0.00s move=1.63s total=1.81s
+23:01:48.978 
+23:01:48.978 ============================================================
+23:01:48.978 [ARIA] Step 13/100  |  goal: find the microwave
+23:01:48.978 ============================================================
+23:01:49.018 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:49.070 [ARIA] YOLO pre-pass:
+23:01:49.070   (none)
+23:01:49.071 [ARIA] Explore: → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 5/6]
+23:01:49.073 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (0.2,3.9) dist=1.7m → turn_right_45 [progress 5/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:49.074 [ARIA] → ACTION: turn_right_45 | → frontier (0.2,3.9) dist=1.7m → turn_right_45  [progress 5/6]
+23:01:50.722 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:50.722 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.00s move=1.65s total=1.74s
+23:01:50.722 
+23:01:50.722 ============================================================
+23:01:50.722 [ARIA] Step 14/100  |  goal: find the microwave
+23:01:50.722 ============================================================
+23:01:50.773 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:50.849 [ARIA] YOLO pre-pass:
+23:01:50.849   (none)
+23:01:50.850 [ARIA] Frontier (0.2,3.9) blocked — blacklisting, will re-scan
+23:01:50.852 [ARIA] Frontier recovery → blocked frontier → frontier (-0.0,4.4) dist=2.3m → turn_right_45
+23:01:50.855 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=blocked frontier → frontier (-0.0,4.4) dist=2.3m → turn_right_45 | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:50.855 [ARIA] → ACTION: turn_right_45 | blocked frontier → frontier (-0.0,4.4) dist=2.3m → turn_right_45
+23:01:52.422 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:52.422 [ARIA] dt sense+perception=0.13s plan=0.00s think=0.00s move=1.57s total=1.70s
+23:01:52.422 
+23:01:52.422 ============================================================
+23:01:52.423 [ARIA] Step 15/100  |  goal: find the microwave
+23:01:52.423 ============================================================
+23:01:52.460 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:52.493 [ARIA] YOLO pre-pass:
+23:01:52.493   (none)
+23:01:52.494 [ARIA] Explore: → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 1/6]
+23:01:52.497 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.0,4.4) dist=2.3m → turn_right_45 [progress 1/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:52.497 [ARIA] → ACTION: turn_right_45 | → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 1/6]
+23:01:54.096 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:54.096 [ARIA] dt sense+perception=0.07s plan=0.00s think=0.00s move=1.60s total=1.67s
+23:01:54.096 
+23:01:54.096 ============================================================
+23:01:54.096 [ARIA] Step 16/100  |  goal: find the microwave
+23:01:54.096 ============================================================
+23:01:54.136 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:54.195 [ARIA] YOLO pre-pass:
+23:01:54.195   (none)
+23:01:54.196 [ARIA] Explore: → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 2/6]
+23:01:54.199 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.0,4.4) dist=2.3m → turn_right_45 [progress 2/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:54.199 [ARIA] → ACTION: turn_right_45 | → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 2/6]
+23:01:55.791 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:55.791 [ARIA] dt sense+perception=0.10s plan=0.00s think=0.00s move=1.59s total=1.69s
+23:01:55.791 
+23:01:55.791 ============================================================
+23:01:55.791 [ARIA] Step 17/100  |  goal: find the microwave
+23:01:55.791 ============================================================
+23:01:55.831 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:55.978 [ARIA] YOLO pre-pass:
+23:01:55.978   (none)
+23:01:55.981 [ARIA] Explore: → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 3/6]
+23:01:55.984 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.0,4.4) dist=2.3m → turn_right_45 [progress 3/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:55.984 [ARIA] → ACTION: turn_right_45 | → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 3/6]
+23:01:57.604 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:57.604 [ARIA] dt sense+perception=0.19s plan=0.00s think=0.00s move=1.62s total=1.81s
+23:01:57.604 
+23:01:57.604 ============================================================
+23:01:57.604 [ARIA] Step 18/100  |  goal: find the microwave
+23:01:57.604 ============================================================
+23:01:57.643 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:57.688 [ARIA] YOLO pre-pass:
+23:01:57.688   (none)
+23:01:57.688 [ARIA] Explore: → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 4/6]
+23:01:57.691 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.0,4.4) dist=2.3m → turn_right_45 [progress 4/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:57.691 [ARIA] → ACTION: turn_right_45 | → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 4/6]
+23:01:59.292 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:01:59.292 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.00s move=1.60s total=1.69s
+23:01:59.292 
+23:01:59.292 ============================================================
+23:01:59.292 [ARIA] Step 19/100  |  goal: find the microwave
+23:01:59.292 ============================================================
+23:01:59.329 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:01:59.455 [ARIA] YOLO pre-pass:
+23:01:59.455   (none)
+23:01:59.456 [ARIA] Explore: → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 5/6]
+23:01:59.459 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.0,4.4) dist=2.3m → turn_right_45 [progress 5/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:01:59.459 [ARIA] → ACTION: turn_right_45 | → frontier (-0.0,4.4) dist=2.3m → turn_right_45  [progress 5/6]
+23:02:01.044 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:02:01.044 [ARIA] dt sense+perception=0.16s plan=0.00s think=0.00s move=1.59s total=1.75s
+23:02:01.044 
+23:02:01.044 ============================================================
+23:02:01.044 [ARIA] Step 20/100  |  goal: find the microwave
+23:02:01.044 ============================================================
+23:02:01.083 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:02:01.143 [ARIA] YOLO pre-pass:
+23:02:01.143   (none)
+23:02:01.144 [ARIA] Frontier (-0.0,4.4) blocked — blacklisting, will re-scan
+23:02:01.145 [ARIA] Frontier recovery → blocked frontier → frontier (-0.6,4.2) dist=2.3m → turn_right_45
+23:02:01.148 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=blocked frontier → frontier (-0.6,4.2) dist=2.3m → turn_right_45 | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:02:01.148 [ARIA] → ACTION: turn_right_45 | blocked frontier → frontier (-0.6,4.2) dist=2.3m → turn_right_45
+23:02:02.754 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:02:02.754 [ARIA] dt sense+perception=0.10s plan=0.00s think=0.00s move=1.61s total=1.71s
+23:02:02.754 
+23:02:02.754 ============================================================
+23:02:02.754 [ARIA] Step 21/100  |  goal: find the microwave
+23:02:02.754 ============================================================
+23:02:02.794 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:02:02.938 [ARIA] YOLO pre-pass:
+23:02:02.938   (none)
+23:02:02.939 [ARIA] Explore: → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 1/6]
+23:02:02.942 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.6,4.2) dist=2.3m → turn_right_45 [progress 1/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:02:02.942 [ARIA] → ACTION: turn_right_45 | → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 1/6]
+23:02:04.557 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:02:04.557 [ARIA] dt sense+perception=0.18s plan=0.00s think=0.00s move=1.62s total=1.80s
+23:02:04.557 
+23:02:04.557 ============================================================
+23:02:04.557 [ARIA] Step 22/100  |  goal: find the microwave
+23:02:04.557 ============================================================
+23:02:04.595 [ARIA] Pos=(0.68,2.29) hdg=-139°  front=0 left=0 right=0  blocked=False
+23:02:04.648 [ARIA] YOLO pre-pass:
+23:02:04.648   (none)
+23:02:04.649 [ARIA] Explore: → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 2/6]
+23:02:04.652 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.6,4.2) dist=2.3m → turn_right_45 [progress 2/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:02:04.652 [ARIA] → ACTION: turn_right_45 | → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 2/6]
+23:02:06.240 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:02:06.240 [ARIA] dt sense+perception=0.09s plan=0.00s think=0.00s move=1.59s total=1.68s
+23:02:06.240 
+23:02:06.240 ============================================================
+23:02:06.240 [ARIA] Step 23/100  |  goal: find the microwave
+23:02:06.240 ============================================================
+23:02:06.280 [ARIA] Pos=(0.68,2.29) hdg=-140°  front=0 left=0 right=0  blocked=False
+23:02:06.433 [ARIA] YOLO pre-pass:
+23:02:06.433   (none)
+23:02:06.434 [ARIA] Explore: → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 3/6]
+23:02:06.436 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-0.6,4.2) dist=2.3m → turn_right_45 [progress 3/6] | action=turn_right_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+23:02:06.436 [ARIA] → ACTION: turn_right_45 | → frontier (-0.6,4.2) dist=2.3m → turn_right_45  [progress 3/6]
+23:02:08.061 [ARIA] MOVED dist=0.000m turned=0.1° reached=False steps=49
+23:02:08.061 [ARIA] dt sense+perception=0.19s plan=0.00s think=0.00s move=1.62s total=1.82s
+23:02:08.061 
+23:02:08.061 [ARIA] STOP SIGNAL RECEIVED at step 24
+23:02:08.152 
+23:02:08.152 ============================================================
+23:02:08.153 [ARIA] STOPPED: 'microwave' not found after 23 steps
+23:02:08.154 [ARIA] Map: {'free': 1866, 'occupied': 140, 'unknown': 10087}
+23:02:08.154 [ARIA] Spatial memory: {'umbrella': 4, 'stop sign': 2, 'person': 1, 'train': 1, 'plant': 6, 'fridge': 2, 'microwave': 3, 'dog': 3, 'clock': 2, 'traffic light': 13, 'airplane': 8, 'book': 2, 'parking meter': 1, 'suitcase': 1, 'table': 1, 'bench': 1, 'couch': 1}
+23:02:08.154 ============================================================
+23:02:08.154 

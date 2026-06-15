@@ -1,0 +1,256 @@
+# ARIA run log — goal='find the dog and approach it' — 2026-06-15 18:13:18
+18:13:18.120 [ARIA] Webots reports world: 'empt_room'  (sources: {'getWorldPath': 'E:/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt'})
+18:13:18.123 [ARIA] Using world file for floor bounds: /mnt/e/Leiden/Year-1/Sem-2/ENV/Robotics/Robotics_ARIA/src/webots/worlds/Project/worlds/empt_room.wbt
+18:13:18.128 [GridExplorer] Floor: centre=(0.2,0.9) world_size=(12.9×7.7) navigable x=[-5.3,5.8] y=[-2.0,3.9]
+18:13:18.128 [GridExplorer] 32 waypoints across the room
+18:13:18.128   wp00 (-5.3,-2.0)
+18:13:18.128   wp01 (-5.3,-0.5)
+18:13:18.128   wp02 (-5.3,1.0)
+18:13:18.128   wp03 (-5.3,2.5)
+18:13:18.128   wp04 (-3.8,2.5)
+18:13:18.128   wp05 (-3.8,1.0)
+18:13:18.128   wp06 (-3.8,-0.5)
+18:13:18.128   wp07 (-3.8,-2.0)
+18:13:18.128   wp08 (-2.3,-2.0)
+18:13:18.128   wp09 (-2.3,-0.5)
+18:13:18.128   wp10 (-2.3,1.0)
+18:13:18.128   wp11 (-2.3,2.5)
+18:13:18.128   wp12 (-0.8,2.5)
+18:13:18.128   wp13 (-0.8,1.0)
+18:13:18.128   wp14 (-0.8,-0.5)
+18:13:18.128   wp15 (-0.8,-2.0)
+18:13:18.128   wp16 (0.7,-2.0)
+18:13:18.128   wp17 (0.7,-0.5)
+18:13:18.128   wp18 (0.7,1.0)
+18:13:18.128   wp19 (0.7,2.5)
+18:13:18.128   wp20 (2.2,2.5)
+18:13:18.128   wp21 (2.2,1.0)
+18:13:18.128   wp22 (2.2,-0.5)
+18:13:18.128   wp23 (2.2,-2.0)
+18:13:18.128   wp24 (3.7,-2.0)
+18:13:18.128   wp25 (3.7,-0.5)
+18:13:18.128   wp26 (3.7,1.0)
+18:13:18.128   wp27 (3.7,2.5)
+18:13:18.128   wp28 (5.2,2.5)
+18:13:18.128   wp29 (5.2,1.0)
+18:13:18.128   wp30 (5.2,-0.5)
+18:13:18.128   wp31 (5.2,-2.0)
+18:13:18.144 [SpatialMemory] Loaded 63 discoveries for 'empt_room'
+18:13:18.144   traffic light: [[-5.4, -1.0], [-4.5, -2.2], [-3.8, -2.3], [-3.2, -2.0], [-2.2, -1.4], [-1.6, -1.1], [-0.6, -2.4], [-4.2, -1.1], [-3.0, -1.3], [1.0, 2.9], [1.6, 3.9], [-5.3, -1.8], [-3.4, -0.7], [-0.5, -1.5], [0.7, -1.7], [1.3, -1.9], [1.9, -2.0], [2.6, -1.7], [2.0, -1.3], [3.2, -1.6], [4.4, -1.9]]
+18:13:18.144   airplane: [[-5.4, -1.0], [-4.3, -2.1], [-1.6, -1.1], [-0.6, -2.4], [0.1, -1.7], [-2.2, 0.4], [-1.9, 0.9], [-2.9, 0.2], [-5.3, -1.8], [4.9, -2.2], [6.0, -1.9]]
+18:13:18.144   plant: [[-5.4, -1.0], [-3.0, -1.3], [-1.8, -1.4], [-2.2, 0.4], [1.1, 2.9], [-4.0, 1.0], [1.6, 3.9], [-0.2, 3.8], [-2.9, 0.2], [-1.1, -1.3], [6.1, -1.7]]
+18:13:18.144   umbrella: [[-4.5, -2.2], [-2.2, 0.4], [0.1, 2.1], [1.1, 2.9], [-0.8, 1.3]]
+18:13:18.144   baseball bat: [[-1.6, -1.1]]
+18:13:18.144   person: [[5.2, 3.2], [1.1, 2.9], [-3.4, -0.7]]
+18:13:18.144   sink: [[-2.9, 1.3], [-3.4, -0.7]]
+18:13:18.144   bed: [[-4.6, -0.6], [6.0, -1.9]]
+18:13:18.144   book: [[1.0, 2.9]]
+18:13:18.144   bench: [[1.1, 2.9]]
+18:13:18.144   fridge: [[-5.3, -1.8]]
+18:13:18.144   clock: [[-5.3, -1.8]]
+18:13:18.144   mouse: [[6.0, -1.9]]
+18:13:18.144   sports ball: [[6.0, -1.9]]
+18:13:18.145   microwave: [[6.0, -1.9]]
+18:13:18.145 
+18:13:18.145 [ARIA] Goal: find the dog and approach it
+18:13:18.145 [ARIA] Target: dog  aliases: ['bear', 'cat', 'cow', 'dog', 'elephant', 'giraffe', 'horse', 'sheep', 'zebra']  mode: APPROACH (drive to it)
+18:13:18.145 [ARIA] Model: qwen3-vl:4b-instruct-q4_K_M
+18:13:18.145 [ARIA] Perception: yolo_vlm
+18:13:18.145 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 11, 'plant': 11, 'umbrella': 5, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 1, 'fridge': 1, 'clock': 1, 'mouse': 1, 'sports ball': 1, 'microwave': 1}
+18:13:18.145 
+18:13:18.145 ============================================================
+18:13:18.145 [ARIA] Step 1/100  |  goal: find the dog and approach it
+18:13:18.145 ============================================================
+18:13:18.168 [ARIA] Pos=(0.52,0.84) hdg=83°  front=0 left=321 right=262  blocked=False
+18:13:18.747 [Detector] Loaded yolo11m successfully (conf=0.25, iou=0.45, open_vocab=False)
+18:13:18.751 [Detector] Loaded yolo11m successfully (conf=0.25, iou=0.45, open_vocab=False)
+18:13:20.923 [ARIA] YOLO pre-pass:
+18:13:20.923   fridge conf=0.36
+18:13:20.923   fridge conf=0.34
+18:13:20.923   suitcase conf=0.21
+18:13:20.923 [SpatialMemory] NEW discovery: 'fridge' @ (0.52,0.84) conf=0.36
+18:13:20.925 [SpatialMemory] NEW discovery: 'suitcase' @ (0.52,0.84) conf=0.21
+18:13:21.172 [ARIA] Explore: → frontier (-1.2,2.7) dist=2.6m → turn_left_45
+18:13:21.178 [ARIA] THINK: verifier[yolo]=YOLO found no target match; keep exploring. | planner=→ frontier (-1.2,2.7) dist=2.6m → turn_left_45 | action=turn_left_45 | mode=frontier_move | memory=YOLO found no target match; keep exploring.
+18:13:21.178 [ARIA] → ACTION: turn_left_45 | → frontier (-1.2,2.7) dist=2.6m → turn_left_45
+18:13:21.375 [ARIA] MOVED dist=0.001m turned=-46.9° reached=True steps=22
+18:13:21.375 [ARIA] dt sense+perception=2.79s plan=0.24s think=0.01s move=0.20s total=3.23s
+18:13:21.375 
+18:13:21.375 ============================================================
+18:13:21.375 [ARIA] Step 2/100  |  goal: find the dog and approach it
+18:13:21.376 ============================================================
+18:13:21.407 [ARIA] Pos=(0.52,0.84) hdg=129°  front=303 left=307 right=257  blocked=False
+18:13:21.426 [ARIA] YOLO pre-pass:
+18:13:21.426   dog conf=0.41
+18:13:21.426 [SpatialMemory] NEW discovery: 'dog' @ (0.52,0.84) conf=0.41
+18:13:21.429 [ARIA] YOLO target match: dog conf=0.41 side=left
+18:13:21.429 [ARIA] TARGET[approach] → move_forward | low confidence — closing in to raise confidence | YOLO 0.41 / VLM none | dog img-LEFT x-err=-0.61 bbox=11% conf=0.41 (YOLO saw 'dog')
+18:13:21.435 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.41 on the left | planner=low confidence — closing in to raise confidence | YOLO 0.41 / VLM none | action=move_forward | mode=target_pursuit | memory=YOLO found no target match; keep exploring. | YOLO saw dog conf=0.41 on the left
+18:13:21.435 [ARIA] → ACTION: move_forward | low confidence — closing in to raise confidence | YOLO 0.41 / VLM none
+18:13:22.097 [ARIA] MOVED dist=0.260m turned=0.0° reached=True steps=21
+18:13:22.097 [ARIA] dt sense+perception=0.05s plan=0.00s think=0.01s move=0.66s total=0.72s
+18:13:22.576 
+18:13:22.576 ============================================================
+18:13:22.576 [ARIA] Step 3/100  |  goal: find the dog and approach it
+18:13:22.576 ============================================================
+18:13:22.590 [ARIA] Pos=(0.35,1.04) hdg=130°  front=257 left=267 right=463  blocked=False
+18:13:22.608 [ARIA] YOLO pre-pass:
+18:13:22.608   horse conf=0.34
+18:13:22.608 [SpatialMemory] NEW discovery: 'horse' @ (0.35,1.04) conf=0.34
+18:13:22.610 [ARIA] YOLO target match: horse conf=0.34 side=left
+18:13:22.611 [ARIA] TARGET[approach] → move_forward | low confidence — closing in to raise confidence | YOLO 0.34 / VLM none | dog img-LEFT x-err=-0.63 bbox=12% conf=0.34 (YOLO saw 'horse')
+18:13:22.616 [ARIA] THINK: verifier[yolo]=YOLO saw horse conf=0.34 on the left | planner=low confidence — closing in to raise confidence | YOLO 0.34 / VLM none | action=move_forward | mode=target_pursuit | memory=YOLO found no target match; keep exploring. | YOLO saw dog conf=0.41 on the left | YOLO s…
+18:13:22.616 [ARIA] → ACTION: move_forward | low confidence — closing in to raise confidence | YOLO 0.34 / VLM none
+18:13:23.243 [ARIA] MOVED dist=0.252m turned=0.0° reached=True steps=21
+18:13:23.243 [ARIA] dt sense+perception=0.04s plan=0.00s think=0.01s move=0.63s total=0.67s
+18:13:23.776 
+18:13:23.776 ============================================================
+18:13:23.776 [ARIA] Step 4/100  |  goal: find the dog and approach it
+18:13:23.776 ============================================================
+18:13:23.790 [ARIA] Pos=(0.19,1.24) hdg=131°  front=217 left=217 right=511  blocked=False
+18:13:23.807 [ARIA] YOLO pre-pass:
+18:13:23.807   sheep conf=0.36
+18:13:23.807   dog conf=0.35
+18:13:23.807   umbrella conf=0.31
+18:13:23.807 [SpatialMemory] NEW discovery: 'sheep' @ (0.19,1.24) conf=0.36
+18:13:23.810 [SpatialMemory] NEW discovery: 'umbrella' @ (0.19,1.24) conf=0.31
+18:13:23.819 [ARIA] YOLO target match: sheep conf=0.36 side=left
+18:13:23.820 [ARIA] TARGET[approach] → move_forward | low confidence — closing in to raise confidence | YOLO 0.36 / VLM none | dog img-LEFT x-err=-0.63 bbox=12% conf=0.36 (YOLO saw 'sheep')
+18:13:23.826 [ARIA] THINK: verifier[yolo]=YOLO saw sheep conf=0.36 on the left | planner=low confidence — closing in to raise confidence | YOLO 0.36 / VLM none | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.41 on the left | YOLO saw horse conf=0.34 on the left | YOLO saw shee…
+18:13:23.826 [ARIA] → ACTION: move_forward | low confidence — closing in to raise confidence | YOLO 0.36 / VLM none
+18:13:24.372 [ARIA] MOVED dist=0.252m turned=0.0° reached=True steps=21
+18:13:24.373 [ARIA] dt sense+perception=0.04s plan=0.00s think=0.01s move=0.55s total=0.60s
+18:13:24.976 
+18:13:24.976 ============================================================
+18:13:24.976 [ARIA] Step 5/100  |  goal: find the dog and approach it
+18:13:24.976 ============================================================
+18:13:24.991 [ARIA] Pos=(0.02,1.44) hdg=131°  front=180 left=180 right=364  blocked=False
+18:13:25.013 [ARIA] YOLO pre-pass:
+18:13:25.013   dog conf=0.81
+18:13:25.013   umbrella conf=0.59
+18:13:25.013 [SpatialMemory] NEW discovery: 'dog' @ (0.02,1.44) conf=0.81
+18:13:25.015 [ARIA] YOLO target match: dog conf=0.81 side=left
+18:13:25.016 [ARIA] TARGET[approach] → move_forward | YOLO 0.81 left — approaching visible target | dog img-LEFT x-err=-0.63 bbox=12% conf=0.81 (YOLO saw 'dog')
+18:13:25.021 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.81 on the left | planner=YOLO 0.81 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw horse conf=0.34 on the left | YOLO saw sheep conf=0.36 on the left | YOLO saw do…
+18:13:25.021 [ARIA] → ACTION: move_forward | YOLO 0.81 left — approaching visible target
+18:13:25.694 [ARIA] MOVED dist=0.259m turned=0.0° reached=True steps=22
+18:13:25.694 [ARIA] dt sense+perception=0.04s plan=0.00s think=0.01s move=0.67s total=0.72s
+18:13:26.176 
+18:13:26.176 ============================================================
+18:13:26.176 [ARIA] Step 6/100  |  goal: find the dog and approach it
+18:13:26.176 ============================================================
+18:13:26.190 [ARIA] Pos=(-0.16,1.64) hdg=132°  front=141 left=141 right=418  blocked=False
+18:13:26.221 [ARIA] YOLO pre-pass:
+18:13:26.221   dog conf=0.89
+18:13:26.221   umbrella conf=0.58
+18:13:26.221 [ARIA] YOLO target match: dog conf=0.89 side=left
+18:13:26.222 [ARIA] TARGET[approach] → move_forward | YOLO 0.89 left — approaching visible target | dog img-LEFT x-err=-0.65 bbox=13% conf=0.89 (YOLO saw 'dog')
+18:13:26.228 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.89 on the left | planner=YOLO 0.89 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw sheep conf=0.36 on the left | YOLO saw dog conf=0.81 on the left | YOLO saw dog…
+18:13:26.228 [ARIA] → ACTION: move_forward | YOLO 0.89 left — approaching visible target
+18:13:26.901 [ARIA] MOVED dist=0.252m turned=0.0° reached=True steps=21
+18:13:26.901 [ARIA] dt sense+perception=0.05s plan=0.00s think=0.01s move=0.67s total=0.73s
+18:13:27.376 
+18:13:27.376 ============================================================
+18:13:27.376 [ARIA] Step 7/100  |  goal: find the dog and approach it
+18:13:27.376 ============================================================
+18:13:27.391 [ARIA] Pos=(-0.33,1.83) hdg=132°  front=102 left=102 right=468  blocked=False
+18:13:27.417 [ARIA] YOLO pre-pass:
+18:13:27.417   dog conf=0.85
+18:13:27.417   umbrella conf=0.64
+18:13:27.417 [ARIA] YOLO target match: dog conf=0.85 side=left
+18:13:27.418 [ARIA] TARGET[approach] → move_forward | YOLO 0.85 left — approaching visible target | dog img-LEFT x-err=-0.66 bbox=14% conf=0.85 (YOLO saw 'dog')
+18:13:27.424 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.85 on the left | planner=YOLO 0.85 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.81 on the left | YOLO saw dog conf=0.89 on the left | YOLO saw dog co…
+18:13:27.424 [ARIA] → ACTION: move_forward | YOLO 0.85 left — approaching visible target
+18:13:29.287 [ARIA] MOVED dist=0.251m turned=0.0° reached=True steps=21
+18:13:29.287 [ARIA] dt sense+perception=0.04s plan=0.00s think=0.01s move=1.86s total=1.91s
+18:13:29.287 
+18:13:29.288 ============================================================
+18:13:29.288 [ARIA] Step 8/100  |  goal: find the dog and approach it
+18:13:29.288 ============================================================
+18:13:29.333 [ARIA] Pos=(-0.50,2.02) hdg=133°  front=64 left=64 right=497  blocked=False
+18:13:29.360 [ARIA] YOLO pre-pass:
+18:13:29.360   dog conf=0.88
+18:13:29.360 [SpatialMemory] NEW discovery: 'dog' @ (-0.50,2.02) conf=0.88
+18:13:29.363 [ARIA] YOLO target match: dog conf=0.88 side=left
+18:13:29.364 [ARIA] TARGET[approach] → move_forward | YOLO 0.88 left — approaching visible target | dog img-LEFT x-err=-0.67 bbox=14% conf=0.88 (YOLO saw 'dog')
+18:13:29.370 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.88 on the left | planner=YOLO 0.88 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.89 on the left | YOLO saw dog conf=0.85 on the left | YOLO saw dog co…
+18:13:29.370 [ARIA] → ACTION: move_forward | YOLO 0.88 left — approaching visible target
+18:13:30.066 [ARIA] MOVED dist=0.251m turned=0.0° reached=True steps=21
+18:13:30.066 [ARIA] dt sense+perception=0.08s plan=0.00s think=0.01s move=0.70s total=0.78s
+18:13:30.488 
+18:13:30.488 ============================================================
+18:13:30.488 [ARIA] Step 9/100  |  goal: find the dog and approach it
+18:13:30.488 ============================================================
+18:13:30.502 [ARIA] Pos=(-0.68,2.21) hdg=134°  front=209 left=209 right=547  blocked=False
+18:13:30.531 [ARIA] YOLO pre-pass:
+18:13:30.531   dog conf=0.84
+18:13:30.531   umbrella conf=0.50
+18:13:30.531 [SpatialMemory] NEW discovery: 'umbrella' @ (-0.68,2.21) conf=0.50
+18:13:30.534 [ARIA] YOLO target match: dog conf=0.84 side=left
+18:13:30.535 [ARIA] TARGET[approach] → move_forward | YOLO 0.84 left — approaching visible target | dog img-LEFT x-err=-0.68 bbox=15% conf=0.84 (YOLO saw 'dog')
+18:13:30.541 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.84 on the left | planner=YOLO 0.84 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.85 on the left | YOLO saw dog conf=0.88 on the left | YOLO saw dog co…
+18:13:30.541 [ARIA] → ACTION: move_forward | YOLO 0.84 left — approaching visible target
+18:13:31.202 [ARIA] MOVED dist=0.251m turned=0.0° reached=True steps=21
+18:13:31.202 [ARIA] dt sense+perception=0.05s plan=0.00s think=0.01s move=0.66s total=0.71s
+18:13:31.688 
+18:13:31.688 ============================================================
+18:13:31.688 [ARIA] Step 10/100  |  goal: find the dog and approach it
+18:13:31.688 ============================================================
+18:13:31.702 [ARIA] Pos=(-0.86,2.39) hdg=135°  front=169 left=169 right=569  blocked=False
+18:13:31.742 [ARIA] YOLO pre-pass:
+18:13:31.742   dog conf=0.88
+18:13:31.742   umbrella conf=0.35
+18:13:31.742 [ARIA] YOLO target match: dog conf=0.88 side=left
+18:13:31.743 [ARIA] TARGET[approach] → move_forward | YOLO 0.88 left — approaching visible target | dog img-LEFT x-err=-0.70 bbox=16% conf=0.88 (YOLO saw 'dog')
+18:13:31.749 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.88 on the left | planner=YOLO 0.88 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.85 on the left | YOLO saw dog conf=0.84 on the left | YOLO saw dog co…
+18:13:31.749 [ARIA] → ACTION: move_forward | YOLO 0.88 left — approaching visible target
+18:13:32.418 [ARIA] MOVED dist=0.251m turned=0.0° reached=True steps=21
+18:13:32.418 [ARIA] dt sense+perception=0.06s plan=0.00s think=0.01s move=0.67s total=0.73s
+18:13:32.888 
+18:13:32.888 ============================================================
+18:13:32.888 [ARIA] Step 11/100  |  goal: find the dog and approach it
+18:13:32.888 ============================================================
+18:13:32.902 [ARIA] Pos=(-1.04,2.58) hdg=135°  front=132 left=132 right=599  blocked=False
+18:13:32.926 [ARIA] YOLO pre-pass:
+18:13:32.926   dog conf=0.91
+18:13:32.926   umbrella conf=0.31
+18:13:32.926 [SpatialMemory] NEW discovery: 'dog' @ (-1.04,2.58) conf=0.91
+18:13:32.929 [ARIA] YOLO target match: dog conf=0.91 side=left
+18:13:32.930 [ARIA] TARGET[approach] → move_forward | YOLO 0.91 left — approaching visible target | dog img-LEFT x-err=-0.72 bbox=17% conf=0.91 (YOLO saw 'dog')
+18:13:32.936 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.91 on the left | planner=YOLO 0.91 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.84 on the left | YOLO saw dog conf=0.88 on the left | YOLO saw dog co…
+18:13:32.936 [ARIA] → ACTION: move_forward | YOLO 0.91 left — approaching visible target
+18:13:33.517 [ARIA] MOVED dist=0.251m turned=0.0° reached=True steps=21
+18:13:33.517 [ARIA] dt sense+perception=0.04s plan=0.00s think=0.01s move=0.58s total=0.63s
+18:13:34.088 
+18:13:34.088 ============================================================
+18:13:34.088 [ARIA] Step 12/100  |  goal: find the dog and approach it
+18:13:34.088 ============================================================
+18:13:34.102 [ARIA] Pos=(-1.22,2.76) hdg=136°  front=93 left=93 right=634  blocked=False
+18:13:34.203 [ARIA] YOLO pre-pass:
+18:13:34.203   dog conf=0.91
+18:13:34.203 [ARIA] YOLO target match: dog conf=0.91 side=left
+18:13:34.204 [ARIA] TARGET[approach] → move_forward | YOLO 0.91 left — approaching visible target | dog img-LEFT x-err=-0.74 bbox=18% conf=0.91 (YOLO saw 'dog')
+18:13:34.210 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.91 on the left | planner=YOLO 0.91 left — approaching visible target | action=move_forward | mode=target_pursuit | memory=YOLO saw dog conf=0.84 on the left | YOLO saw dog conf=0.88 on the left | YOLO saw dog co…
+18:13:34.210 [ARIA] → ACTION: move_forward | YOLO 0.91 left — approaching visible target
+18:13:34.863 [ARIA] MOVED dist=0.259m turned=0.0° reached=True steps=22
+18:13:34.864 [ARIA] dt sense+perception=0.12s plan=0.00s think=0.01s move=0.65s total=0.78s
+18:13:35.288 
+18:13:35.288 ============================================================
+18:13:35.288 [ARIA] Step 13/100  |  goal: find the dog and approach it
+18:13:35.288 ============================================================
+18:13:35.304 [ARIA] Pos=(-1.41,2.94) hdg=136°  front=86 left=57 right=674  blocked=False
+18:13:35.323 [ARIA] YOLO pre-pass:
+18:13:35.323   dog conf=0.94
+18:13:35.323 [ARIA] YOLO target match: dog conf=0.94 side=left
+18:13:35.324 [ARIA] TARGET[approach] → stop | reached (visual bbox close) | dog img-LEFT x-err=-0.78 bbox=19% conf=0.94 (YOLO saw 'dog')
+18:13:35.330 [ARIA] THINK: verifier[yolo]=YOLO saw dog conf=0.94 on the left | planner=reached (visual bbox close) | action=stop | mode=target_pursuit | memory=YOLO saw dog conf=0.88 on the left | YOLO saw dog conf=0.91 on the left | YOLO saw dog co…
+18:13:35.330 [ARIA] → ACTION: stop | reached (visual bbox close)
+18:13:35.333 
+18:13:35.333 [ARIA] SUCCESS — reached 'dog' at step 13
+18:13:35.333 
+18:13:35.333 ============================================================
+18:13:35.333 [ARIA] SUCCESS: 'dog' found in 13 steps
+18:13:35.335 [ARIA] Map: {'free': 9042, 'occupied': 688, 'unknown': 2363}
+18:13:35.335 [ARIA] Spatial memory: {'traffic light': 21, 'airplane': 11, 'plant': 11, 'umbrella': 7, 'baseball bat': 1, 'person': 3, 'sink': 2, 'bed': 2, 'book': 1, 'bench': 1, 'fridge': 2, 'clock': 1, 'mouse': 1, 'sports ball': 1, 'microwave': 1, 'suitcase': 1, 'dog': 4, 'horse': 1, 'sheep': 1}
+18:13:35.335 ============================================================
+18:13:35.335 

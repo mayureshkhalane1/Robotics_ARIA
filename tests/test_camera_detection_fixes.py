@@ -9,17 +9,12 @@ Validates:
 
 import sys
 from pathlib import Path
-
-# Add parent directory to path so imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
-
 import base64
 import numpy as np
 import pytest
 
 # These tests can run without Webots connection
-
-
 def test_camera_frame_shape_validation():
     """Test that frame validation accepts valid BGR arrays.
     
@@ -49,7 +44,7 @@ def test_camera_frame_shape_validation():
     invalid_gray = np.zeros((240, 320, 1), dtype=np.uint8)
     assert not validate_frame(invalid_gray), "Grayscale frame should fail validation"
     
-    print("✓ Camera frame shape validation test PASSED")
+    print(" Camera frame shape validation test PASSED")
 
 
 def test_camera_bgra_to_bgr_conversion():
@@ -86,7 +81,7 @@ def test_camera_bgra_to_bgr_conversion():
     assert np.all(frame_bgr[:, :, 1] == 150), "G channel should be uniform"
     assert np.all(frame_bgr[:, :, 2] == 200), "R channel should be uniform"
     
-    print("✓ BGRA→BGR conversion test PASSED")
+    print(" BGRA->BGR conversion test PASSED")
 
 
 def test_detection_output_structure():
@@ -125,7 +120,7 @@ def test_detection_output_structure():
     assert isinstance(det.class_id, int), "class_id must be int"
     assert det.class_id >= 0, "class_id must be non-negative"
     
-    print("✓ Detection output structure test PASSED")
+    print(" Detection output structure test PASSED")
 
 
 def test_detection_bbox_validation():
@@ -148,7 +143,7 @@ def test_detection_bbox_validation():
     x1, y1, x2, y2 = valid_det.bbox
     assert 0 <= x1 < x2 <= frame_w, "Valid bbox should be within bounds"
     assert 0 <= y1 < y2 <= frame_h, "Valid bbox should be within bounds"
-    print("  ✓ Valid bbox accepted")
+    print("   Valid bbox accepted")
     
     # Test 2: Invalid bbox: x exceeds frame width
     invalid_x = Detection(
@@ -160,7 +155,7 @@ def test_detection_bbox_validation():
     )
     x1, y1, x2, y2 = invalid_x.bbox
     assert not (0 <= x1 < x2 <= frame_w), "Invalid X bbox should fail check"
-    print("  ✓ Invalid X bbox rejected")
+    print("   Invalid X bbox rejected")
     
     # Test 3: Invalid bbox: y exceeds frame height
     invalid_y = Detection(
@@ -172,7 +167,7 @@ def test_detection_bbox_validation():
     )
     x1, y1, x2, y2 = invalid_y.bbox
     assert not (0 <= y1 < y2 <= frame_h), "Invalid Y bbox should fail check"
-    print("  ✓ Invalid Y bbox rejected")
+    print("   Invalid Y bbox rejected")
     
     # Test 4: Invalid bbox: x1 >= x2
     invalid_order = Detection(
@@ -184,9 +179,9 @@ def test_detection_bbox_validation():
     )
     x1, y1, x2, y2 = invalid_order.bbox
     assert not (x1 < x2), "Invalid bbox order should fail"
-    print("  ✓ Invalid bbox order rejected")
+    print("   Invalid bbox order rejected")
     
-    print("✓ Detection bbox validation test PASSED")
+    print(" Detection bbox validation test PASSED")
 
 
 def test_confidence_range_validation():
@@ -204,7 +199,7 @@ def test_confidence_range_validation():
             class_id=39,
         )
         assert 0 <= det.confidence <= 1.0, f"Valid confidence {conf} should be accepted"
-    print("  ✓ Valid confidence values accepted")
+    print("   Valid confidence values accepted")
     
     # Test detection output validation (from object_detector.py line 114-116)
     def validate_confidence(confidence):
@@ -216,9 +211,9 @@ def test_confidence_range_validation():
     # Invalid confidence
     assert not validate_confidence(-0.1), "Negative confidence should be rejected"
     assert not validate_confidence(1.1), "Confidence > 1.0 should be rejected"
-    print("  ✓ Invalid confidence values rejected")
+    print("   Invalid confidence values rejected")
     
-    print("✓ Confidence range validation test PASSED")
+    print(" Confidence range validation test PASSED")
 
 
 def test_detector_initialization():
@@ -231,10 +226,10 @@ def test_detector_initialization():
         
         # Test 1: Default initialization
         detector_default = ObjectDetector()
-        assert detector_default.model_name == "yolov8n"
+        assert detector_default.model_name == "yolo11m"
         assert detector_default.confidence_threshold == 0.5
         assert detector_default.iou_threshold == 0.45
-        print("  ✓ Default detector parameters correct")
+        print("   Default detector parameters correct")
         
         # Test 2: Custom parameters
         detector_custom = ObjectDetector(
@@ -245,14 +240,12 @@ def test_detector_initialization():
         assert detector_custom.model_name == "yolov8s"
         assert detector_custom.confidence_threshold == 0.6
         assert detector_custom.iou_threshold == 0.5
-        print("  ✓ Custom detector parameters correct")
+        print("   Custom detector parameters correct")
         
-        # Note: Model loading may fail if ultralytics not installed
-        # That's OK - this just validates parameter storage
         
-        print("✓ Detector initialization test PASSED")
+        print(" Detector initialization test PASSED")
     except ImportError:
-        print("⊘ Skipping detector test (ultralytics not installed)")
+        print("** Skipping detector test (ultralytics not installed)")
 
 
 def test_detector_frame_format_validation():
@@ -272,28 +265,28 @@ def test_detector_frame_format_validation():
     # Test 1: Valid BGR frame
     valid_bgr = np.zeros((240, 320, 3), dtype=np.uint8)
     assert validate_frame_format(valid_bgr), "Valid BGR should pass"
-    print("  ✓ Valid BGR frame accepted")
+    print("   Valid BGR frame accepted")
     
     # Test 2: Invalid: None
     assert not validate_frame_format(None), "None should fail"
-    print("  ✓ None rejected")
+    print("   None rejected")
     
     # Test 3: Invalid: Empty array
     empty = np.array([])
     assert not validate_frame_format(empty), "Empty array should fail"
-    print("  ✓ Empty array rejected")
+    print("   Empty array rejected")
     
     # Test 4: Invalid: 2D array
     gray = np.zeros((240, 320), dtype=np.uint8)
     assert not validate_frame_format(gray), "2D array should fail"
-    print("  ✓ 2D array rejected")
+    print("   2D array rejected")
     
     # Test 5: Invalid: Wrong number of channels
     rgba = np.zeros((240, 320, 4), dtype=np.uint8)
     assert not validate_frame_format(rgba), "RGBA should fail"
-    print("  ✓ RGBA rejected")
+    print("   RGBA rejected")
     
-    print("✓ Frame format validation test PASSED")
+    print(" Frame format validation test PASSED")
 
 
 def test_nms_parameters():
@@ -312,16 +305,16 @@ def test_nms_parameters():
         )
         assert hasattr(detector, 'iou_threshold'), "Detector must have iou_threshold"
         assert detector.iou_threshold == 0.45, "NMS threshold should be 0.45"
-        print("  ✓ ObjectDetector stores NMS threshold")
+        print("   ObjectDetector stores NMS threshold")
         
         # Test 2: init_detector function
         detector2 = init_detector(iou_threshold=0.5)
         assert detector2.iou_threshold == 0.5, "init_detector should accept iou_threshold"
-        print("  ✓ init_detector accepts NMS threshold")
+        print("   init_detector accepts NMS threshold")
         
-        print("✓ NMS parameter test PASSED")
+        print(" NMS parameter test PASSED")
     except ImportError:
-        print("⊘ Skipping NMS test (module not available)")
+        print("** Skipping NMS test (module not available)")
 
 
 def test_centroid_calculation():
@@ -338,22 +331,22 @@ def test_centroid_calculation():
     bbox1 = (0, 0, 100, 100)
     center1 = calculate_center(bbox1)
     assert center1 == (50, 50), f"Center of (0,0,100,100) should be (50,50), got {center1}"
-    print("  ✓ Square centroid correct")
+    print("   Square centroid correct")
     
     # Test 2: Asymmetric rectangle
     bbox2 = (10.5, 20.5, 89.5, 79.5)
     center2 = calculate_center(bbox2)
     assert center2 == (50.0, 50.0), f"Center of {bbox2} should be (50.0, 50.0), got {center2}"
-    print("  ✓ Rectangle centroid correct")
+    print("   Rectangle centroid correct")
     
     # Test 3: Float coordinates
     bbox3 = (45.2, 78.1, 120.5, 145.3)
     center3 = calculate_center(bbox3)
     expected = ((45.2 + 120.5) / 2, (78.1 + 145.3) / 2)
     assert center3 == expected, f"Centroid mismatch"
-    print("  ✓ Float coordinate centroid correct")
+    print("   Float coordinate centroid correct")
     
-    print("✓ Centroid calculation test PASSED")
+    print(" Centroid calculation test PASSED")
 
 
 # Run all tests if executed directly
@@ -391,5 +384,5 @@ if __name__ == "__main__":
     print()
     
     print("=" * 60)
-    print("ALL TESTS PASSED ✓")
+    print("ALL TESTS PASSED ")
     print("=" * 60)

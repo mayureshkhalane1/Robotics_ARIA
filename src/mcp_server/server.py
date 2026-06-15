@@ -1,8 +1,11 @@
 """
 MCP Server for ARIA Robot Intelligence Architecture
 
-This server bridges the LangGraph agent to the Webots simulator.
-It exposes robot control and state reading as callable tools via the Model Context Protocol.
+This module is a TCP bridge to the Webots robot controller. It exposes robot
+control and state reading as in-process callable tools (see call_tool /
+list_tools and the MCP_TOOLS registry) that the agent invokes directly as
+Python functions. Despite the package name, this is NOT a Model Context
+Protocol server: there is no MCP transport (stdio/HTTP) and no JSON-RPC.
 
 Tools exposed:
 - get_state: Retrieve current robot sensor readings
@@ -195,10 +198,7 @@ def get_bridge() -> WebotsBridge:
     return _bridge
 
 
-# ============================================================================
 # Tool Functions - These are called by the agent via MCP
-# ============================================================================
-
 def tool_get_state(include_camera: bool = True) -> Dict[str, Any]:
     """
     MCP Tool: Get current robot state.
@@ -367,10 +367,7 @@ def tool_validate_action(action_type: str, **params) -> Dict[str, Any]:
     }
 
 
-# ============================================================================
 # MCP Tool Registry
-# ============================================================================
-
 MCP_TOOLS = {
     "get_state": {
         "function": tool_get_state,
@@ -477,12 +474,9 @@ def call_tool(name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         return {"error": f"Tool execution failed: {e}"}
 
 
-# ============================================================================
 # CLI / Testing
-# ============================================================================
-
 def main():
-    """Test the MCP server."""
+    """Smoke-test the Webots bridge tools (get_state / execute_action / stop)."""
     logger.info("Starting MCP Server tests...")
 
     # Test listing tools
